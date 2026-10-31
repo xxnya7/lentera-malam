@@ -1,0 +1,17 @@
+{
+  "name": "Lentera Malam",
+  "short_name": "Lentera",
+  "description": "Renungan Alkitab harian sebelum tidur: seluruh Alkitab dalam satu tahun.",
+  "lang": "id",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F0B26",
+  "theme_color": "#0F0B26",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

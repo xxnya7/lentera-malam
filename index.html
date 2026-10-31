@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lentera Malam</title>
+<meta name="description" content="Renungan Alkitab harian sebelum tidur: seluruh Alkitab dalam satu tahun.">
+<meta name="theme-color" content="#0F0B26">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lentera">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,400..600;1,7..72,400..600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=account_circle,bedtime,calendar_month,chevron_right,close,cloud_done,content_copy,dark_mode,download,edit_note,explore,favorite,fiber_manual_record,history,history_edu,hub,insights,layers,light_mode,lightbulb,local_fire_department,lock,menu_book,notes,notifications,schedule,search,skip_next,star,task_alt,tips_and_updates,translate,verified&display=block">
+<link rel="stylesheet" href="/style.css">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/></symbol>
+  <symbol id="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+</svg>
+<header class="topbar"><div class="in">
+  <div class="brand"><span class="logo"></span>Lentera Malam</div>
+  <div class="streak" id="streak" title="Malam berturut-turut"></div>
+  <button class="themebtn" id="themeBtn" aria-label="Ganti tampilan terang/gelap"></button>
+</div></header>
+<main class="app" id="app"></main>
+<nav class="bottom" aria-label="Menu utama"><div class="wrap" id="nav"></div></nav>
+<div id="layer"></div>
+<script src="/supabase-config.js"></script>
+<script type="module" src="/app.js"></script>
+</body>
+</html>
