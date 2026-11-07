@@ -50,4 +50,4 @@ Alkitab Yang Terbuka (AYT) © 2011–2024 Yayasan Lembaga SABDA (YLSA), dari htt
 ## Aset pihak ketiga
 
 - Font di `fonts/`: Literata, Nunito, dan Fraunces (SIL Open Font License 1.1), dari paket Fontsource.
-- Ikon di `index.html`: Phosphor Icons (MIT), gaya Regular.
+- Ikon di `index.html` dan maskot burung hantu: digambar khusus untuk Lentera Malam.

@@ -20,7 +20,7 @@
   --text:#EFE9DD; --text-read:#DED7C9; --text-2:#C9C4D6; --muted:#A29FBF; --verse-num:#9592B3;
   --lamp:#F5B95E; --on-lamp:#2A1A06; --lamp-soft:rgba(245,185,94,.14); --lamp-glow:rgba(245,185,94,.55); --lamp-text:#F5B95E;
   --plum:#BBA6F2; --plum-deep:#8E74D6; --sage:#86D4B8; --ember:#F59E89; --skyblue:#93BDF2; --cream:#F6E3C0; --shade:rgba(5,6,18,.55);
-  --sky:#0F1126; --cloud:#262B52; --cloud-2:#30366A; --star:#F6E3C0; --moon-glow:rgba(246,227,192,.22);
+  --sticker-edge:#F6E3C0; --sky:#0F1126; --cloud:#262B52; --cloud-2:#30366A; --star:#F6E3C0; --moon-glow:rgba(246,227,192,.22);
   --font-read:"Literata",Georgia,serif; --font-ui:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif; --font-display:"Fraunces","Literata",Georgia,serif;
   --fs-xs:13px; --fs-sm:15px; --fs-md:17px; --fs-read:19px; --fs-key:23px; --fs-h3:20px; --fs-h2:26px; --fs-h1:34px; --fs-stat:56px;
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px;
@@ -44,14 +44,14 @@
   --text:#2A2440; --text-read:#2A2440; --text-2:#514B66; --muted:#6E6A85; --verse-num:#6E6A85;
   --lamp:#E9A23B; --on-lamp:#2A1A06; --lamp-soft:rgba(233,162,59,.16); --lamp-glow:rgba(233,162,59,.45); --lamp-text:#9A5B0E;
   --plum:#6A4FB0; --plum-deep:#4F3790; --sage:#1E7A61; --ember:#B4472E; --skyblue:#2F63A8; --cream:#F6E3C0; --shade:rgba(42,36,64,.35);
-  --sky:#DCE4F7; --cloud:#FFFFFF; --cloud-2:#EEF2FB; --star:#9A5B0E; --moon-glow:rgba(233,162,59,.25);
+  --sticker-edge:#FFFFFF; --sky:#DCE4F7; --cloud:#FFFFFF; --cloud-2:#EEF2FB; --star:#9A5B0E; --moon-glow:rgba(233,162,59,.25);
   --elev-1:0 -8px 24px rgba(42,36,64,.10); color-scheme:light}}
 :root[data-theme="light"]{
   --bg:#F6F2EA; --surface:#FFFDF8; --surface-2:#EFEAF6; --line:#E3DDEC; --line-strong:#8E89A6;
   --text:#2A2440; --text-read:#2A2440; --text-2:#514B66; --muted:#6E6A85; --verse-num:#6E6A85;
   --lamp:#E9A23B; --on-lamp:#2A1A06; --lamp-soft:rgba(233,162,59,.16); --lamp-glow:rgba(233,162,59,.45); --lamp-text:#9A5B0E;
   --plum:#6A4FB0; --plum-deep:#4F3790; --sage:#1E7A61; --ember:#B4472E; --skyblue:#2F63A8; --cream:#F6E3C0; --shade:rgba(42,36,64,.35);
-  --sky:#DCE4F7; --cloud:#FFFFFF; --cloud-2:#EEF2FB; --star:#9A5B0E; --moon-glow:rgba(233,162,59,.25);
+  --sticker-edge:#FFFFFF; --sky:#DCE4F7; --cloud:#FFFFFF; --cloud-2:#EEF2FB; --star:#9A5B0E; --moon-glow:rgba(233,162,59,.25);
   --elev-1:0 -8px 24px rgba(42,36,64,.10); color-scheme:light}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -109,8 +109,8 @@ nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:20;padding-bottom:calc
 nav.bottom .wrap{pointer-events:auto;max-width:400px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border:1px solid var(--glassLine);border-radius:999px;padding:6px}
 nav.bottom button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:52px;border-radius:999px;color:var(--muted);font-size:10.5px;font-weight:700}
 nav.bottom button .ms{font-size:23px;font-variation-settings:"FILL" 0,"wght" 500,"GRAD" 0,"opsz" 24}
-nav.bottom button[aria-current="page"]{background:var(--invert);color:var(--invertInk)}
-nav.bottom button[aria-current="page"] .ms{font-variation-settings:"FILL" 1,"wght" 600,"GRAD" 0,"opsz" 24}
+
+
 details.chap{background:var(--surface2);border-radius:var(--r-sm);overflow:hidden}
 details.chap summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:0 16px;min-height:54px}
 details.chap summary::-webkit-details-marker{display:none}
@@ -190,9 +190,8 @@ body{background-image:radial-gradient(1.5px 1.5px at 12% 18%,color-mix(in srgb,v
 .celebrate p{font-size:14px;color:var(--soft)}
 
 /* navigasi */
-nav.bottom button[aria-current="page"]{background:var(--accent);color:var(--accentInk)}
-nav.bottom button:nth-child(2) .ms{color:var(--sky)} nav.bottom button:nth-child(3) .ms{color:var(--teal)} nav.bottom button:nth-child(4) .ms{color:var(--pinkc)} nav.bottom button:nth-child(5) .ms{color:var(--violet)} nav.bottom button:nth-child(1) .ms{color:var(--amber)}
-nav.bottom button[aria-current="page"] .ms{color:var(--accentInk)!important}.seg button[aria-pressed="true"]{background:var(--surface-2);color:var(--text)}
+
+.seg button[aria-pressed="true"]{background:var(--surface-2);color:var(--text)}
 
 .bk:nth-child(6n+1) i{background:var(--coral)} .bk:nth-child(6n+2) i{background:var(--amber)} .bk:nth-child(6n+3) i{background:var(--teal)} .bk:nth-child(6n+4) i{background:var(--sky)} .bk:nth-child(6n+5) i{background:var(--violet)} .bk:nth-child(6n) i{background:var(--pinkc)}
 .empty .owl{margin-bottom:4px}
@@ -704,3 +703,72 @@ button.ws-row:active{transform:scale(.985)}
 .wl-act{display:flex;flex-direction:column;align-items:center;gap:var(--s2)}
 .wl-act .btn-primary{min-width:min(100%,260px)}
 [tabindex="-1"]:focus:not(:focus-visible),h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}
+
+/* =====================================================================
+   Redesign 2026-11 · bagian G: ikon gambar tangan, fase bulan, stiker, selimut, awan
+   ===================================================================== */
+svg.ms{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+/* isi sprite berada di shadow tree <use>, jadi aksennya diatur lewat properti yang diwariskan */
+symbol .a{fill:var(--icon-accent,var(--lamp));stroke:currentColor}
+symbol .af{fill:var(--icon-accent-solid,var(--lamp));stroke:none}
+symbol .ao{fill:none;stroke:var(--icon-accent-line,var(--lamp-text))}
+/* menu bawah: hanya ikon aktif yang memakai isian lentera */
+nav.bottom button:not([aria-current="page"]){--icon-accent:none;--icon-accent-solid:currentColor;--icon-accent-line:currentColor}
+nav.bottom button[aria-current="page"] svg.ms{color:var(--text)}
+nav.bottom button svg.ms{font-size:26px}
+/* lentera streak di bilah atas */
+.streak svg.ms{font-size:22px;color:var(--text)}
+/* zona baca: ikon kecil dan tenang */
+.rd-h svg.ms{stroke-width:1.9}
+.rd-verses p.key sup svg.ms{font-size:12px}
+.mp-ic{fill:none;stroke:var(--on-lamp);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.mp-ic{--icon-accent:var(--cream);--icon-accent-solid:var(--cream)}
+
+/* fase bulan */
+.moonph{width:38px;height:38px;flex:none}
+.moonph .mp-full{fill:var(--lamp);stroke:var(--text);stroke-width:1.8}
+.moonph .mp-crater{fill:var(--on-lamp);opacity:.18}
+.moonph .mp-check{fill:none;stroke:var(--on-lamp);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.moonph .mp-ring{fill:none;stroke:var(--lamp);stroke-width:1.8;stroke-dasharray:3 3.4}
+.moonph .mp-cres{fill:var(--lamp)}
+.moonph .mp-new{fill:var(--surface-2);stroke:var(--line-strong);stroke-width:1.8}
+.moonph .mp-fut{fill:none;stroke:var(--line-strong);stroke-width:1.6;stroke-dasharray:1.5 4;stroke-linecap:round}
+.pg-week li .moonph{width:40px;height:40px}
+.pg-legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:var(--fs-xs);color:var(--muted)}
+.pg-legend span{display:inline-flex;align-items:center;gap:6px}
+.pg-legend .moonph{width:18px;height:18px}
+
+/* stiker pencapaian */
+.pg-stickers li{gap:6px}
+.stk{width:76px;height:76px;transform:rotate(var(--rot));transition:transform var(--dur-sm) var(--ease-out)}
+.stk .stk-edge{fill:var(--surface-2);stroke:var(--line-strong);stroke-width:2;stroke-dasharray:4 5;stroke-linejoin:round}
+.stk.on{filter:drop-shadow(0 6px 8px var(--shade))}
+.stk.on .stk-edge{fill:var(--lamp-soft);stroke:var(--sticker-edge);stroke-width:6;stroke-dasharray:none}
+.stk .stk-face{fill:var(--surface)}
+.stk .stk-ic{color:var(--muted)}
+.stk.on .stk-ic{color:var(--text)}
+.pg-stickers li.on:hover .stk{transform:rotate(0deg) scale(1.04)}
+
+/* kartu selimut: jahitan dan tepi bawah bergelombang */
+.blanket{border-radius:var(--r-lg) var(--r-lg) 0 0;border-bottom:0;padding-bottom:calc(var(--s6) + 12px);
+  -webkit-mask:radial-gradient(circle at 50% 100%,transparent 9px,#000 9.5px) bottom/22px 12px repeat-x,linear-gradient(#000 0 0) top/100% calc(100% - 11px) no-repeat;
+          mask:radial-gradient(circle at 50% 100%,transparent 9px,#000 9.5px) bottom/22px 12px repeat-x,linear-gradient(#000 0 0) top/100% calc(100% - 11px) no-repeat}
+.blanket::after{content:"";position:absolute;inset:8px 8px 20px;border:2px dashed var(--line-strong);border-radius:20px 20px 8px 8px;opacity:.55;pointer-events:none;z-index:-1}
+
+/* kartu awan: puncak berbentuk awan */
+.cloud-top{position:relative;margin-top:30px;border-top:0;border-radius:0 0 var(--r-lg) var(--r-lg);padding-top:var(--s4)}
+.cloud-top::before{content:"";position:absolute;left:-1px;right:-1px;top:-33px;height:34px;pointer-events:none;
+  background:radial-gradient(circle at 9% 100%,var(--surface) 24px,transparent 24.5px),radial-gradient(circle at 27% 100%,var(--surface) 33px,transparent 33.5px),radial-gradient(circle at 48% 100%,var(--surface) 26px,transparent 26.5px),radial-gradient(circle at 69% 100%,var(--surface) 32px,transparent 32.5px),radial-gradient(circle at 90% 100%,var(--surface) 25px,transparent 25.5px),linear-gradient(var(--surface),var(--surface)) bottom/100% 12px no-repeat}
+
+/* maskot: ekspresi baru */
+.owl .ow-specs{fill:none;stroke:var(--on-lamp);stroke-width:2.6}
+.owl .ow-book{fill:var(--lamp);stroke:var(--on-lamp);stroke-width:2;stroke-linejoin:round}
+.owl .ow-drop{fill:var(--skyblue)}
+.owl .ow-cloud{fill:var(--surface-2);stroke:var(--muted);stroke-width:2.4;stroke-linejoin:round}
+.owl .ow-slash{stroke:var(--muted);stroke-width:2.6;stroke-linecap:round}
+.rd-loading{display:flex;gap:var(--s4);align-items:flex-start}
+.rd-loading .rd-skel{flex:1}
+/* rak: garis kecil di punggung buku */
+.pg-book::after{content:"";position:absolute;top:8px;left:10px;right:10px;height:2px;border-radius:2px;background:var(--line-strong);opacity:.55}
+nav.bottom button svg.ms{color:var(--muted)}
+nav.bottom button[aria-current="page"] svg.ms{color:var(--text)}

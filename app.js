@@ -3,7 +3,7 @@ import { currentStreak } from '/lib/streak.js';
 
 const sb = createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
 
-const ICONS = {moon:'moon', sun:'sun', book:'book-open-text', check:'check-circle', star:'star', starfill:'star-fill', link:'link-simple', chart:'chart-line-up', bell:'bell', flame:'fire', heart:'heart', scroll:'scroll', bulb:'lightbulb', lock:'lock-simple', clock:'clock', shield:'seal-check', skip:'skip-forward', pen:'pencil-simple-line', map:'graph', sparkle:'sparkle', lang:'translate', user:'user-circle', calendar:'calendar-blank', chev:'caret-right', x:'x', close:'x', leaf:'leaf', layers:'stack', cloud:'cloud-check', search:'magnifying-glass', download:'download-simple', copy:'copy', compass:'compass', rewind:'clock-counter-clockwise', dot:'dot', notifications:'bell-ringing', dark_mode:'moon-stars', minus:'minus', plus:'plus', books:'books'};
+const ICONS = {moon:'malam', sun:'terang', dark_mode:'gelap', book:'pasal', check:'selesai', star:'favorit', starfill:'favorit', link:'kaitan', chart:'progres', bell:'notif', notifications:'notif', flame:'lentera2', heart:'doa', scroll:'kisah', bulb:'penerapan', lock:'kunci', clock:'linimasa', shield:'sumber', skip:'lanjut', chev:'lanjut', pen:'jurnal', map:'kaitan', sparkle:'bintang', lang:'kata', user:'akun', calendar:'minggu', x:'tutup', close:'keluar', leaf:'ringkas', layers:'mendalam', cloud:'sinkron', search:'cari', download:'ekspor', copy:'salin', compass:'pengantar', rewind:'sebelumnya', dot:'titik', minus:'kurang', plus:'tambah', books:'arsip'};
 const ic = n => `<svg class="ms" aria-hidden="true" focusable="false"><use href="#i-${ICONS[n] || n}"/></svg>`;
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const P = arr => (arr||[]).map(t=>`<p>${t}</p>`).join('');
@@ -13,10 +13,19 @@ function owl(mood = 'sleepy', size = 96){
     ? `<path class="ow-ink-s" d="M37 56 Q46 47 55 56M65 56 Q74 47 83 56"/>`
     : mood === 'awake'
     ? `<circle class="ow-ink" cx="46" cy="55" r="7"/><circle class="ow-ink" cx="74" cy="55" r="7"/><circle class="ow-hi" cx="48.5" cy="52.5" r="2.4"/><circle class="ow-hi" cx="76.5" cy="52.5" r="2.4"/>`
+    : mood === 'reading'
+    ? `<circle class="ow-ink" cx="46" cy="58" r="5.5"/><circle class="ow-ink" cx="74" cy="58" r="5.5"/><circle class="ow-specs" cx="46" cy="56" r="12"/><circle class="ow-specs" cx="74" cy="56" r="12"/><path class="ow-specs" d="M58 55 q2-2 4 0"/>`
+    : mood === 'worried'
+    ? `<circle class="ow-ink" cx="46" cy="57" r="5"/><circle class="ow-ink" cx="74" cy="57" r="5"/><circle class="ow-hi" cx="47.6" cy="55.4" r="1.8"/><circle class="ow-hi" cx="75.6" cy="55.4" r="1.8"/><path class="ow-ink-s" d="M38 46 L52 41M82 46 L68 41"/>`
+    : mood === 'offline'
+    ? `<path class="ow-ink-s" d="M38 56 h15"/><circle class="ow-ink" cx="74" cy="56" r="6"/><circle class="ow-hi" cx="76" cy="54" r="2"/>`
     : `<path class="ow-ink-s" d="M37 54 Q46 61 55 54M65 54 Q74 61 83 54"/>`;
   const extra = mood === 'happy'
     ? `<path class="ow-lamp" d="M104 18l2.2 5 5 2.2-5 2.2-2.2 5-2.2-5-5-2.2 5-2.2z"/><path class="ow-plum" d="M13 32l1.5 3.4 3.4 1.5-3.4 1.5L13 41.8l-1.5-3.4-3.4-1.5 3.4-1.5z"/>`
-    : mood === 'asleep' ? `<text class="ow-z" x="94" y="24">z</text><text class="ow-z ow-z2" x="105" y="12">z</text>` : '';
+    : mood === 'asleep' ? `<text class="ow-z" x="94" y="24">z</text><text class="ow-z ow-z2" x="105" y="12">z</text>`
+    : mood === 'reading' ? `<path class="ow-book" d="M36 80 q12-6 24 0 q12-6 24 0 v20 q-12-6-24 0 q-12-6-24 0z"/><path class="ow-specs" d="M60 80 v20"/>`
+    : mood === 'worried' ? `<path class="ow-drop" d="M96 34c3 4 5 7 5 9.5 0 2.8-2.2 5-5 5s-5-2.2-5-5c0-2.5 2-5.5 5-9.5z"/>`
+    : mood === 'offline' ? `<path class="ow-cloud" d="M88 30h18c3.6 0 6.4-2.8 6.4-6.2 0-3.3-2.6-6-5.9-6.2-.8-4.5-4.6-7.6-9.1-7.6-4 0-7.4 2.5-8.6 6.2-3.3.6-5.7 3.3-5.7 6.7 0 3.9 2.9 7.1 4.9 7.1z"/><path class="ow-slash" d="M86 8 L110 32"/>` : '';
   return `<svg class="owl owl-${mood}" width="${size}" height="${size}" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
   <path class="ow-body-d" d="M28 34 L33 12 L47 28 Z M92 34 L87 12 L73 28 Z"/>
   <path class="ow-body" d="M60 20 C89 20 98 44 98 68 C98 94 82 110 60 110 C38 110 22 94 22 68 C22 44 31 20 60 20Z"/>
@@ -27,10 +36,28 @@ function owl(mood = 'sleepy', size = 96){
   ${eyes}
   <path class="ow-beak" d="M55 63 L65 63 L60 71 Z"/>
   <path class="ow-feet" d="M50 108 l-3 6 M54 108 v7 M58 108 l3 6 M62 108 l-3 6 M66 108 v7 M70 108 l3 6"/>
-  <g class="ow-lantern"><path class="ow-metal" d="M100 58 v8 M93 66 h14 l-2 4 h-10z M93 86 h14 l-2 3 h-10z"/><rect class="ow-glass" x="94" y="70" width="12" height="16" rx="3"/><circle class="ow-flame" cx="100" cy="78" r="3"/></g>
-  <path class="ow-wing" d="M88 76 C92 70 98 70 100 74"/>
+  ${mood === 'reading' ? '' : `<g class="ow-lantern"><path class="ow-metal" d="M100 58 v8 M93 66 h14 l-2 4 h-10z M93 86 h14 l-2 3 h-10z"/><rect class="ow-glass" x="94" y="70" width="12" height="16" rx="3"/>${mood === 'offline' ? '' : '<circle class="ow-flame" cx="100" cy="78" r="3"/>'}</g>
+  <path class="ow-wing" d="M88 76 C92 70 98 70 100 74"/>`}
   ${extra}
 </svg>`;
+}
+
+// Penanda hari berbentuk fase bulan: purnama = sudah, sabit = malam ini, bulan baru = belum, putus-putus = nanti.
+function moonPhase(kind){
+  const d = {
+    full:`<circle class="mp-full" cx="18" cy="18" r="13"/><circle class="mp-crater" cx="14" cy="14" r="2.4"/><circle class="mp-crater" cx="22" cy="21" r="1.8"/><path class="mp-check" d="M12.5 18.5l3.6 3.5 7.4-7.6"/>`,
+    crescent:`<circle class="mp-ring" cx="18" cy="18" r="13"/><path class="mp-cres" d="M21 7.4c-5 .9-8.2 5.6-7.2 10.6.9 4.6 5.4 7.6 10 6.8-1.8 1.6-4.2 2.5-6.8 2.3-5.4-.3-9.5-5-9.2-10.4.3-5 4.4-8.9 9.4-9 1.3 0 2.6.2 3.8.7z"/>`,
+    new:`<circle class="mp-new" cx="18" cy="18" r="13"/>`,
+    future:`<circle class="mp-fut" cx="18" cy="18" r="13"/>`
+  }[kind];
+  return `<svg class="moonph" viewBox="0 0 36 36" aria-hidden="true" focusable="false">${d}</svg>`;
+}
+// Stiker pencapaian bertepi putih, sedikit miring.
+const STK = 'M46 6c6 0 9 5 14 6s11-2 15 3 1 11 4 15 9 6 8 13-7 8-8 13 4 11-1 15-11 1-15 4-6 9-13 8-8-7-13-8-11 4-15-1-1-11-4-15-9-6-8-13 7-8 8-13-4-11 1-15 11-1 15-4 7-11 13-11z';
+function sticker(icon, on, i = 0){
+  return `<svg class="stk ${on ? 'on' : ''}" style="--rot:${[-6,4,-2,5,-4,3][i % 6]}deg" viewBox="0 0 92 92" aria-hidden="true" focusable="false">
+    <path class="stk-edge" d="${STK}"/>${on ? `<path class="stk-face" d="${STK}" transform="translate(9 9) scale(.8)"/>` : ''}
+    <svg x="26" y="26" width="40" height="40" viewBox="0 0 24 24" class="ms stk-ic"><use href="#i-${ICONS[icon] || icon}"/></svg></svg>`;
 }
 
 // Langit malam: bulan, awan, dan bintang statis (ilustrasi, bukan gradien).
@@ -162,11 +189,11 @@ async function loadDevo(date){
 
 /* ---------- tampilan ---------- */
 const VIEWS = [
-  {id:'malam', label:'Malam ini', icon:'moon'},
-  {id:'cari', label:'Cari', icon:'search'},
-  {id:'arsip', label:'Arsip', icon:'check'},
-  {id:'progres', label:'Progres', icon:'chart'},
-  {id:'akun', label:'Akun', icon:'user'}
+  {id:'malam', label:'Malam ini', icon:'malam'},
+  {id:'cari', label:'Cari', icon:'cari'},
+  {id:'arsip', label:'Arsip', icon:'arsip'},
+  {id:'progres', label:'Progres', icon:'progres'},
+  {id:'akun', label:'Akun', icon:'akun'}
 ];
 const cur = () => { const h = location.hash.slice(1); return (VIEWS.some(v=>v.id===h) || h==='kaitan') ? h : 'malam'; };
 const greet = () => { const f = (S.data.nama || '').trim().split(/\s+/)[0]; return f ? `Selamat malam, ${esc(f)}` : 'Selamat malam'; };
@@ -179,7 +206,7 @@ function renderChrome(){
   const st = streakInfo();
   const k = Object.keys(S.data.read).length;
   const el = document.getElementById('streak');
-  el.innerHTML = `${lantern(k, 22, {cls:'ln-top', id:'t'})}<span>${st.cur}</span>`;
+  el.innerHTML = `${ic(flameIcon(st.cur))}<span>${st.cur}</span>`;
   el.setAttribute('aria-label', `Lentera menyala ${st.cur} malam berturut-turut, berisi ${k} kunang-kunang`);
 }
 
@@ -189,7 +216,7 @@ function vLogin(){
   const lead = m === 'daftar' ? 'Supaya lentera Anda ikut ke perangkat mana pun.' : m === 'lupa' ? 'Kami kirim tautan atur ulang ke email Anda.' : m === 'baru' ? 'Buat kata sandi baru untuk akun Anda.' : 'Masuk untuk melanjutkan bacaan malam ini.';
   const err = S.authErr ? 'auth-err' : '';
   return `<div class="au">
-    <header class="au-sky">${nightSky()}<div class="au-owl">${owl('awake', 104)}</div>
+    <header class="au-sky">${nightSky()}<div class="au-owl">${owl(S.authErr ? 'worried' : 'awake', 104)}</div>
       <h1 class="au-h">${title}</h1><p class="au-lead">${lead}</p></header>
     <form class="ws-panel au-form" id="authform" novalidate>
       ${S.authInfo ? `<p class="au-info" role="status">${ic('notifications')}<span>${esc(S.authInfo)}</span></p>` : ''}
@@ -278,7 +305,7 @@ function vMalam(){
   let note = '';
   if (before) note = `<p class="tn-note">${ic('calendar')}<span>Rencana dimulai Minggu, 1 November 2026. Hari 1 boleh dibaca lebih awal; streak dihitung dari hari Anda menandainya.</span></p>`;
   else if (!isToday && date < TODAY()) note = `<p class="tn-note">${ic('clock')}<span>Anda sedang membuka bacaan ${fmtDate(date)}.</span><button class="btn-text" data-act="today">Kembali ke hari ini</button></p>`;
-  else if (isToday && !done && st.cur > 0) note = `<p class="tn-note">${lantern(fireflies, 18, {cls:'ln-inline', id:'n'})}<span>Lentera Anda sudah menyala ${st.cur} malam berturut-turut. Malam ini tinggal satu langkah lagi.</span></p>`;
+  else if (isToday && !done && st.cur > 0) note = `<p class="tn-note">${ic(flameIcon(st.cur))}<span>Lentera Anda sudah menyala ${st.cur} malam berturut-turut. Malam ini tinggal satu langkah lagi.</span></p>`;
   const title = isToday || before ? (nama ? `Selamat malam, ${esc(nama)}` : 'Selamat malam') : `Bacaan ${fmtShort(day.t)}`;
   const header = `
   <header class="tn">
@@ -310,7 +337,7 @@ function vMalam(){
 
   const focus = ok && dv.fokus ? `
   <section class="rd-focus t-lamp" aria-labelledby="fokush">
-    <h2 class="rd-h rd-theme" id="fokush">${ic('moon')}${esc(dv.tema)}</h2>
+    <h2 class="rd-h rd-theme" id="fokush">${ic('malam')}${esc(dv.tema)}</h2>
     <div class="rd-verses">${focusVs.map(v => `<p tabindex="0" role="button" data-ref="${dv.fokus.b}:${dv.fokus.c}:${v[0]}" class="${dv.fokus.key.includes(v[0])?'key':''} ${isFav(dv.fokus.b,dv.fokus.c,v[0])?'fav':''}"><sup>${dv.fokus.key.includes(v[0]) ? ic('sparkle') : ''}${v[0]}</sup>${verseHTML(v[1])}</p>`).join('')}</div>
     <p class="rd-ref">${bookName(dv.fokus.b)} ${dv.fokus.c}:${dv.fokus.v1}–${dv.fokus.v2}, ayat fokus (AYT). Ketuk ayat untuk menyimpan atau menyalin.</p>
   </section>` : '';
@@ -326,8 +353,8 @@ function vMalam(){
   </section>`;
 
   let devo = '', bonus = '';
-  if (dv === undefined || S.devoLoading[day.t]) devo = `<div class="rd-skel" aria-label="Memuat renungan" role="status"><i></i><i></i><i></i><i></i></div>`;
-  else if (dv === 'timeout') devo = `<div class="rd-empty">${owl('awake', 72)}<p><b>Renungan belum dapat dimuat.</b> Periksa koneksi Anda. Bacaan Alkitab di atas tetap bisa dibaca.</p></div>`;
+  if (dv === undefined || S.devoLoading[day.t]) devo = `<div class="rd-loading" role="status">${owl('reading', 72)}<div class="rd-skel" aria-label="Memuat renungan"><i></i><i></i><i></i><i></i></div></div>`;
+  else if (dv === 'timeout') devo = `<div class="rd-empty">${owl(navigator.onLine === false ? 'offline' : 'worried', 72)}<p><b>${navigator.onLine === false ? 'Sedang tanpa sinyal.' : 'Renungan belum dapat dimuat.'}</b> Periksa koneksi Anda. Bacaan Alkitab di atas tetap bisa dibaca.</p></div>`;
   else if (!dv) devo = `<div class="rd-empty">${owl('sleepy', 72)}<p><b>Renungan untuk hari ini sedang disiapkan.</b> Renungan ditulis per minggu dan diperbarui setiap Jumat. Sementara itu, bacalah pasal-pasal hari ini dan tuliskan refleksi Anda di bawah.</p></div>`;
   else {
     devo = `
@@ -346,7 +373,7 @@ function vMalam(){
   </section>`;
     bonus = `
   <section class="bn-fact" aria-labelledby="faktah">
-    <p class="bn-kind">${ic('sparkle')}${esc(dv.fakta.kind)}</p>
+    <p class="bn-kind">${ic('fakta')}${esc(dv.fakta.kind)}</p>
     <h2 class="bn-h" id="faktah">${esc(dv.fakta.title)}</h2>
     <p>${glossLink(dv.fakta.text)}</p>
   </section>
@@ -370,18 +397,18 @@ function vMalam(){
     <p class="saved" id="jsaved" aria-live="polite"></p>
   </section>`;
 
-  const prayer = ok && dv.doa ? `<section class="rd-sec rd-pray t-plum" aria-labelledby="doah"><h2 class="rd-h" id="doah">${ic('moon')}Doa sebelum tidur</h2><p class="prayer">${esc(dv.doa)}</p></section>` : '';
+  const prayer = ok && dv.doa ? `<section class="rd-sec rd-pray t-plum" aria-labelledby="doah"><h2 class="rd-h" id="doah">${ic('doa')}Doa sebelum tidur</h2><p class="prayer">${esc(dv.doa)}</p></section>` : '';
   const sources = ok && dv.sumber && dv.sumber.length ? `<section class="rd-sec t-sage" aria-labelledby="sumberh"><h2 class="rd-h" id="sumberh">${ic('shield')}Sumber bacaan</h2>
       <ol class="srclist">${dv.sumber.map(s=>`<li><a href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a></li>`).join('')}</ol></section>` : '';
 
   /* ---- Signature: lentera kunang-kunang ---- */
   const finish = done ? `
-  <section class="fin fin-done ${S.justDone === day.t ? 'just' : ''}" aria-labelledby="finh">${nightSky('sky-fin')}
+  <section class="fin blanket fin-done ${S.justDone === day.t ? 'just' : ''}" aria-labelledby="finh">${nightSky('sky-fin')}
     <div class="fin-art">${lantern(fireflies, 112, {cls:'ln-big', id:'f'})}<div class="fin-owl">${owl(S.justDone === day.t ? 'happy' : 'asleep', 76)}</div></div>
     <h2 class="fin-h" id="finh">${isToday ? `Malam ke-${st.cur}. Selamat tidur${nama ? ', ' + esc(nama) : ''}.` : 'Bacaan ini sudah selesai.'}</h2>
     <p class="fin-p">Ditandai ${fmtShort(S.data.read[day.t].on)}. Lentera Anda kini berisi ${fireflies} kunang-kunang; ${Math.max(0, 365 - fireflies)} lagi sampai akhir tahun.</p>
   </section>` : `
-  <section class="fin" aria-labelledby="finh">${nightSky('sky-fin')}
+  <section class="fin blanket" aria-labelledby="finh">${nightSky('sky-fin')}
     <div class="fin-art">${lantern(fireflies, 112, {cls:'ln-big', id:'f'})}</div>
     <h2 class="fin-h" id="finh">Selesai membaca?</h2>
     <p class="fin-p">Tandai bacaan ini, dan satu kunang-kunang lagi masuk ke lentera Anda.</p>
@@ -436,7 +463,7 @@ function vKaitan(){
   const lines = dv.kaitan.map((l,i)=>`<path class="mp-line ${sel===i?'on':''}" d="M${cx} ${cy} L ${pos[i][0]} ${pos[i][1]}" style="stroke:var(${tone[i]})"/>`).join('');
   const nodes = dv.kaitan.map((l,i)=>{ const p=pos[i]; const nm=refText(l.b,l.c,l.v); return `<g class="node ${sel===i?'on':''}" data-node="${i}" tabindex="0" role="button" aria-pressed="${sel===i}" aria-label="${esc(nm)}">
     <circle cx="${p[0]}" cy="${p[1]}" r="40" fill="transparent"/><circle class="mp-dot" cx="${p[0]}" cy="${p[1]}" r="28" style="fill:var(${tone[i]})"/>
-    <use href="#i-book-open-text" x="${p[0]-12}" y="${p[1]-12}" width="24" height="24" class="mp-ic"/>
+    <use href="#i-pasal" x="${p[0]-12}" y="${p[1]-12}" width="24" height="24" class="mp-ic"/>
     <text class="mp-t" x="${p[0]}" y="${p[1]+48}" text-anchor="middle">${esc(nm)}</text></g>`; }).join('');
   const L = sel==null ? null : dv.kaitan[sel];
   const info = L ? `<p class="rd-links-ref">${refText(L.b,L.c,L.v)}</p><p class="rd-links-v">${chapter(L.b,L.c).filter(v=>L.v.includes(v[0])).map(v=>verseHTML(v[1])).join(' ')}</p><p class="rd-links-why">${esc(L.why)}</p>`
@@ -451,7 +478,7 @@ function vKaitan(){
     ${back}`;
 }
 
-const MILESTONES = [[1,'moon','Malam pertama'],[7,'star','Seminggu bersinar'],[30,'books','Sebulan setia'],[100,'sparkle','Seratus kunang-kunang'],[200,'heart','Dua ratus malam'],[365,'sun','Setahun penuh']];
+const MILESTONES = [[1,'malam','Malam pertama'],[7,'lentera2','Seminggu bersinar'],[30,'arsip','Sebulan setia'],[100,'fakta','Seratus kunang-kunang'],[200,'lentera3','Dua ratus malam'],[365,'terang','Setahun penuh']];
 function vProgres(){
   const st = streakInfo();
   const readDays = Object.keys(S.data.read); const k = readDays.length;
@@ -480,14 +507,15 @@ function vProgres(){
       </div>
     </section>
     <section class="ws-panel" aria-labelledby="wkh"><h2 class="rd-h t-lamp" id="wkh">${ic('calendar')}Minggu ini</h2>
-      <ol class="pg-week">${week.map(w => `<li class="${w.r ? 'r' : ''} ${w.today ? 't' : ''} ${w.future ? 'f' : ''}"><span class="pg-wd" aria-hidden="true">${w.r ? ic('check') : ''}</span><span class="pg-wl">${w.l}</span><span class="sr">${fmtShort(w.d)}${w.r ? ', sudah membaca' : w.today ? ', malam ini' : ''}</span></li>`).join('')}</ol>
+      <ol class="pg-week">${week.map(w => `<li class="${w.r ? 'r' : ''} ${w.today ? 't' : ''}">${moonPhase(w.r ? 'full' : w.today ? 'crescent' : w.future ? 'future' : 'new')}<span class="pg-wl">${w.l}</span><span class="sr">${fmtShort(w.d)}${w.r ? ', sudah membaca' : w.today ? ', malam ini' : w.future ? '' : ', belum dibaca'}</span></li>`).join('')}</ol>
+      <p class="pg-legend"><span>${moonPhase('full')}Sudah dibaca</span><span>${moonPhase('crescent')}Malam ini</span><span>${moonPhase('new')}Belum dibaca</span></p>
     </section>
-    <section class="ws-panel" aria-labelledby="rakh"><h2 class="rd-h t-sky" id="rakh">${ic('books')}Rak Alkitab</h2>
+    <section class="ws-panel" aria-labelledby="rakh"><h2 class="rd-h t-sky" id="rakh">${ic('progres')}Rak Alkitab</h2>
       <p class="pg-lead">${n ? `${n} dari 1.189 pasal sudah dibaca.${cmp ? ` Sudah lebih panjang dari seluruh kitab ${esc(cmp.n)} (${cmp.tot} pasal).` : ''}` : 'Rak masih kosong. Setiap pasal yang dibaca mengisi satu kitab sedikit demi sedikit.'}</p>
       ${shelf(0, 39, 'Perjanjian Lama')}${shelf(39, 66, 'Perjanjian Baru')}
     </section>
-    <section class="ws-panel" aria-labelledby="stkh"><h2 class="rd-h t-plum" id="stkh">${ic('sparkle')}Pencapaian</h2>
-      <ul class="pg-stickers">${MILESTONES.map(([need, icon, name]) => `<li class="${k >= need ? 'on' : ''}"><span class="pg-st-ic" aria-hidden="true">${ic(icon)}</span><b>${name}</b><small>${k >= need ? 'Terbuka' : `Baca ${need} malam (${k}/${need})`}</small></li>`).join('')}</ul>
+    <section class="ws-panel cloud-top" aria-labelledby="stkh"><h2 class="rd-h t-plum" id="stkh">${ic('pencapaian')}Pencapaian</h2>
+      <ul class="pg-stickers">${MILESTONES.map(([need, icon, name], i) => `<li class="${k >= need ? 'on' : ''}">${sticker(k >= need ? icon : 'kunci', k >= need, i)}<b>${name}</b><small>${k >= need ? 'Terbuka' : `Baca ${need} malam (${k}/${need})`}</small></li>`).join('')}</ul>
     </section>
     <section class="ws-panel" aria-labelledby="calh"><h2 class="rd-h t-sage" id="calh">${ic('calendar')}${BULAN[m]} ${y}</h2><div class="pg-cal">${cells}</div></section>
     ${timelineHTML()}`;
@@ -517,7 +545,7 @@ function vAkun(){
       </div>
       <p class="ac-txt">Ringkas: ayat fokus, satu paragraf latar, satu paragraf penerapan, refleksi, dan doa. Mendalam: ditambah telaah kata, isu terkini, ayat berkaitan, dan sumber.</p>
     </section>
-    <section class="ws-panel" aria-labelledby="pngh"><h2 class="rd-h t-plum" id="pngh">${ic('bell')}Pengingat malam</h2>
+    <section class="ws-panel cloud-top" aria-labelledby="pngh"><h2 class="rd-h t-plum" id="pngh">${ic('bell')}Pengingat malam</h2>
       ${isIOS() && !isStandalone() ? `<p class="ac-note">${ic('notifications')}<span>Di iPhone, notifikasi hanya bisa aktif setelah aplikasi dipasang: buka di <b>Safari</b>, ketuk <b>Bagikan</b>, pilih <b>Tambahkan ke Layar Utama</b>, lalu buka dari ikon itu.</span></p>` : ''}
       ${u.signedIn ? `
       <div class="switchlist">
@@ -763,6 +791,7 @@ function applyTheme(){
 }
 
 function toast(msg){ document.querySelectorAll('.toast').forEach(t=>t.remove()); const t=document.createElement('div'); t.className='toast' + (document.getElementById('layer').innerHTML ? ' top' : ''); t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),4000); }
+const flameIcon = n => n >= 30 ? 'lentera3' : n >= 7 ? 'lentera2' : n >= 1 ? 'lentera1' : 'lentera0';
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* Signature: satu kunang-kunang terbang dari tombol ke lentera di bilah atas. */
 function celebrate(from, date){
@@ -982,6 +1011,6 @@ async function loadCloud(uid){
   const [bible, plan] = await Promise.all([fetch('/data/alkitab.json').then(r=>r.json()), fetch('/data/rencana.json').then(r=>r.json())]).catch(()=>[null,null]);
   try { const [l, g] = await Promise.all([fetch('/data/linimasa.json').then(r=>r.json()), fetch('/data/glosarium.json').then(r=>r.json())]); LINI = l; GLOS = g; glossInit(); } catch(e) {}
   BIBLE = bible; PLAN = plan;
-  if (!BIBLE) { document.getElementById('app').innerHTML = `<div class="empty"><b>Alkitab gagal dimuat</b><p class="small">Periksa koneksi lalu muat ulang.</p></div>`; return; }
+  if (!BIBLE) { document.getElementById('app').innerHTML = `<div class="ws-empty">${owl(navigator.onLine === false ? 'offline' : 'worried', 72)}<p><b>Alkitab gagal dimuat.</b> Periksa koneksi lalu muat ulang halaman.</p></div>`; return; }
   render();
 })();

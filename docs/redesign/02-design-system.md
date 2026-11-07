@@ -10,6 +10,8 @@ Tanggal: 7 November 2026 · Dasar: kode di branch `redesign` (commit `c092716`) 
 > - **Kepala halaman** memakai ilustrasi langit: bulan, awan, dan bintang statis dalam SVG (bukan gradien). Maskot duduk di atas awan.
 > - **Zona Baca memakai panel.** Setiap bagian berada di panel `--surface` dengan garis 1 px, radius 28 px, dan jarak 24 px antarpanel, supaya batas antarbagian jelas. Setiap bagian punya warna aksen ikon sendiri: kisah dan doa plum, telaah kata dan ayat kaitan biru langit, penerapan dan sumber hijau, pasal dan refleksi lentera. Isi panel tetap tanpa kartu bersarang (memakai garis pemisah, bukan kotak).
 
+> **Revisi 2 (7 November 2026): ikon dan bentuk.** Ikon Phosphor diganti dengan ikon gambar tangan buatan sendiri (sprite di `index.html`). Garisnya 1,8 px dengan ujung membulat, dan aksen lentera diatur lewat kelas `a`/`af`/`ao` dan properti `--icon-accent`. Streak memakai lentera yang nyalanya makin besar (1–6, 7–29, 30+ malam). Penanda hari memakai fase bulan, pencapaian memakai stiker bertepi putih, "Selesai membaca" memakai kartu selimut, dan kepala Pencapaian serta Pengingat memakai kartu awan. Maskot punya ekspresi tambahan: membaca, cemas, dan tanpa sinyal. Halaman baca hanya memakai ikon 20 px. Pratinjau: artifact "Ikon Lentera Malam".
+
 **Cara memakai dokumen ini:**
 - Dokumen ini adalah **Master**: aturan bawaan untuk semua halaman.
 - Bagian **Zona Baca** dan **Zona Main** (bagian 4) berisi aturan khusus. Kalau aturan zona bertentangan dengan Master, aturan zona yang berlaku.
