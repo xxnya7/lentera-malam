@@ -7,7 +7,6 @@ const ICONS = {"moon": "bedtime", "sun": "light_mode", "book": "menu_book", "che
 const ic = n => `<span class="ms" aria-hidden="true">${ICONS[n] || n}</span>`;
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const P = arr => (arr||[]).map(t=>`<p>${t}</p>`).join('');
-const SHEEP = '';
 let OWL_N = 0;
 function owl(mood = 'sleepy', size = 96){
   const k = 'ow' + (OWL_N++);
@@ -65,7 +64,7 @@ const planIndexFor = date => Math.max(0, Math.min(364, dayDiff(START, date)));
 let BIBLE = null, PLAN = null;
 const S = {
   view: null, viewDate: null, mapSel: null, filter: 'semua', tabCari: 'cari', q: '',
-  user: { id: null, name: '', email: '', avatar: '', signedIn: false }, authChecked: false, authMode: 'masuk', authErr: '', authBusy: false,
+  user: { id: null, email: '', signedIn: false }, authChecked: false, authMode: 'masuk', authErr: '', authBusy: false,
   data: { read: {}, fav: {}, mode: 'mendalam', theme: null, welcomed: false },
   journal: {}, journalAt: {}, devo: {}, devoLoading: {}, sync: 'local', dbErr: false
 };
@@ -75,14 +74,12 @@ const LS = 'lentera-v4';
 function lsLoad(){ try { return JSON.parse(localStorage.getItem(LS) || 'null'); } catch(e){ return null; } }
 function lsSave(){ try { localStorage.setItem(LS, JSON.stringify({ data: S.data, journal: S.journal, journalAt: S.journalAt })); } catch(e){} }
 
-const stateDoc = () => S.user.id ? true : null;
-const journalDoc = date => S.user.id ? true : null;
 const must = r => { if (r.error) throw r.error; return r; };
 
 let writing = Promise.resolve();
 function saveState(){
   lsSave();
-  const ref = stateDoc(); if (!ref) return;
+  if (!S.user.id) return;
   const uid = S.user.id;
   writing = writing.then(async () => {
     // Gabung dengan isi cloud dulu supaya perangkat lain yang lebih baru tidak tertimpa.
@@ -98,8 +95,8 @@ function saveJournal(date, text){
   S.journal[date] = text; S.journalAt[date] = new Date().toISOString(); lsSave();
   clearTimeout(jTimers[date]);
   jTimers[date] = setTimeout(async () => {
-    const ref = journalDoc(date); const el = document.getElementById('jsaved');
-    if (!ref) { if (el) el.textContent = 'Tersimpan di perangkat ini'; return; }
+    const el = document.getElementById('jsaved');
+    if (!S.user.id) { if (el) el.textContent = 'Tersimpan di perangkat ini'; return; }
     try { must(await sb.from('journals').upsert({ user_id: S.user.id, date, text, updated_at: S.journalAt[date] })); if (el) el.textContent = 'Tersimpan di akun'; }
     catch(e){ if (el) el.textContent = 'Tersimpan di perangkat ini (gagal sinkron)'; }
   }, 900);
@@ -150,7 +147,7 @@ const VIEWS = [
   {id:'akun', label:'Akun', icon:'user'}
 ];
 const cur = () => { const h = location.hash.slice(1); return (VIEWS.some(v=>v.id===h) || h==='kaitan') ? h : 'malam'; };
-const greet = () => { const f = (S.data.nama || S.user.name || '').trim().split(/\s+/)[0]; return f ? `Selamat malam, ${esc(f)}` : 'Selamat malam'; };
+const greet = () => { const f = (S.data.nama || '').trim().split(/\s+/)[0]; return f ? `Selamat malam, ${esc(f)}` : 'Selamat malam'; };
 const head = (title, sub) => `<div class="pagehead"><small>${sub}</small><h1>${title}</h1></div>`;
 const viewDate = () => S.viewDate || (TODAY() < START ? START : TODAY());
 
@@ -823,9 +820,9 @@ async function loadCloud(uid){
     if (event === 'PASSWORD_RECOVERY') { S.recovery = true; }
     const user = session && session.user;
     if (user) {
-      S.user = { id: user.id, email: user.email || '', name: '', avatar: '', signedIn: true }; S.data.offline = false;
+      S.user = { id: user.id, email: user.email || '', signedIn: true }; S.data.offline = false;
       if (lastUid !== user.id) { lastUid = user.id; await loadCloud(user.id); }
-    } else { lastUid = null; S.user = { id: null, email: '', name: '', avatar: '', signedIn: false }; S.sync = 'local'; }
+    } else { lastUid = null; S.user = { id: null, email: '', signedIn: false }; S.sync = 'local'; }
     S.authChecked = true; render();
   };
   sb.auth.onAuthStateChange((event, session) => { setTimeout(() => onSession(event, session), 0); });
