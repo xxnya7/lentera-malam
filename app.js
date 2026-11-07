@@ -19,7 +19,7 @@ function owl(mood = 'sleepy', size = 96){
     ? `<circle class="ow-ink" cx="46" cy="57" r="5"/><circle class="ow-ink" cx="74" cy="57" r="5"/><circle class="ow-hi" cx="47.6" cy="55.4" r="1.8"/><circle class="ow-hi" cx="75.6" cy="55.4" r="1.8"/><path class="ow-ink-s" d="M38 46 L52 41M82 46 L68 41"/>`
     : mood === 'offline'
     ? `<path class="ow-ink-s" d="M38 56 h15"/><circle class="ow-ink" cx="74" cy="56" r="6"/><circle class="ow-hi" cx="76" cy="54" r="2"/>`
-    : `<path class="ow-ink-s" d="M37 54 Q46 61 55 54M65 54 Q74 61 83 54"/>`;
+    : `<path class="ow-ink-s ow-shut" d="M37 54 Q46 61 55 54M65 54 Q74 61 83 54"/><g class="ow-open"><circle class="ow-ink" cx="46" cy="56" r="6"/><circle class="ow-ink" cx="74" cy="56" r="6"/><circle class="ow-hi" cx="48" cy="54" r="2"/><circle class="ow-hi" cx="76" cy="54" r="2"/></g>`;
   const extra = mood === 'happy'
     ? `<path class="ow-lamp" d="M104 18l2.2 5 5 2.2-5 2.2-2.2 5-2.2-5-5-2.2 5-2.2z"/><path class="ow-plum" d="M13 32l1.5 3.4 3.4 1.5-3.4 1.5L13 41.8l-1.5-3.4-3.4-1.5 3.4-1.5z"/>`
     : mood === 'asleep' ? `<text class="ow-z" x="94" y="24">z</text><text class="ow-z ow-z2" x="105" y="12">z</text>`
@@ -61,14 +61,24 @@ function sticker(icon, on, i = 0){
 }
 
 // Langit malam: bulan, awan, dan bintang statis (ilustrasi, bukan gradien).
-function nightSky(cls = ''){
+// Fase bulan sungguhan untuk malam tertentu (0 = bulan baru, 0,5 = purnama).
+function lunarPhase(iso){ const d = parseISO(iso); d.setHours(20); const days = (d.getTime() - Date.UTC(2000, 0, 6, 18, 14)) / 86400000; return ((days / 29.530588853) % 1 + 1) % 1; }
+function moonLitPath(p, cx = 282, cy = 66, r = 27){
+  const k = Math.cos(2 * Math.PI * p), rx = Math.abs(k) * r, wax = p < .5, cres = k > 0;
+  const inner = wax ? (cres ? 0 : 1) : (cres ? 1 : 0);
+  return `M${cx} ${cy - r}A${r} ${r} 0 0 ${wax ? 1 : 0} ${cx} ${cy + r}A${rx.toFixed(2)} ${r} 0 0 ${inner} ${cx} ${cy - r}Z`;
+}
+function nightSky(cls = '', phase = null){
   const st = [[22,30,1.4],[70,16,1],[118,52,1.2],[170,22,1.6],[208,70,1],[40,96,1],[150,110,1.3],[236,30,1],[96,150,.9],[200,160,1.1],[330,150,1.2],[262,128,.9],[20,200,1]];
   return `<svg class="sky-art ${cls}" viewBox="0 0 360 460" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
   ${st.map(([x,y,r]) => `<circle class="sk-star" cx="${x}" cy="${y}" r="${r}"/>`).join('')}
   <path class="sk-star" d="M250 92l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>
-  <circle class="sk-glow" cx="282" cy="66" r="64" opacity=".35"/><circle class="sk-glow" cx="282" cy="66" r="46" opacity=".55"/>
-  <circle class="sk-moon" cx="282" cy="66" r="27"/>
-  <circle class="sk-crater" cx="273" cy="59" r="4.5"/><circle class="sk-crater" cx="289" cy="76" r="3.2"/><circle class="sk-crater" cx="292" cy="56" r="2.3"/>
+  ${(g => `<circle class="sk-glow" cx="282" cy="66" r="64" opacity="${(.35 * g).toFixed(2)}"/><circle class="sk-glow" cx="282" cy="66" r="46" opacity="${(.55 * g).toFixed(2)}"/>`)(phase === null ? 1 : .25 + .75 * (1 - Math.cos(2 * Math.PI * phase)) / 2)}
+  ${phase === null ? `<circle class="sk-moon" cx="282" cy="66" r="27"/>
+  <circle class="sk-crater" cx="273" cy="59" r="4.5"/><circle class="sk-crater" cx="289" cy="76" r="3.2"/><circle class="sk-crater" cx="292" cy="56" r="2.3"/>` : `
+  <clipPath id="moonLit"><path class="sk-litp" d="${moonLitPath(phase)}"/></clipPath>
+  <circle class="sk-dark" cx="282" cy="66" r="27"/>
+  <g clip-path="url(#moonLit)"><circle class="sk-moon" cx="282" cy="66" r="27"/><circle class="sk-crater" cx="273" cy="59" r="4.5"/><circle class="sk-crater" cx="289" cy="76" r="3.2"/><circle class="sk-crater" cx="292" cy="56" r="2.3"/></g>`}
   <path class="sk-cloud2" d="M-20 410c0-14 12-24 25-21 5-12 19-18 31-12 10-10 28-7 34 6 13-1 24 8 24 20 0 4-1 7-2 7H-18c-1 0-2 0-2 0z"/>
   <path class="sk-cloud" d="M196 470c0-20 17-34 36-30 7-17 27-26 44-17 14-14 40-10 48 9 19-2 34 11 34 28 0 6-1 10-3 10H199c-2 0-3 0-3 0z"/>
   <path class="sk-cloud" d="M40 470c0-12 10-20 21-18 4-10 16-15 26-10 8-8 23-6 28 5 11-1 20 7 20 17 0 3-1 6-2 6H43c-2 0-3 0-3 0z"/>
@@ -309,13 +319,13 @@ function vMalam(){
   const title = isToday || before ? (nama ? `Selamat malam, ${esc(nama)}` : 'Selamat malam') : `Bacaan ${fmtShort(day.t)}`;
   const header = `
   <header class="tn">
-    ${nightSky()}
+    ${nightSky('', S.moonAnim ? S.moonAnim.p : lunarPhase(date))}
     <div class="tn-chips">
       <span class="chip-s">Hari ${day.d} dari 365</span>
       <span class="chip-s">${esc(day.g)}</span>
       ${era ? `<button class="chip-s chip-btn" data-era="${day.r[0][0]}:${day.r[0][1]}">${ic('clock')}${esc(era.n)}</button>` : ''}
     </div>
-    <div class="tn-owl">${owl(done ? 'asleep' : 'sleepy', 104)}</div>
+    <div class="tn-owl ${S.fxPeek ? 'peek' : ''}">${owl(done ? 'asleep' : 'sleepy', 104)}</div>
     <h1 class="tn-hello">${title}</h1>
     <p class="tn-line">${done ? 'Bacaan malam ini sudah selesai. Selamat beristirahat.' : `${isToday || before ? 'Malam ini ' : ''}${fmtRefs(allRefs)}, sekitar ${readMinutes(day, dv, deep)} menit.`}</p>
     ${done ? '' : `<button class="btn-primary" data-act="tobaca">${ic('book')}Mulai baca</button>`}
@@ -499,7 +509,7 @@ function vProgres(){
   const shelf = (from, to, title) => `<h3 class="pg-shelf-h">${title}</h3><ul class="pg-shelf">${books.slice(from, to).map(b => `<li><button class="pg-book ${b.r===b.tot?'done':''}" data-bk="${b.i}" style="--fill:${(b.r/b.tot*100).toFixed(1)}%" aria-label="${esc(b.n)}: ${b.r} dari ${b.tot} pasal"><span>${esc(b.a)}</span></button></li>`).join('')}</ul>`;
   return `${head('Progres', 'Rencana setahun, 1 November 2026 sampai 31 Oktober 2027.')}
     <section class="pg-hero" aria-labelledby="pgh">${nightSky('sky-pg')}
-      <div class="pg-lantern">${lantern(k, 128, {cls:'ln-big', id:'p'})}</div>
+      <div class="pg-lantern ${S.fxGlow ? 'glow' : ''}">${lantern(k, 128, {cls:'ln-big', id:'p'})}</div>
       <div class="pg-hero-t">
         <h2 class="pg-stat" id="pgh">${k}<span> kunang-kunang</span></h2>
         <p>${k ? `Lentera Anda makin terang. ${Math.max(0, 365 - k)} malam lagi sampai lentera penuh.` : 'Lentera Anda menunggu kunang-kunang pertama malam ini.'}</p>
@@ -507,7 +517,7 @@ function vProgres(){
       </div>
     </section>
     <section class="ws-panel" aria-labelledby="wkh"><h2 class="rd-h t-lamp" id="wkh">${ic('calendar')}Minggu ini</h2>
-      <ol class="pg-week">${week.map(w => `<li class="${w.r ? 'r' : ''} ${w.today ? 't' : ''}">${moonPhase(w.r ? 'full' : w.today ? 'crescent' : w.future ? 'future' : 'new')}<span class="pg-wl">${w.l}</span><span class="sr">${fmtShort(w.d)}${w.r ? ', sudah membaca' : w.today ? ', malam ini' : w.future ? '' : ', belum dibaca'}</span></li>`).join('')}</ol>
+      <ol class="pg-week">${week.map(w => `<li class="${w.r ? 'r' : ''} ${w.today ? 't' : ''} ${w.today && w.r && S.fxWax ? 'wax' : ''}">${moonPhase(w.r ? 'full' : w.today ? 'crescent' : w.future ? 'future' : 'new')}<span class="pg-wl">${w.l}</span><span class="sr">${fmtShort(w.d)}${w.r ? ', sudah membaca' : w.today ? ', malam ini' : w.future ? '' : ', belum dibaca'}</span></li>`).join('')}</ol>
       <p class="pg-legend"><span>${moonPhase('full')}Sudah dibaca</span><span>${moonPhase('crescent')}Malam ini</span><span>${moonPhase('new')}Belum dibaca</span></p>
     </section>
     <section class="ws-panel" aria-labelledby="rakh"><h2 class="rd-h t-sky" id="rakh">${ic('progres')}Rak Alkitab</h2>
@@ -515,7 +525,7 @@ function vProgres(){
       ${shelf(0, 39, 'Perjanjian Lama')}${shelf(39, 66, 'Perjanjian Baru')}
     </section>
     <section class="ws-panel cloud-top" aria-labelledby="stkh"><h2 class="rd-h t-plum" id="stkh">${ic('pencapaian')}Pencapaian</h2>
-      <ul class="pg-stickers">${MILESTONES.map(([need, icon, name], i) => `<li class="${k >= need ? 'on' : ''}">${sticker(k >= need ? icon : 'kunci', k >= need, i)}<b>${name}</b><small>${k >= need ? 'Terbuka' : `Baca ${need} malam (${k}/${need})`}</small></li>`).join('')}</ul>
+      <ul class="pg-stickers">${MILESTONES.map(([need, icon, name], i) => `<li class="${k >= need ? 'on' : ''} ${S.fxStick === i ? 'stick' : ''}">${sticker(k >= need ? icon : 'kunci', k >= need, i)}<b>${name}</b><small>${k >= need ? 'Terbuka' : `Baca ${need} malam (${k}/${need})`}</small></li>`).join('')}</ul>
     </section>
     <section class="ws-panel" aria-labelledby="calh"><h2 class="rd-h t-sage" id="calh">${ic('calendar')}${BULAN[m]} ${y}</h2><div class="pg-cal">${cells}</div></section>
     ${timelineHTML()}`;
@@ -759,6 +769,48 @@ function timelineHTML(){
 }
 
 /* ---------- render ---------- */
+/* ---------- momen kecil (sekali jalan, tidak terulang saat layar dirender ulang) ---------- */
+const lsGet = k => { try { return localStorage.getItem(k); } catch(e){ return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch(e){} };
+const FX = new Set();
+function fx(){
+  const v = cur();
+  if (v === 'malam' && !FX.has('malam')){
+    const date = viewDate(); const day = PLAN[planIndexFor(date)];
+    if (S.devo[day.t] === undefined || S.devoLoading[day.t]) return; // tunggu layar stabil
+    FX.add('malam');
+    // Burung hantu mengintip sekali saat beranda dibuka.
+    S.fxPeek = true; const o = document.querySelector('.tn-owl'); if (o) o.classList.add('peek');
+    // Bulan bergeser dari fase malam terakhir Anda membuka aplikasi ke fase malam ini.
+    const t = TODAY(), last = lsGet('lentera-moon'); lsSet('lentera-moon', t);
+    if (date === t && last && last < t && !calm()){
+      const gap = Math.min(14, dayDiff(last, t)); let p0 = lunarPhase(addDays(t, -gap)), p1 = lunarPhase(t);
+      if (p1 < p0) p1 += 1;
+      const t0 = performance.now(), dur = 900 + gap * 120;
+      S.moonAnim = { p: p0 % 1 };
+      const step = now => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+        S.moonAnim.p = (p0 + (p1 - p0) * e) % 1;
+        const el = document.querySelector('.tn .sk-litp'); if (el) el.setAttribute('d', moonLitPath(S.moonAnim.p));
+        if (k < 1) requestAnimationFrame(step); else S.moonAnim = null; };
+      requestAnimationFrame(step);
+    }
+  }
+  if (v === 'progres' && !FX.has('progres')){
+    FX.add('progres');
+    const k = Object.keys(S.data.read).length, earned = MILESTONES.filter(([n]) => k >= n).length;
+    const seen = Number(lsGet('lentera-stk') || 0); lsSet('lentera-stk', String(earned));
+    const t = TODAY(), readToday = Object.values(S.data.read).some(r => r.on === t);
+    const L = document.querySelector('.pg-lantern'); if (L) { S.fxGlow = true; L.classList.add('glow'); }
+    // Satu momen besar saja: stiker baru ditempel, atau bulan malam ini menjadi purnama.
+    if (earned > seen && seen >= 0 && lsGet('lentera-stk-init')){ S.fxStick = earned - 1; const li = document.querySelectorAll('.pg-stickers li')[earned - 1]; if (li) li.classList.add('stick'); }
+    else if (readToday && lsGet('lentera-wax') !== t){ S.fxWax = true; const li = document.querySelector('.pg-week li.t.r'); if (li) li.classList.add('wax'); }
+    if (readToday) lsSet('lentera-wax', t);
+    lsSet('lentera-stk-init', '1');
+    setTimeout(() => { S.fxStick = null; S.fxWax = false; S.fxGlow = false; }, 2400);
+  }
+  if (v !== 'progres') FX.delete('progres');
+}
+
 function render(){
   renderChrome();
   const app = document.getElementById('app');
@@ -778,6 +830,7 @@ function render(){
   if (focusId === 'qg') { const q = document.getElementById('qg'); if (q){ q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
   if (focusId === 'q') { const q = document.getElementById('q'); if (q){ q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
   if (focusId === 'jurnal') { const ta = document.getElementById('jurnal'); if (ta){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } }
+  fx();
 }
 
 /* ---------- tema ---------- */
@@ -798,7 +851,10 @@ function celebrate(from, date){
   const st = streakInfo(); const nama = (S.data.nama || '').trim().split(/\s+/)[0];
   const msg = date === TODAY() ? `Malam ke-${st.cur}. Selamat tidur${nama ? ', ' + nama : ''}.` : 'Tercatat. Terima kasih sudah menyusul bacaan ini.';
   const top = document.getElementById('streak');
-  setTimeout(() => { if (S.justDone === date) { S.justDone = null; } }, 2600);
+  setTimeout(() => { if (S.justDone === date) { S.justDone = null; }
+    // Setelah perayaan, burung hantu tertidur pelan-pelan.
+    const o = document.querySelector('.fin-done .fin-owl'); if (o) { o.innerHTML = owl('asleep', 76); o.classList.add('doze'); }
+  }, 2800);
   if (calm() || !top) { const f = document.querySelector('.fin'); if (f) f.scrollIntoView({ block: 'center' }); toast(msg); return; }
   const fin = document.querySelector('.fin-art'); if (fin) fin.closest('.fin').scrollIntoView({ block: 'center' });
   const a = (fin || document.body).getBoundingClientRect(); const b = top.getBoundingClientRect();
