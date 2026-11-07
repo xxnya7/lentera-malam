@@ -794,6 +794,10 @@ async function logout(){
   saveState(); await writing;
   try { if (uid) await syncJournals(uid); } catch(e) { S.sync = 'local'; }
   if (S.sync !== 'cloud') { toast('Belum semua data tersinkron. Periksa koneksi, lalu coba Keluar lagi.'); return; }
+  try { // perangkat ini berhenti menerima pengingat akun yang keluar
+    const sub = swReg && await swReg.pushManager.getSubscription();
+    if (sub) { await sb.from('push_subscriptions').delete().eq('endpoint', sub.endpoint); await sub.unsubscribe(); }
+  } catch(e) {}
   await sb.auth.signOut();
   S.data = { read: {}, fav: {}, mode: 'mendalam', theme: S.data.theme, welcomed: false }; S.journal = {}; S.journalAt = {}; lsSave(); location.hash = ''; render();
 }
