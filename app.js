@@ -170,7 +170,7 @@ const VIEWS = [
 ];
 const cur = () => { const h = location.hash.slice(1); return (VIEWS.some(v=>v.id===h) || h==='kaitan') ? h : 'malam'; };
 const greet = () => { const f = (S.data.nama || '').trim().split(/\s+/)[0]; return f ? `Selamat malam, ${esc(f)}` : 'Selamat malam'; };
-const head = (title, sub) => `<div class="pagehead"><small>${sub}</small><h1>${title}</h1></div>`;
+const head = (title, sub) => `<header class="ph"><h1 class="ph-h">${title}</h1>${sub ? `<p class="ph-sub">${sub}</p>` : ''}</header>`;
 const viewDate = () => S.viewDate || (TODAY() < START ? START : TODAY());
 
 function renderChrome(){
@@ -185,22 +185,25 @@ function renderChrome(){
 
 function vLogin(){
   const m = S.authMode;
-  return `<div class="welcome">
-    <div class="welcomeowl">${owl('awake', 120)}</div>
-    <div class="big">${m === 'daftar' ? 'Buat akun Lentera Malam' : m === 'lupa' ? 'Atur ulang kata sandi' : m === 'baru' ? 'Buat kata sandi baru' : 'Masuk ke Lentera Malam'}</div>
-    <form class="card c-violet authform" id="authform" novalidate>
-      ${S.authInfo ? `<div class="banner">${ic('notifications')}<span>${esc(S.authInfo)}</span></div>` : ''}
-      ${m !== 'baru' ? `<label class="small muted" for="email" style="font-weight:700">Email</label>
-      <input class="field" id="email" type="email" autocomplete="email" inputmode="email" required placeholder="nama@email.com">` : ''}
-      ${m !== 'lupa' ? `<label class="small muted" for="password" style="font-weight:700">Kata sandi</label>
-      <input class="field" id="password" type="password" autocomplete="${m === 'daftar' || m === 'baru' ? 'new-password' : 'current-password'}" minlength="6" required placeholder="Minimal 6 karakter">` : ''}
-      ${S.authErr ? `<div class="banner warn">${ic('flame')}<span>${esc(S.authErr)}</span></div>` : ''}
-      <button class="cta" type="submit" ${S.authBusy ? 'disabled' : ''}>${ic(m === 'lupa' ? 'pen' : 'star')} ${S.authBusy ? 'Memproses…' : m === 'daftar' ? 'Buat akun' : m === 'lupa' ? 'Kirim tautan atur ulang' : m === 'baru' ? 'Simpan kata sandi' : 'Masuk'}</button>
+  const title = m === 'daftar' ? 'Buat akun' : m === 'lupa' ? 'Atur ulang kata sandi' : m === 'baru' ? 'Kata sandi baru' : 'Selamat datang kembali';
+  const lead = m === 'daftar' ? 'Supaya lentera Anda ikut ke perangkat mana pun.' : m === 'lupa' ? 'Kami kirim tautan atur ulang ke email Anda.' : m === 'baru' ? 'Buat kata sandi baru untuk akun Anda.' : 'Masuk untuk melanjutkan bacaan malam ini.';
+  const err = S.authErr ? 'auth-err' : '';
+  return `<div class="au">
+    <header class="au-sky">${nightSky()}<div class="au-owl">${owl('awake', 104)}</div>
+      <h1 class="au-h">${title}</h1><p class="au-lead">${lead}</p></header>
+    <form class="ws-panel au-form" id="authform" novalidate>
+      ${S.authInfo ? `<p class="au-info" role="status">${ic('notifications')}<span>${esc(S.authInfo)}</span></p>` : ''}
+      ${m !== 'baru' ? `<label class="field-l" for="email">Email</label>
+      <input class="ws-input" id="email" type="email" autocomplete="email" inputmode="email" required placeholder="nama@email.com" ${err ? `aria-invalid="true" aria-describedby="${err}"` : ''}>` : ''}
+      ${m !== 'lupa' ? `<label class="field-l" for="password">Kata sandi</label>
+      <input class="ws-input" id="password" type="password" autocomplete="${m === 'daftar' || m === 'baru' ? 'new-password' : 'current-password'}" minlength="6" required placeholder="Minimal 6 karakter" ${err ? `aria-invalid="true" aria-describedby="${err}"` : ''}>` : ''}
+      ${S.authErr ? `<p class="au-err" id="auth-err" role="alert">${esc(S.authErr)}</p>` : ''}
+      <button class="btn-primary au-go" type="submit" ${S.authBusy ? 'disabled aria-busy="true"' : ''}>${ic(m === 'lupa' ? 'pen' : m === 'daftar' ? 'star' : 'moon')}${S.authBusy ? 'Memproses…' : m === 'daftar' ? 'Buat akun' : m === 'lupa' ? 'Kirim tautan atur ulang' : m === 'baru' ? 'Simpan kata sandi' : 'Masuk'}</button>
       <div class="authlinks">
-        ${m !== 'masuk' ? `<button type="button" data-authmode="masuk">Sudah punya akun? Masuk</button>` : `<button type="button" data-authmode="daftar">Belum punya akun? Daftar</button><button type="button" data-authmode="lupa">Lupa kata sandi</button>`}
+        ${m !== 'masuk' ? `<button class="btn-text" type="button" data-authmode="masuk">Sudah punya akun? Masuk</button>` : `<button class="btn-text" type="button" data-authmode="daftar">Belum punya akun? Daftar</button><button class="btn-text" type="button" data-authmode="lupa">Lupa kata sandi</button>`}
       </div>
     </form>
-    <button class="ghost" data-act="offline">${ic('lock')} Lanjut tanpa akun (hanya di perangkat ini)</button>
+    <button class="btn-text au-skip" data-act="offline">${ic('lock')}Lanjut tanpa akun (hanya di perangkat ini)</button>
   </div>`;
 }
 const AUTH_ERR = [[/invalid login credentials/i,'Email atau kata sandi salah.'],[/email not confirmed/i,'Email belum dikonfirmasi. Buka tautan konfirmasi di email Anda.'],[/already registered|already exists/i,'Email ini sudah terdaftar. Silakan masuk.'],[/password should be at least/i,'Kata sandi minimal 6 karakter.'],[/invalid.*email|unable to validate email/i,'Format email tidak valid.'],[/rate limit|too many/i,'Terlalu banyak percobaan. Coba lagi beberapa menit lagi.'],[/fetch|network/i,'Tidak ada koneksi internet.']];
@@ -222,25 +225,30 @@ async function submitAuth(){
 }
 
 function vWelcome(){
-  const signed = S.user.signedIn;
-  return `<div class="welcome">
-    <div class="welcomeowl">${owl('awake', 132)}</div>
-    <div class="big">Satu tahun, seluruh Alkitab, satu malam setiap kali.</div>
-    <div class="featurelist">
-      <div>${ic('book')}<span>Seluruh Alkitab dalam 365 hari, bergantian antarjenis kitab, teks AYT lengkap</span></div>
-      <div>${ic('bulb')}<span>Renungan mendalam dengan sumber yang dapat diperiksa</span></div>
-      <div>${ic('pen')}<span>Jurnal refleksi pribadi yang tersimpan</span></div>
-      <div>${ic('flame')}<span>Streak harian yang ketat untuk melatih disiplin</span></div>
+  const signed = S.user.signedIn; const step = S.wStep || 0;
+  const dots = `<ol class="wl-dots" aria-label="Langkah ${step + 1} dari 3">${[0,1,2].map(i => `<li class="${i === step ? 'on' : i < step ? 'done' : ''}"></li>`).join('')}</ol>`;
+  const sky = `<div class="wl-sky">${nightSky()}<div class="wl-owl">${owl(step === 2 ? 'happy' : 'awake', 132)}</div></div>`;
+  if (step === 0) return `<div class="wl">${sky}${dots}
+    <h1 class="wl-h">Halo, saya Lentera.</h1>
+    <div class="wl-talk">
+      <p>Saya akan menemani Anda membaca seluruh Alkitab dalam 365 hari, satu malam setiap kali, bergantian antarjenis kitab dengan teks AYT lengkap.</p>
+      <p>Setiap malam ada renungan dengan sumber yang bisa diperiksa, dan jurnal refleksi pribadi yang tersimpan.</p>
+      <p>Setiap bacaan yang selesai menambah satu kunang-kunang ke lentera Anda.</p>
     </div>
-    <section class="card">
-      ${signed
-        ? `<div class="acct"><div class="who"><b>${esc(S.user.email)}</b><small>Progres, jurnal, dan pengaturan tersimpan di akun ini.</small></div></div>`
-        : `<p class="prose">Anda memakai mode tanpa akun. Progres hanya tersimpan di perangkat ini.</p>`}
-      <label class="small muted" for="nama" style="font-weight:700">Nama panggilan</label>
-      <input class="field" id="nama" autocomplete="given-name" placeholder="Mis. Anya" value="${esc(S.data.nama || '')}">
-      <button class="cta" data-act="start">${ic('star')} Mulai membaca</button>
-    </section>
-  </div>`;
+    <div class="wl-act"><button class="btn-primary" data-wstep="1">Kenalan dulu</button><button class="btn-text" data-act="start">Lewati</button></div></div>`;
+  if (step === 1) return `<div class="wl">${sky}${dots}
+    <h1 class="wl-h">Saya panggil Anda siapa?</h1>
+    <div class="ws-panel wl-form">
+      <label class="field-l" for="nama">Nama panggilan</label>
+      <input class="ws-input" id="nama" autocomplete="given-name" placeholder="Mis. Anya" value="${esc(S.data.nama || '')}">
+      <p class="ac-txt">${signed ? `Masuk sebagai ${esc(S.user.email)}. Progres, jurnal, dan pengaturan tersimpan di akun ini.` : 'Anda memakai mode tanpa akun. Progres hanya tersimpan di perangkat ini.'}</p>
+    </div>
+    <div class="wl-act"><button class="btn-primary" data-wstep="2">Lanjut</button><button class="btn-text" data-wstep="0">Kembali</button></div></div>`;
+  return `<div class="wl">${sky}${dots}
+    <h1 class="wl-h">${S.data.nama ? `Siap, ${esc(S.data.nama.split(/\s+/)[0])}.` : 'Siap.'} Mau diingatkan setiap malam?</h1>
+    <div class="wl-talk"><p>Saya bisa mengirim pengingat lembut sekitar pukul 21.00 bila bacaan belum ditandai. Pengaturannya bisa diubah kapan saja di tab Akun.</p></div>
+    ${signed ? `<div class="wl-act"><button class="btn-quiet" data-act="push">${ic('bell')}Nyalakan pengingat</button></div>` : ''}
+    <div class="wl-act"><button class="btn-primary" data-act="start">${ic('moon')}Mulai membaca</button><button class="btn-text" data-wstep="1">Kembali</button></div></div>`;
 }
 
 function readMinutes(day, dv, deep){
@@ -400,107 +408,117 @@ function vArsip(){
   const shown = rows.filter(x => f==='semua' || (f==='sudah' ? x.k==='read' : x.k!=='read'));
   const n = Object.keys(S.data.read).length;
   const nextUp = PLAN.slice(lastIdx+1, lastIdx+4);
-  return `${head('Arsip bacaan', 'Buka kembali bacaan dan jurnal lama')}
-    <div class="seg" role="group" aria-label="Saring">
+  const label = { read: 'Sudah dibaca', today: 'Malam ini', miss: 'Belum dibaca' };
+  return `${head('Arsip bacaan', 'Buka kembali bacaan dan jurnal lama.')}
+    <div class="seg ws-seg" role="group" aria-label="Saring bacaan">
       ${['semua','sudah','belum'].map(k=>`<button data-filter="${k}" aria-pressed="${f===k}">${k[0].toUpperCase()+k.slice(1)}</button>`).join('')}
     </div>
-    <div class="list">${shown.map(x => `
-      <button class="row ${x.k}" data-open="${x.p.t}">
-        <div class="tick">${x.k==='read'?ic('check'):x.k==='today'?ic('moon'):ic('x')}</div>
-        <div class="meta"><b>Hari ${x.p.d} · ${fmtShort(x.p.t)}</b><small>${fmtRefs(x.p.r)}${S.journal[x.p.t]?' · ada jurnal':''}</small></div>
-        <span class="pill ${x.k}">${x.k==='read'?'Sudah':x.k==='today'?'Hari ini':'Terlewat'}</span>
-      </button>`).join('') || `<div class="empty"><b>Belum ada bacaan di kategori ini</b></div>`}
-    </div>
-    ${nextUp.length ? `<section class="card"><h2 style="font-family:var(--serif);font-size:18px">Berikutnya</h2>
-      <div class="list">${nextUp.map(p=>`<div class="row todo"><div class="tick">${ic('lock')}</div><div class="meta"><b>Hari ${p.d} · ${fmtShort(p.t)}</b><small>${fmtRefs(p.r)}</small></div></div>`).join('')}</div></section>` : ''}
-    <button class="ghost" data-act="export">${ic('download')} Ekspor jurnal (.md)</button>
-    <p class="small muted" style="text-align:center">${n} dari 365 hari sudah ditandai. Bacaan yang terlewat tetap dapat dibaca, tetapi tidak memulihkan streak.</p>`;
+    <ul class="ws-list">${shown.map(x => `<li>
+      <button class="ws-row st-${x.k}" data-open="${x.p.t}">
+        <span class="ws-ic" aria-hidden="true">${x.k==='read' ? ic('check') : x.k==='today' ? ic('moon') : ic('dot')}</span>
+        <span class="ws-meta"><b>Hari ${x.p.d}, ${fmtShort(x.p.t)}</b><span>${fmtRefs(x.p.r)}</span>${S.journal[x.p.t] ? `<span class="ws-tag">${ic('pen')}Ada jurnal</span>` : ''}</span>
+        <span class="ws-state">${label[x.k]}</span>
+      </button></li>`).join('') || `<li class="ws-empty">${owl('sleepy', 64)}<p>Belum ada bacaan di kategori ini.</p></li>`}
+    </ul>
+    ${nextUp.length ? `<section class="ws-group" aria-labelledby="nexth"><h2 class="ws-h" id="nexth">Berikutnya</h2>
+      <ul class="ws-list">${nextUp.map(p=>`<li><div class="ws-row st-lock"><span class="ws-ic" aria-hidden="true">${ic('lock')}</span><span class="ws-meta"><b>Hari ${p.d}, ${fmtShort(p.t)}</b><span>${fmtRefs(p.r)}</span></span></div></li>`).join('')}</ul></section>` : ''}
+    <button class="btn-quiet" data-act="export">${ic('download')}Ekspor jurnal (.md)</button>
+    <p class="ws-foot">${n} dari 365 malam sudah ditandai. Bacaan yang belum dibaca bisa disusul kapan saja.</p>`;
 }
 
 function vKaitan(){
   const date = viewDate(); const day = PLAN[planIndexFor(date)];
   loadDevo(day.t); const dv = S.devo[day.t];
-  if (!dv || !dv.kaitan) return `${head('Kaitan antar ayat', fmtDate(day.t))}<section class="card"><div class="empty"><div class="bubble b-lilac">${ic('link')}</div><b>Peta kaitan belum tersedia</b><p class="small">Peta muncul bersama renungan hari ini.</p></div></section>`;
-  const cx=170, cy=150, pos=[[62,58],[278,58],[170,262]];
+  const back = `<button class="btn-quiet" data-go="malam">${ic('moon')}Kembali ke bacaan</button>`;
+  if (!dv || !dv.kaitan) return `${head('Kaitan antar ayat', fmtDate(day.t))}<div class="ws-empty">${owl('sleepy', 72)}<p><b>Peta kaitan belum tersedia.</b> Peta muncul bersama renungan hari ini.</p></div>${back}`;
+  const cx=170, cy=150, pos=[[62,58],[278,58],[170,262]], tone=['--plum','--sage','--skyblue'];
   const sel = S.mapSel; const fk = dv.fokus;
-  const lines = dv.kaitan.map((l,i)=>`<path d="M${cx} ${cy} L ${pos[i][0]} ${pos[i][1]}" style="stroke:var(${LINK_COLORS[i]})" stroke-width="3" stroke-dasharray="${sel===i?'0':'7 7'}" fill="none"/>`).join('');
-  const nodes = dv.kaitan.map((l,i)=>{ const p=pos[i]; const nm=refText(l.b,l.c,l.v); return `<g class="node ${sel===i?'on':''}" data-node="${i}" tabindex="0" role="button" aria-label="${esc(nm)}">
-    <circle cx="${p[0]}" cy="${p[1]}" r="38" fill="transparent"/><circle class="dot" cx="${p[0]}" cy="${p[1]}" r="28" style="fill:var(${LINK_COLORS[i]})"/>
-    <use href="#book" x="${p[0]-12}" y="${p[1]-12}" width="24" height="24" style="stroke:var(--on)" fill="none" stroke-width="2"/>
-    <text class="maptext" x="${p[0]}" y="${p[1]+46}" text-anchor="middle">${esc(nm)}</text></g>`; }).join('');
+  const lines = dv.kaitan.map((l,i)=>`<path class="mp-line ${sel===i?'on':''}" d="M${cx} ${cy} L ${pos[i][0]} ${pos[i][1]}" style="stroke:var(${tone[i]})"/>`).join('');
+  const nodes = dv.kaitan.map((l,i)=>{ const p=pos[i]; const nm=refText(l.b,l.c,l.v); return `<g class="node ${sel===i?'on':''}" data-node="${i}" tabindex="0" role="button" aria-pressed="${sel===i}" aria-label="${esc(nm)}">
+    <circle cx="${p[0]}" cy="${p[1]}" r="40" fill="transparent"/><circle class="mp-dot" cx="${p[0]}" cy="${p[1]}" r="28" style="fill:var(${tone[i]})"/>
+    <use href="#i-book-open-text" x="${p[0]-12}" y="${p[1]-12}" width="24" height="24" class="mp-ic"/>
+    <text class="mp-t" x="${p[0]}" y="${p[1]+48}" text-anchor="middle">${esc(nm)}</text></g>`; }).join('');
   const L = sel==null ? null : dv.kaitan[sel];
-  const info = L ? `<article class="relcard" style="--c:var(${LINK_COLORS[sel]})"><div class="rh"><b>${refText(L.b,L.c,L.v)}</b></div><p class="rt">${chapter(L.b,L.c).filter(v=>L.v.includes(v[0])).map(v=>verseHTML(v[1])).join(' ')}</p><p class="why">${ic('link')}<span>${esc(L.why)}</span></p></article>`
-    : `<p class="muted">Ketuk salah satu lingkaran untuk membaca ayatnya dan melihat hubungannya dengan ayat fokus.</p>`;
-  const fr = `${bookName(fk.b)} ${fk.c}:${fk.v1}-${fk.v2}`;
+  const info = L ? `<p class="rd-links-ref">${refText(L.b,L.c,L.v)}</p><p class="rd-links-v">${chapter(L.b,L.c).filter(v=>L.v.includes(v[0])).map(v=>verseHTML(v[1])).join(' ')}</p><p class="rd-links-why">${esc(L.why)}</p>`
+    : `<p class="rd-note">Ketuk salah satu lingkaran untuk membaca ayatnya dan melihat hubungannya dengan ayat fokus.</p>`;
   return `${head('Kaitan antar ayat', fmtDate(day.t))}
-    <div class="mapbox"><svg viewBox="0 0 340 310" role="img" aria-label="Peta kaitan ayat">${lines}
-      <circle cx="${cx}" cy="${cy}" r="58" fill="none" style="stroke:var(--moon)" opacity=".35" stroke-width="2"/>
-      <circle cx="${cx}" cy="${cy}" r="50" style="fill:var(--moon)"/>
-      <text x="${cx}" y="${cy-3}" text-anchor="middle" font-family="Literata,serif" font-weight="700" font-size="13" style="fill:var(--on)">${esc(bookName(fk.b))}</text>
-      <text x="${cx}" y="${cy+16}" text-anchor="middle" font-family="Literata,serif" font-weight="700" font-size="14" style="fill:var(--on)">${fk.c}:${fk.v1}-${fk.v2}</text>${nodes}</svg></div>
-    <section class="card" aria-live="polite">${info}</section>`;
+    <div class="mapbox ws-panel"><svg viewBox="0 0 340 320" role="img" aria-label="Peta kaitan ayat">${lines}
+      <circle class="mp-ring" cx="${cx}" cy="${cy}" r="58"/>
+      <circle class="mp-core" cx="${cx}" cy="${cy}" r="50"/>
+      <text class="mp-ct" x="${cx}" y="${cy-3}" text-anchor="middle">${esc(bookName(fk.b))}</text>
+      <text class="mp-ct" x="${cx}" y="${cy+16}" text-anchor="middle">${fk.c}:${fk.v1}–${fk.v2}</text>${nodes}</svg></div>
+    <section class="ws-panel mp-info" aria-live="polite">${info}</section>
+    ${back}`;
 }
 
+const MILESTONES = [[1,'moon','Malam pertama'],[7,'star','Seminggu bersinar'],[30,'books','Sebulan setia'],[100,'sparkle','Seratus kunang-kunang'],[200,'heart','Dua ratus malam'],[365,'sun','Setahun penuh']];
 function vProgres(){
   const st = streakInfo();
-  const readDays = Object.keys(S.data.read);
+  const readDays = Object.keys(S.data.read); const k = readDays.length;
   const readCh = new Set(); readDays.forEach(t => { const p = PLAN[planIndexFor(t)]; p.r.forEach(([b,c]) => readCh.add(b+':'+c)); });
-  const pct = (readCh.size/1189*100);
-  const books = BIBLE.map((B,i) => { const tot = B.c.length; let r=0; for (let c=1;c<=tot;c++) if (readCh.has(i+':'+c)) r++; return {n:B.n, a:B.a, r, tot}; });
+  const books = BIBLE.map((B,i) => { const tot = B.c.length; let r=0; for (let c=1;c<=tot;c++) if (readCh.has(i+':'+c)) r++; return {i, n:B.n, a:B.a, r, tot}; });
+  const n = readCh.size;
+  const cmp = n ? books.filter(b => b.tot <= n).sort((x,y) => y.tot - x.tot)[0] : null;
   const t = TODAY(); const ref = t < START ? START : t; const d0 = parseISO(ref); const y=d0.getFullYear(), m=d0.getMonth();
-  const first = new Date(y,m,1).getDay(); const lead = (first+6)%7; const dim = new Date(y,m+1,0).getDate();
   const readOn = new Set(Object.values(S.data.read).map(r=>r.on));
-  let cells = ['Sn','Sl','Rb','Km','Jm','Sb','Mg'].map(d=>`<div class="dh">${d}</div>`).join('');
-  for (let i=0;i<lead;i++) cells += `<div class="d e"></div>`;
-  for (let d=1; d<=dim; d++){ const s = `${y}-${pad(m+1)}-${pad(d)}`; cells += `<div class="d ${readOn.has(s)?'r':''} ${s===t?'t':''}">${readOn.has(s)?'★':d}</div>`; }
-  return `${head('Progres bacaan', 'Rencana setahun · 1 Nov 2026 – 31 Okt 2027')}
-    <section class="streakhero" aria-label="Streak">
-      <h2>Streak</h2><p>Bertambah hanya bila bacaan ditandai setiap malam tanpa terlewat.</p>
-      <div class="nums">
-        <div><b>${st.cur}</b><small>Saat ini</small></div>
-        <div><b>${st.best}</b><small>Terpanjang</small></div>
-        <div><b>${readDays.length}</b><small>Hari dibaca</small></div>
+  // minggu ini (Senin–Minggu)
+  const dow = (d0.getDay()+6)%7; const mon = addDays(ref, -dow);
+  const week = ['Sn','Sl','Rb','Km','Jm','Sb','Mg'].map((l,i) => { const d = addDays(mon, i); return { l, d, r: readOn.has(d), today: d === t, future: d > t }; });
+  // kalender bulan
+  const first = new Date(y,m,1).getDay(); const lead = (first+6)%7; const dim = new Date(y,m+1,0).getDate();
+  let cells = ['Sn','Sl','Rb','Km','Jm','Sb','Mg'].map(d=>`<div class="pg-dh" aria-hidden="true">${d}</div>`).join('');
+  for (let i=0;i<lead;i++) cells += `<div class="pg-d e"></div>`;
+  for (let d=1; d<=dim; d++){ const s = `${y}-${pad(m+1)}-${pad(d)}`; const r = readOn.has(s); cells += `<div class="pg-d ${r?'r':''} ${s===t?'t':''}" aria-label="${d} ${BULAN[m]}${r ? ', sudah membaca' : ''}">${r ? ic('check') : d}</div>`; }
+  const shelf = (from, to, title) => `<h3 class="pg-shelf-h">${title}</h3><ul class="pg-shelf">${books.slice(from, to).map(b => `<li><button class="pg-book ${b.r===b.tot?'done':''}" data-bk="${b.i}" style="--fill:${(b.r/b.tot*100).toFixed(1)}%" aria-label="${esc(b.n)}: ${b.r} dari ${b.tot} pasal"><span>${esc(b.a)}</span></button></li>`).join('')}</ul>`;
+  return `${head('Progres', 'Rencana setahun, 1 November 2026 sampai 31 Oktober 2027.')}
+    <section class="pg-hero" aria-labelledby="pgh">${nightSky('sky-pg')}
+      <div class="pg-lantern">${lantern(k, 128, {cls:'ln-big', id:'p'})}</div>
+      <div class="pg-hero-t">
+        <h2 class="pg-stat" id="pgh">${k}<span> kunang-kunang</span></h2>
+        <p>${k ? `Lentera Anda makin terang. ${Math.max(0, 365 - k)} malam lagi sampai lentera penuh.` : 'Lentera Anda menunggu kunang-kunang pertama malam ini.'}</p>
+        <p class="pg-streak">${st.cur ? `Menyala ${st.cur} malam berturut-turut. Terpanjang ${st.best} malam.` : st.broken ? 'Streak dimulai lagi malam ini. Kunang-kunang Anda tetap tersimpan.' : 'Streak dimulai saat Anda menandai bacaan pertama.'}</p>
       </div>
     </section>
-    ${st.broken ? `<div class="banner warn">${ic('flame')}<span><b>Streak terputus.</b> Streak hanya bertambah bila bacaan ditandai pada hari yang sama, tanpa terlewat satu malam pun. Mulailah lagi malam ini.</span></div>` : ''}
-    <section class="card">
-      <h2 style="font-family:var(--serif);font-size:18px">Seluruh Alkitab</h2>
-      <div class="bar" role="progressbar" aria-valuenow="${readCh.size}" aria-valuemin="0" aria-valuemax="1189"><i style="width:${pct}%"></i></div>
-      <p class="small muted">${readCh.size} dari 1.189 pasal (${pct.toFixed(1)}%).</p>
-      <div class="bookgrid">${books.map(b=>`<div class="bk ${b.r===b.tot?'done':''}" title="${esc(b.n)}: ${b.r}/${b.tot} pasal">${esc(b.a)}${b.r && b.r<b.tot?`<i style="width:${b.r/b.tot*100}%"></i>`:''}</div>`).join('')}</div>
+    <section class="ws-panel" aria-labelledby="wkh"><h2 class="rd-h t-lamp" id="wkh">${ic('calendar')}Minggu ini</h2>
+      <ol class="pg-week">${week.map(w => `<li class="${w.r ? 'r' : ''} ${w.today ? 't' : ''} ${w.future ? 'f' : ''}"><span class="pg-wd" aria-hidden="true">${w.r ? ic('check') : ''}</span><span class="pg-wl">${w.l}</span><span class="sr">${fmtShort(w.d)}${w.r ? ', sudah membaca' : w.today ? ', malam ini' : ''}</span></li>`).join('')}</ol>
     </section>
-    <section class="card"><h2 style="font-family:var(--serif);font-size:18px">${BULAN[m]} ${y}</h2><div class="cal">${cells}</div></section>
+    <section class="ws-panel" aria-labelledby="rakh"><h2 class="rd-h t-sky" id="rakh">${ic('books')}Rak Alkitab</h2>
+      <p class="pg-lead">${n ? `${n} dari 1.189 pasal sudah dibaca.${cmp ? ` Sudah lebih panjang dari seluruh kitab ${esc(cmp.n)} (${cmp.tot} pasal).` : ''}` : 'Rak masih kosong. Setiap pasal yang dibaca mengisi satu kitab sedikit demi sedikit.'}</p>
+      ${shelf(0, 39, 'Perjanjian Lama')}${shelf(39, 66, 'Perjanjian Baru')}
+    </section>
+    <section class="ws-panel" aria-labelledby="stkh"><h2 class="rd-h t-plum" id="stkh">${ic('sparkle')}Pencapaian</h2>
+      <ul class="pg-stickers">${MILESTONES.map(([need, icon, name]) => `<li class="${k >= need ? 'on' : ''}"><span class="pg-st-ic" aria-hidden="true">${ic(icon)}</span><b>${name}</b><small>${k >= need ? 'Terbuka' : `Baca ${need} malam (${k}/${need})`}</small></li>`).join('')}</ul>
+    </section>
+    <section class="ws-panel" aria-labelledby="calh"><h2 class="rd-h t-sage" id="calh">${ic('calendar')}${BULAN[m]} ${y}</h2><div class="pg-cal">${cells}</div></section>
     ${timelineHTML()}`;
 }
 
 function vAkun(){
-  const u = S.user;
-  return `${head('Akun & pengaturan', 'Penyimpanan, mode, dan pengingat')}
-    <section class="card">
+  const u = S.user; const nama = (S.data.nama || '').trim();
+  return `${head('Akun', 'Penyimpanan, cara membaca, dan pengingat.')}
+    <section class="ws-panel ac-who" aria-labelledby="ach">
+      <div class="ac-owl">${owl('awake', 64)}</div>
       ${u.signedIn
-        ? `<div class="acct"><div class="who"><b>${esc(u.email)}</b><small>Masuk dengan email</small></div></div>
-           <span class="status ${S.sync==='cloud'?'ok':'local'}">${ic(S.sync==='cloud'?'cloud':'shield')}${S.sync==='cloud'?'Tersinkron ke akun':'Menyimpan di perangkat'}</span>
-           <p class="small muted">Progres, streak, mode bacaan, dan jurnal disimpan secara pribadi di akun ini dan hanya dapat dibaca oleh Anda.</p>
-           <button class="ghost" data-act="logout">${ic('close')} Keluar</button>`
-        : `<div class="acct"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Ccircle cx='28' cy='28' r='28' fill='%23999' opacity='.25'/%3E%3C/svg%3E" alt=""><div class="who"><b>Belum masuk</b><small>Progres tersimpan di peramban ini saja</small></div></div>
-           <p class="small muted">Masuk dengan email agar progres tersimpan di akun dan tidak hilang saat cache dihapus atau ganti perangkat.</p>
-           <button class="ghost" data-act="tologin">${ic('star')} Masuk atau buat akun</button>`}
+        ? `<h2 class="ac-name" id="ach">${nama ? esc(nama) : 'Akun Anda'}</h2><p class="ac-mail">${esc(u.email)}</p>
+           <p class="ac-sync ${S.sync==='cloud'?'ok':'local'}">${ic(S.sync==='cloud'?'cloud':'shield')}${S.sync==='cloud'?'Tersinkron ke akun':'Menyimpan di perangkat'}</p>
+           <p class="ac-txt">Progres, streak, mode bacaan, dan jurnal disimpan secara pribadi di akun ini dan hanya dapat dibaca oleh Anda.</p>
+           <button class="btn-quiet" data-act="logout">${ic('close')}Keluar</button>`
+        : `<h2 class="ac-name" id="ach">Belum masuk</h2><p class="ac-mail">Progres tersimpan di peramban ini saja.</p>
+           <p class="ac-txt">Masuk dengan email agar progres tersimpan di akun dan tidak hilang saat cache dihapus atau ganti perangkat.</p>
+           <button class="btn-primary" data-act="tologin">${ic('user')}Masuk atau buat akun</button>`}
     </section>
-    <section class="card">
-      <label class="small muted" for="namaakun" style="font-weight:700">Nama panggilan untuk sapaan</label>
-      <input class="field" id="namaakun" autocomplete="given-name" placeholder="Mis. Anya" value="${esc(S.data.nama || '')}">
-    </section>
-    <section class="card">
-      <h2 style="font-family:var(--serif);font-size:18px">Mode bawaan</h2>
-      <div class="modeseg" role="group" aria-label="Mode bawaan">
+    <section class="ws-panel" aria-labelledby="bach"><h2 class="rd-h t-lamp" id="bach">${ic('book')}Membaca</h2>
+      <label class="field-l" for="namaakun">Nama panggilan untuk sapaan</label>
+      <input class="ws-input" id="namaakun" autocomplete="given-name" placeholder="Mis. Anya" value="${esc(S.data.nama || '')}">
+      <p class="field-l">Mode bawaan</p>
+      <div class="seg ws-seg" role="group" aria-label="Mode bawaan">
         <button data-mode="ringkas" aria-pressed="${S.data.mode!=='mendalam'}">${ic('leaf')}Ringkas</button>
         <button data-mode="mendalam" aria-pressed="${S.data.mode==='mendalam'}">${ic('layers')}Mendalam</button>
       </div>
-      <p class="small muted">Ringkas: ayat fokus, satu paragraf latar, satu paragraf penerapan, refleksi, dan doa. Mendalam: ditambah telaah kata, isu terkini, ayat berkaitan, dan sumber.</p>
+      <p class="ac-txt">Ringkas: ayat fokus, satu paragraf latar, satu paragraf penerapan, refleksi, dan doa. Mendalam: ditambah telaah kata, isu terkini, ayat berkaitan, dan sumber.</p>
     </section>
-    <section class="card c-amber">
-      <div class="sechead"><div class="bubble b-moon">${ic('bell')}</div><div><h2>Pengingat malam</h2><small>${S.data.notif ? 'Menyala' : 'Mati'}</small></div></div>
-      ${isIOS() && !isStandalone() ? `<div class="banner">${ic('notifications')}<span>Di iPhone, notifikasi hanya bisa aktif setelah aplikasi dipasang: buka di <b>Safari</b> → tombol <b>Bagikan</b> → <b>Tambahkan ke Layar Utama</b>, lalu buka dari ikon itu.</span></div>` : ''}
+    <section class="ws-panel" aria-labelledby="pngh"><h2 class="rd-h t-plum" id="pngh">${ic('bell')}Pengingat malam</h2>
+      ${isIOS() && !isStandalone() ? `<p class="ac-note">${ic('notifications')}<span>Di iPhone, notifikasi hanya bisa aktif setelah aplikasi dipasang: buka di <b>Safari</b>, ketuk <b>Bagikan</b>, pilih <b>Tambahkan ke Layar Utama</b>, lalu buka dari ikon itu.</span></p>` : ''}
       ${u.signedIn ? `
       <div class="switchlist">
         <div class="switchrow main"><div><b>Notifikasi</b><small>${S.pushBusy ? 'Memproses…' : S.data.notif ? 'Menyala' : 'Mati'}</small></div>
@@ -508,20 +526,19 @@ function vAkun(){
         ${S.data.notif ? `
         <div class="switchrow"><div><b>Pengingat renungan</b><small>Sekitar 21.00–22.00 WIB, bila belum membaca</small></div>
           <button class="switch" role="switch" aria-checked="${S.data.notifMalam !== false}" aria-label="Pengingat renungan" data-notifkind="notifMalam"></button></div>
-        <div class="switchrow"><div><b>Peringatan streak</b><small>Sekitar 22.00–23.00 WIB, bila streak hampir putus</small></div>
-          <button class="switch" role="switch" aria-checked="${S.data.notifStreak !== false}" aria-label="Peringatan streak" data-notifkind="notifStreak"></button></div>
-        <button class="mini" data-act="push">${ic('notifications')} Daftarkan ulang perangkat ini</button>` : ''}
+        <div class="switchrow"><div><b>Pengingat lentera</b><small>Sekitar 22.00–23.00 WIB, bila streak akan berhenti malam ini</small></div>
+          <button class="switch" role="switch" aria-checked="${S.data.notifStreak !== false}" aria-label="Pengingat lentera" data-notifkind="notifStreak"></button></div>
+        <button class="btn-text" data-act="push">${ic('notifications')}Daftarkan ulang perangkat ini</button>` : ''}
       </div>`
-        : `<p class="small muted">Masuk dengan akun terlebih dahulu untuk mengaktifkan notifikasi.</p>`}
+        : `<p class="ac-txt">Masuk dengan akun terlebih dahulu untuk mengaktifkan notifikasi.</p>`}
     </section>
-    <section class="card c-sky">
-      <div class="sechead"><div class="bubble b-lilac">${ic('pen')}</div><div><h2>Jurnal</h2><small>${Object.values(S.journal).filter(t=>t&&t.trim()).length} catatan tersimpan</small></div></div>
-      <button class="ghost" data-act="export">${ic('download')} Ekspor semua jurnal (.md)</button>
+    <section class="ws-panel" aria-labelledby="jrnh"><h2 class="rd-h t-sky" id="jrnh">${ic('pen')}Jurnal</h2>
+      <p class="ac-txt">${Object.values(S.journal).filter(t=>t&&t.trim()).length} catatan tersimpan.</p>
+      <button class="btn-quiet" data-act="export">${ic('download')}Ekspor semua jurnal (.md)</button>
     </section>
-    <section class="card">
-      <h2 style="font-family:var(--serif);font-size:18px">Sumber teks</h2>
-      <p class="small muted">Alkitab Yang Terbuka (AYT) © 2011–2024 Yayasan Lembaga SABDA, diambil dari repositori resmi YLSA (github.com/sabdacode/ayt). Penggunaan non-komersial diizinkan dengan mencantumkan sumber. Penomoran ayat disesuaikan dengan Alkitab TB: kitab Mazmur memakai penomoran Ibrani (judul mazmur dihitung sebagai ayat 1), begitu pula 3 Yohanes 1:15 dan Wahyu 12:18, berdasarkan penanda penomoran asli yang disertakan AYT.</p>
-    </section>`;
+    <details class="ws-panel ac-about"><summary><span class="rd-h t-sage">${ic('shield')}Tentang sumber teks</span>${ic('chev')}</summary>
+      <p class="ac-txt">Alkitab Yang Terbuka (AYT) © 2011–2024 Yayasan Lembaga SABDA, diambil dari repositori resmi YLSA (github.com/sabdacode/ayt). Penggunaan non-komersial diizinkan dengan mencantumkan sumber. Penomoran ayat disesuaikan dengan Alkitab TB: kitab Mazmur memakai penomoran Ibrani (judul mazmur dihitung sebagai ayat 1), begitu pula 3 Yohanes 1:15 dan Wahyu 12:18, berdasarkan penanda penomoran asli yang disertakan AYT.</p>
+    </details>`;
 }
 
 /* ---------- pencarian & favorit ---------- */
@@ -547,40 +564,40 @@ function parseRef(q){
   const v1 = m[3] ? +m[3] : null, v2 = m[4] ? +m[4] : v1;
   return { b, c, v1, v2 };
 }
-const verseRow = (b,c,v,t,hl) => `<button class="vrow ${isFav(b,c,v)?'fav':''}" data-ref="${b}:${c}:${v}"><b>${esc(bookName(b))} ${c}:${v}</b><span>${hl ? hl(t) : verseHTML(t)}</span></button>`;
+const verseRow = (b,c,v,t,hl) => `<li><button class="sr-row ${isFav(b,c,v)?'fav':''}" data-ref="${b}:${c}:${v}"><b>${isFav(b,c,v) ? ic('starfill') : ''}${esc(bookName(b))} ${c}:${v}</b><span>${hl ? hl(t) : verseHTML(t)}</span></button></li>`;
 function searchResults(q){
   q = (q||'').trim();
-  if (!q) return `<div class="empty"><div class="bubble b-lilac">${ic('search')}</div><b>Cari ayat atau kata</b><p class="small">Contoh: <em>Yoh 3:16</em>, <em>Mazmur 23</em>, <em>Roma 8:28-30</em>, atau kata seperti <em>damai sejahtera</em>.</p></div>`;
+  if (!q) return `<div class="ws-empty">${owl('awake', 64)}<p><b>Cari ayat atau kata.</b> Contoh: Yoh 3:16, Mazmur 23, Roma 8:28-30, atau kata seperti “damai sejahtera”.</p></div>`;
   const ref = parseRef(q);
   if (ref){
     const ch = chapter(ref.b, ref.c).filter(v => ref.v1 == null || (v[0] >= ref.v1 && v[0] <= ref.v2));
-    if (!ch.length) return `<div class="empty"><b>Ayat tidak ditemukan</b><p class="small">${esc(bookName(ref.b))} ${ref.c} memiliki ${chapter(ref.b,ref.c).length} ayat.</p></div>`;
-    return `<p class="small muted">${esc(bookName(ref.b))} ${ref.c}${ref.v1?':'+ref.v1+(ref.v2!==ref.v1?'-'+ref.v2:''):''} · ketuk ayat untuk menandai favorit</p><div class="vlist">${ch.map(v => verseRow(ref.b, ref.c, v[0], v[1])).join('')}</div>`;
+    if (!ch.length) return `<div class="ws-empty"><p><b>Ayat tidak ditemukan.</b> ${esc(bookName(ref.b))} ${ref.c} memiliki ${chapter(ref.b,ref.c).length} ayat.</p></div>`;
+    return `<p class="sr-count">${esc(bookName(ref.b))} ${ref.c}${ref.v1?':'+ref.v1+(ref.v2!==ref.v1?'-'+ref.v2:''):''}. Ketuk ayat untuk menandai favorit.</p><ul class="sr-list">${ch.map(v => verseRow(ref.b, ref.c, v[0], v[1])).join('')}</ul>`;
   }
-  if (q.length < 3) return `<p class="small muted">Ketik minimal 3 huruf untuk mencari kata.</p>`;
+  if (q.length < 3) return `<p class="sr-count">Ketik minimal 3 huruf untuk mencari kata.</p>`;
   const needle = q.toLowerCase(); const out = []; let total = 0;
   for (let b = 0; b < BIBLE.length; b++) for (let c = 0; c < BIBLE[b].c.length; c++) for (const v of BIBLE[b].c[c]){
     if (v[1].toLowerCase().includes(needle)){ total++; if (out.length < 100) out.push([b, c+1, v[0], v[1]]); }
   }
-  if (!total) return `<div class="empty"><b>Tidak ada hasil untuk “${esc(q)}”</b><p class="small">Coba kata lain atau periksa ejaannya.</p></div>`;
+  if (!total) return `<div class="ws-empty">${owl('sleepy', 64)}<p><b>Tidak ada hasil untuk “${esc(q)}”.</b> Coba kata lain atau periksa ejaannya.</p></div>`;
   const re = new RegExp(needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
   const hl = t => esc(t).replace(re, m => `<mark>${m}</mark>`);
-  return `<p class="small muted">${total.toLocaleString('id-ID')} ayat ditemukan${total > 100 ? ', menampilkan 100 pertama' : ''}.</p><div class="vlist">${out.map(r => verseRow(r[0], r[1], r[2], r[3], hl)).join('')}</div>`;
+  return `<p class="sr-count">${total.toLocaleString('id-ID')} ayat ditemukan${total > 100 ? ', menampilkan 100 pertama' : ''}.</p><ul class="sr-list">${out.map(r => verseRow(r[0], r[1], r[2], r[3], hl)).join('')}</ul>`;
 }
 function vCari(){
   const favs = Object.keys(S.data.fav || {}).map(k => k.split(':').map(Number)).sort((x,y) => x[0]-y[0] || x[1]-y[1] || x[2]-y[2]);
   const tab = S.tabCari;
-  return `${head(tab === 'cari' ? 'Cari ayat' : tab === 'istilah' ? 'Glosarium istilah' : 'Ayat favorit', 'Teks AYT · penomoran TB')}
-    <div class="seg" role="group" aria-label="Pilih">
+  return `${head(tab === 'cari' ? 'Cari ayat' : tab === 'istilah' ? 'Glosarium istilah' : 'Ayat favorit', 'Teks AYT dengan penomoran TB.')}
+    <div class="seg ws-seg" role="group" aria-label="Pilih">
       <button data-tab="cari" aria-pressed="${tab==='cari'}">Cari</button>
       <button data-tab="favorit" aria-pressed="${tab==='favorit'}">Favorit (${favs.length})</button>
       <button data-tab="istilah" aria-pressed="${tab==='istilah'}">Istilah</button>
     </div>
     ${tab === 'istilah' ? vIstilah() : tab === 'cari' ? `
-      <label class="searchbox" for="q">${ic('search')}<input id="q" type="search" inputmode="search" autocomplete="off" placeholder="Yoh 3:16 atau kata kunci" value="${esc(S.q)}"></label>
+      <label class="ws-search" for="q"><span class="sr">Cari ayat atau kata</span>${ic('search')}<input id="q" type="search" inputmode="search" autocomplete="off" placeholder="Yoh 3:16 atau kata kunci" value="${esc(S.q)}"></label>
       <div id="results">${searchResults(S.q)}</div>`
-    : (favs.length ? `<p class="small muted">Ketuk ayat untuk menyalin atau menghapus dari favorit.</p><div class="vlist">${favs.map(([b,c,v]) => { const x = chapter(b,c).find(y => y[0]===v); return x ? verseRow(b,c,v,x[1]) : ''; }).join('')}</div>`
-      : `<div class="empty"><div class="bubble b-pink">${ic('star')}</div><b>Belum ada ayat favorit</b><p class="small">Ketuk ayat mana pun saat membaca, lalu pilih “Tandai favorit”.</p></div>`)}`;
+    : (favs.length ? `<p class="sr-count">Ketuk ayat untuk menyalin atau menghapus dari favorit.</p><ul class="sr-list">${favs.map(([b,c,v]) => { const x = chapter(b,c).find(y => y[0]===v); return x ? verseRow(b,c,v,x[1]) : ''; }).join('')}</ul>`
+      : `<div class="ws-empty">${owl('happy', 64)}<p><b>Belum ada ayat favorit.</b> Ketuk ayat mana pun saat membaca, lalu pilih “Tandai favorit”.</p></div>`)}`;
 }
 function verseSheet(ref){
   const [b,c,v] = ref.split(':').map(Number); const x = chapter(b,c).find(y => y[0]===v); if (!x) return;
@@ -700,17 +717,17 @@ function glossSheet(id){
 function vIstilah(){
   const q = (S.qg || '').toLowerCase();
   const list = GLOS.filter(g => !q || g.w.toLowerCase().includes(q) || g.d.toLowerCase().includes(q)).sort((a,b) => a.w.localeCompare(b.w, 'id'));
-  return `<label class="searchbox" for="qg">${ic('search')}<input id="qg" type="search" autocomplete="off" placeholder="Cari istilah, mis. Sabat" value="${esc(S.qg||'')}"></label>
-    <div class="vlist" id="glist">${list.map(g => `<div class="vrow"><b style="font-family:var(--serif);font-size:17px;color:var(--ink)">${esc(g.w)}</b><span style="font-family:var(--sans);font-size:15px;color:var(--soft)">${esc(g.d)}</span></div>`).join('') || '<div class="empty"><b>Istilah tidak ditemukan</b></div>'}</div>
-    <p class="small muted">Definisi ringkas untuk membantu membaca. Istilah yang bergaris bawah titik-titik di renungan dapat diketuk.</p>`;
+  return `<label class="ws-search" for="qg"><span class="sr">Cari istilah</span>${ic('search')}<input id="qg" type="search" autocomplete="off" placeholder="Cari istilah, mis. Sabat" value="${esc(S.qg||'')}"></label>
+    <dl class="gl-list" id="glist">${list.map(g => `<div><dt>${esc(g.w)}</dt><dd>${esc(g.d)}</dd></div>`).join('') || '<div class="ws-empty"><p><b>Istilah tidak ditemukan.</b></p></div>'}</dl>
+    <p class="ws-foot">Definisi ringkas untuk membantu membaca. Istilah yang bergaris bawah titik-titik di renungan dapat diketuk.</p>`;
 }
 function timelineHTML(){
   if (!LINI) return '';
   const t = TODAY() < START ? START : TODAY(); const cur = eraOf(...PLAN[planIndexFor(t)].r[0]);
   const counts = {}; Object.keys(S.data.read).forEach(d => { const e = eraOf(...PLAN[planIndexFor(d)].r[0]); if (e) counts[e.id] = (counts[e.id]||0) + 1; });
-  return `<section class="card"><h2 style="font-family:var(--serif);font-size:18px">Lini masa Alkitab</h2>
-    <p class="small muted">Tanggal adalah perkiraan; sebagian masih diperdebatkan para ahli. Bacaan Anda berpindah-pindah era karena pola rotasi.</p>
-    <ol class="timeline">${LINI.eras.map(e => `<li class="${cur && cur.id===e.id ? 'now' : ''}"><span class="tdot"></span><div><b>${esc(e.n)}</b><small>${esc(e.t)}${counts[e.id] ? ` · ${counts[e.id]} hari dibaca` : ''}${cur && cur.id===e.id ? ' · bacaan hari ini' : ''}</small><p>${esc(e.d)}</p></div></li>`).join('')}</ol></section>`;
+  return `<section class="ws-panel" aria-labelledby="linh"><h2 class="rd-h t-ember" id="linh">${ic('clock')}Lini masa Alkitab</h2>
+    <p class="ac-txt">Tanggal adalah perkiraan; sebagian masih diperdebatkan para ahli. Bacaan Anda berpindah-pindah era karena pola rotasi.</p>
+    <ol class="pg-tl">${LINI.eras.map(e => `<li class="${cur && cur.id===e.id ? 'now' : ''}"><span class="pg-tl-dot" aria-hidden="true"></span><div><b>${esc(e.n)}</b><p class="pg-tl-meta"><span>${esc(e.t)}</span>${counts[e.id] ? `<span>${counts[e.id]} hari dibaca</span>` : ''}${cur && cur.id===e.id ? `<span class="now-tag">Bacaan hari ini</span>` : ''}</p><p>${esc(e.d)}</p></div></li>`).join('')}</ol></section>`;
 }
 
 /* ---------- render ---------- */
@@ -815,6 +832,8 @@ document.addEventListener('click', e => {
   if (t.dataset.copy) { const [b,c,v] = t.dataset.copy.split(':').map(Number); const x = chapter(b,c).find(y=>y[0]===v); const txt = `${x[1]} (${bookName(b)} ${c}:${v}, AYT)`;
     navigator.clipboard.writeText(txt).then(()=>toast('Ayat disalin')).catch(()=>toast('Tidak dapat menyalin di tampilan ini')); return; }
   if (t.dataset.tab) { S.tabCari = t.dataset.tab; render(); return; }
+  if (t.dataset.bk) { toast(t.getAttribute('aria-label').replace(':', ',') + ' sudah dibaca.'); return; }
+  if (t.dataset.wstep) { const n = document.getElementById('nama'); if (n) S.data.nama = n.value.trim(); S.wStep = +t.dataset.wstep; render(); const h = document.querySelector('#app h1'); if (h) { h.setAttribute('tabindex','-1'); h.focus(); } return; }
   if (t.dataset.tabset) S.tabCari = t.dataset.tabset;
   if (t.dataset.go) { closeSheet(); if (t.dataset.go === 'malam') S.viewDate = null; location.hash = t.dataset.go; render(); return; }
   const a = t.dataset.act;
@@ -834,7 +853,7 @@ document.addEventListener('click', e => {
   if (a === 'push') { enablePush(); return; }
   if (a === 'pushoff' || (a === 'pushtoggle' && S.data.notif)) { S.data.notif = false; saveState(); render(); toast('Notifikasi dimatikan'); return; }
   if (a === 'pushtoggle') { enablePush(); return; }
-  if (t.dataset.notifkind) { const k = t.dataset.notifkind; S.data[k] = S.data[k] === false; saveState(); render(); toast(`${k === 'notifMalam' ? 'Pengingat renungan' : 'Peringatan streak'} ${S.data[k] ? 'dinyalakan' : 'dimatikan'}`); return; }
+  if (t.dataset.notifkind) { const k = t.dataset.notifkind; S.data[k] = S.data[k] === false; saveState(); render(); toast(`${k === 'notifMalam' ? 'Pengingat renungan' : 'Pengingat lentera'} ${S.data[k] ? 'dinyalakan' : 'dimatikan'}`); return; }
   if (a === 'today') { S.viewDate = null; render(); window.scrollTo({top:0}); return; }
   if (t.dataset.mode) { S.data.mode = t.dataset.mode; saveState(); render(); return; }
   if (t.dataset.open) { S.viewDate = t.dataset.open; S.mapSel = null; location.hash = 'malam'; render(); window.scrollTo({top:0}); return; }
