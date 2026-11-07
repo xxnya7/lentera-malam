@@ -1,4 +1,5 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+import { currentStreak } from '/lib/streak.js';
 
 const sb = createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
 
@@ -108,8 +109,7 @@ function saveJournal(date, text){
 function streakInfo(){
   const dates = new Set(Object.values(S.data.read).map(r => r.on));
   const t = TODAY();
-  let cur = 0, d = dates.has(t) ? t : addDays(t, -1);
-  while (dates.has(d)) { cur++; d = addDays(d, -1); }
+  const cur = currentStreak(dates, t);
   const sorted = [...dates].sort(); let best = 0, run = 0, prev = null;
   for (const x of sorted){ run = (prev && dayDiff(prev, x) === 1) ? run + 1 : 1; best = Math.max(best, run); prev = x; }
   return { cur, best, today: dates.has(t), broken: !dates.has(t) && !dates.has(addDays(t,-1)) && sorted.length > 0 };

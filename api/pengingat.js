@@ -3,12 +3,12 @@
    ?jenis=streak -> peringatan streak akan putus bila belum membaca hari ini */
 import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
+import { currentStreak } from '../lib/streak.js';
 
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:admin@example.com', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
 
 const ymd = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(d);
-const minusDays = (s, n) => { const d = new Date(s + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - n); return d.toISOString().slice(0, 10); };
 
 export default async function handler(req, res) {
   if (!process.env.CRON_SECRET || req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -27,8 +27,7 @@ export default async function handler(req, res) {
     if (jenis === 'streak' && data.notifStreak === false) { skipped++; continue; }
     const dates = new Set(Object.values(data.read || {}).map(r => r && r.on).filter(Boolean));
     if (dates.has(today)) { skipped++; continue; }
-    let streak = 0, d = minusDays(today, 1);
-    while (dates.has(d)) { streak++; d = minusDays(d, 1); }
+    const streak = currentStreak(dates, today);
     if (jenis === 'streak' && streak === 0) { skipped++; continue; }
 
     const nama = (data.nama || '').split(' ')[0];

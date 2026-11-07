@@ -22,7 +22,7 @@ self.addEventListener('notificationclick', event => {
 
 /* ---------- cache offline ---------- */
 const CACHE = 'lentera-v1';
-const SHELL = ['/', '/index.html', '/style.css', '/app.js', '/supabase-config.js', '/manifest.webmanifest',
+const SHELL = ['/', '/index.html', '/style.css', '/app.js', '/lib/streak.js', '/supabase-config.js', '/manifest.webmanifest',
   '/data/alkitab.json', '/data/rencana.json', '/data/linimasa.json', '/data/glosarium.json', '/icons/icon-192.png'];
 
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
