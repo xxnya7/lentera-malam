@@ -1,4 +1,4 @@
-import { nightOf, tonight, streakState, migrate, mergeData, markRead, uid, minutes, LONG, wipeProgress, RESET } from '/lib/antrean.js';
+import { nightOf, tonight, streakState, mergeData, markRead, uid, minutes, LONG, wipeProgress, RESET } from '/lib/antrean.js';
 
 // Supabase dimuat dari CDN. Kalau CDN atau layanan akun tidak terjangkau (offline, diblokir, sangat lambat),
 // aplikasi tetap jalan dengan data di perangkat, bukan layar kosong.
@@ -133,7 +133,7 @@ const fmtShort = s => { const d = parseISO(s); return `${d.getDate()} ${BULAN[d.
 const TODAY = () => nightOf(new Date()); // tanggal malam: membaca sebelum pukul 04.00 masih dihitung malam sebelumnya
 
 /* ---------- state ---------- */
-let BIBLE = null, PLAN = null, A = null, UNIT = null;
+let BIBLE = null, A = null, UNIT = null;
 const S = {
   view: null, viewNight: null, mapSel: null, filter: 'semua', tabCari: 'cari', q: '',
   user: { id: null, email: '', signedIn: false }, authChecked: false, authMode: 'masuk', authErr: '', authBusy: false,
@@ -157,7 +157,7 @@ function saveState(){
     // Gabung dengan isi cloud dulu supaya perangkat lain yang lebih baru tidak tertimpa.
     const cur = must(await sb.from('user_state').select('data').eq('user_id', uid).maybeSingle());
     const cloud = await resetCloud(uid, (cur.data && cur.data.data) || {});
-    S.data = upgrade(mergeData(S.data, cloud));
+    S.data = mergeData(S.data, cloud);
     must(await sb.from('user_state').upsert({ user_id: uid, data: S.data, updated_at: new Date().toISOString() }));
     lsSave(); S.sync = 'cloud';
   }).catch(() => { S.sync = 'local'; });
@@ -176,8 +176,6 @@ function saveJournal(date, text){
 
 /* ---------- streak dengan pemulihan (aturan di lib/antrean.js) ---------- */
 const streakInfo = () => streakState(S.data.nights || {}, TODAY());
-// Data lama (per tanggal) diubah ke bentuk per perikop begitu antrean termuat. Aman diulang.
-const upgrade = d => (A && PLAN ? migrate(d, PLAN, A.q) : d);
 
 /* ---------- Alkitab ---------- */
 const bookName = b => BIBLE[b].n;
@@ -353,6 +351,7 @@ function vMalam(){
   /* ---- Zona Main: kepala malam ini ---- */
   let note = '';
   if (past) note = `<p class="tn-note">${ic('clock')}<span>Kamu sedang membuka bacaan ${fmtDate(past)}.</span><button class="btn-text" data-act="today">Kembali ke malam ini</button></p>`;
+  else if (S.viewNight && S.viewNight !== night) note = `<p class="tn-note">${ic('pen')}<span>Kamu sedang membuka jurnal ${fmtDate(S.viewNight)}. Jurnalnya ada di bawah, setelah bacaan malam ini.</span><button class="btn-text" data-act="today">Kembali ke malam ini</button></p>`;
   else if (!done && st.dim) note = `<p class="tn-note">${ic(flameIcon(1))}<span>Lenteramu sedang redup, belum padam. Satu bacaan malam ini menyalakannya lagi. Kalau masih ada tenaga, satu bacaan tambahan ikut memulihkan streak ${st.streak} malammu. Waktunya masih ${dayDiff(night, st.deadline) + 1} malam, jadi santai saja.</span></p>`;
   else if (!done && st.restarted && st.restarted >= addDays(night, -1) && st.streak === 0) note = `<p class="tn-note">${ic(flameIcon(1))}<span>Lenteramu menyala lagi mulai malam ini. ${unitsDone()} bacaan dan ${fireflies} kunang-kunang yang sudah terkumpul tetap aman.</span></p>`;
   else if (!done && st.streak > 0) note = `<p class="tn-note">${ic(flameIcon(st.streak))}<span>Lenteramu sudah menyala ${st.streak} malam berturut-turut. Malam ini, satu bacaan sudah cukup.</span></p>`;
@@ -429,7 +428,7 @@ function vMalam(){
   </section>` : ''}`;
   }
 
-  const jd = past || night;
+  const jd = S.viewNight || night; // malam yang dibuka dari Riwayat, termasuk malam yang hanya berisi jurnal
   const journal = `
   <section class="rd-sec journal t-lamp" aria-labelledby="refh">
     <h2 class="rd-h" id="refh">${ic('pen')}Refleksi malam ini</h2>
@@ -867,7 +866,7 @@ function fx(){
 function render(){
   renderChrome();
   const app = document.getElementById('app');
-  if (!BIBLE || !PLAN || !A) { app.innerHTML = `<div class="loading"><span class="spin"></span>Memuat Alkitab…</div>`; return; }
+  if (!BIBLE || !A) { app.innerHTML = `<div class="loading"><span class="spin"></span>Memuat Alkitab…</div>`; return; }
   if (!S.authChecked) { app.innerHTML = `<div class="loading"><span class="spin"></span>Memeriksa akun…</div>`; return; }
   if (S.recovery) { S.authMode = 'baru'; app.innerHTML = `<div class="view">${vLogin()}</div>`; document.querySelector('nav.bottom').hidden = true; return; }
   // Layanan akun mati tetapi perangkat ini sudah punya bacaan: tetap bisa membaca, sinkron menyusul.
@@ -1104,7 +1103,7 @@ async function loadCloud(uid){
   try {
     const st = must(await sb.from('user_state').select('data').eq('user_id', uid).maybeSingle());
     const cloud = st.data ? await resetCloud(uid, st.data.data || {}) : null;
-    if (cloud) S.data = upgrade(mergeData(cloud, S.data)); // isi cloud menang untuk pengaturan, bacaan dari keduanya digabung
+    if (cloud) S.data = mergeData(cloud, S.data); // isi cloud menang untuk pengaturan, bacaan dari keduanya digabung
     await syncJournals(uid);
     S.sync = 'cloud';
     if (S.data.welcomed || Object.keys(S.data.nights || {}).length) saveState(); // kirim juga progres yang dibuat sebelum masuk
@@ -1137,10 +1136,10 @@ async function loadCloud(uid){
   // Aplikasi di HP bisa berhari-hari di latar; ambil data terbaru setiap kali dibuka lagi.
   window.addEventListener('online', () => { if (S.user.id && S.sync !== 'cloud') saveState(); }); // coba kirim ulang setelah sinyal kembali
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.user.id) loadCloud(S.user.id).then(render); });
-  const [bible, plan, antrean] = await Promise.all(['/data/alkitab.json', '/data/rencana.json', '/data/antrean.json'].map(u => fetch(u).then(r => r.json()))).catch(() => [null, null, null]);
+  const [bible, antrean] = await Promise.all(['/data/alkitab.json', '/data/antrean.json'].map(u => fetch(u).then(r => r.json()))).catch(() => [null, null]);
   try { const [l, g] = await Promise.all([fetch('/data/linimasa.json').then(r=>r.json()), fetch('/data/glosarium.json').then(r=>r.json())]); LINI = l; GLOS = g; glossInit(); } catch(e) {}
-  BIBLE = bible; PLAN = plan; A = antrean;
-  if (A) { UNIT = new Map(A.q.map(u => [uid(u), u])); const before = JSON.stringify(S.data); S.data = upgrade(S.data); if (JSON.stringify(S.data) !== before) saveState(); }
+  BIBLE = bible; A = antrean;
+  if (A) UNIT = new Map(A.q.map(u => [uid(u), u]));
   if (!BIBLE) { document.getElementById('app').innerHTML = `<div class="ws-empty">${owl(navigator.onLine === false ? 'offline' : 'worried', 72)}<p><b>Alkitabnya belum berhasil dimuat.</b> Cek koneksimu, lalu muat ulang halaman ini.</p></div>`; return; }
   render();
 })();

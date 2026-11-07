@@ -21,9 +21,9 @@ self.addEventListener('notificationclick', event => {
 });
 
 /* ---------- cache offline ---------- */
-const CACHE = 'lentera-v4';
+const CACHE = 'lentera-v5';
 const SHELL = ['/', '/index.html', '/style.css', '/app.js', '/lib/antrean.js', '/data/antrean.json', '/supabase-config.js', '/manifest.webmanifest',
-  '/data/alkitab.json', '/data/rencana.json', '/data/linimasa.json', '/data/glosarium.json', '/icons/icon-192.png',
+  '/data/alkitab.json', '/data/linimasa.json', '/data/glosarium.json', '/icons/icon-192.png',
   '/fonts/alegreya-latin-wght-normal.woff2', '/fonts/alegreya-latin-wght-italic.woff2', '/fonts/alegreya-latin-ext-wght-normal.woff2', '/fonts/alegreya-latin-ext-wght-italic.woff2',
   '/fonts/alegreya-sans-latin-400-normal.woff2', '/fonts/alegreya-sans-latin-500-normal.woff2', '/fonts/alegreya-sans-latin-700-normal.woff2',
   '/fonts/alegreya-sans-latin-ext-400-normal.woff2', '/fonts/alegreya-sans-latin-ext-500-normal.woff2', '/fonts/alegreya-sans-latin-ext-700-normal.woff2'];

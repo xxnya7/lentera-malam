@@ -40,7 +40,7 @@
   ],
   "functions": {
     "api/pengingat.js": {
-      "includeFiles": "{data/antrean.json,data/rencana.json,data/panjang-pasal.json,lib/antrean.js}"
+      "includeFiles": "{data/antrean.json,data/panjang-pasal.json,lib/antrean.js}"
     }
   }
 }
