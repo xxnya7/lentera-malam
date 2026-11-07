@@ -1,11 +1,11 @@
 {
   "crons": [
     {
-      "path": "/api/pengingat?jenis=malam",
+      "path": "/api/pengingat",
       "schedule": "0 14 * * *"
     },
     {
-      "path": "/api/pengingat?jenis=streak",
+      "path": "/api/pengingat",
       "schedule": "0 15 * * *"
     }
   ],

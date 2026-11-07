@@ -765,8 +765,12 @@ async function enablePush(){
     const reg = swReg || await registerSW(); await navigator.serviceWorker.ready;
     const { publicKey } = await fetch('/api/vapid-public').then(r => r.json());
     if (!publicKey) throw new Error('vapid-missing');
+    const key = b64ToU8(publicKey);
     let sub = await reg.pushManager.getSubscription();
-    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(publicKey) });
+    // Langganan lama dengan kunci server lain tidak akan pernah menerima notifikasi; buat ulang.
+    const old = sub && sub.options && sub.options.applicationServerKey && new Uint8Array(sub.options.applicationServerKey);
+    if (old && (old.length !== key.length || old.some((b, i) => b !== key[i]))) { await sub.unsubscribe(); sub = null; }
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
     const json = sub.toJSON();
     must(await sb.from('push_subscriptions').upsert({ endpoint: json.endpoint, user_id: S.user.id, subscription: json, user_agent: navigator.userAgent.slice(0, 200) }));
     S.data.notif = true; saveState(); toast('Notifikasi aktif');

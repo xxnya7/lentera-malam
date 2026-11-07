@@ -14,11 +14,12 @@ export default async function handler(req, res) {
   if (!process.env.CRON_SECRET || req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'unauthorized' });
   }
-  const jenis = req.query.jenis === 'streak' ? 'streak' : 'malam';
+  // Vercel Cron memberi tahu jadwal yang memanggil lewat header; ?jenis= tetap bisa dipakai untuk uji manual.
+  const jenis = (req.query.jenis || (req.headers['x-vercel-cron-schedule'] === '0 15 * * *' ? 'streak' : 'malam')) === 'streak' ? 'streak' : 'malam';
   const today = ymd(new Date());
   const { data: states, error } = await sb.from('user_state').select('user_id, data');
   if (error) return res.status(500).json({ error: error.message });
-  let sent = 0, skipped = 0, removed = 0;
+  let sent = 0, skipped = 0, removed = 0; const failed = [];
 
   for (const row of states || []) {
     const data = row.data || {};
@@ -43,8 +44,11 @@ export default async function handler(req, res) {
       try { await webpush.sendNotification(s.subscription, payload, { TTL: 3600 }); sent++; }
       catch (e) {
         if (e.statusCode === 404 || e.statusCode === 410) { await sb.from('push_subscriptions').delete().eq('endpoint', s.endpoint); removed++; }
+        else failed.push({ status: e.statusCode || null, body: String(e.body || e.message).slice(0, 200), host: new URL(s.endpoint).host });
       }
     }
   }
-  res.status(200).json({ jenis, today, sent, skipped, removed });
+  const result = { jenis, today, sent, skipped, removed, failed };
+  console.log('pengingat', JSON.stringify(result)); // terlihat di Vercel → Logs
+  res.status(200).json(result);
 }
