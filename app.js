@@ -3,44 +3,50 @@ import { currentStreak } from '/lib/streak.js';
 
 const sb = createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
 
-const ICONS = {"moon": "bedtime", "sun": "light_mode", "book": "menu_book", "check": "task_alt", "star": "star", "link": "hub", "chart": "insights", "bell": "notifications", "flame": "local_fire_department", "heart": "favorite", "scroll": "history_edu", "bulb": "lightbulb", "lock": "lock", "clock": "schedule", "shield": "verified", "skip": "skip_next", "pen": "edit_note", "map": "hub", "sparkle": "tips_and_updates", "lang": "translate", "user": "account_circle", "calendar": "calendar_month", "chev": "chevron_right", "x": "close", "leaf": "notes", "layers": "layers", "cloud": "cloud_done", "search": "search", "download": "download", "copy": "content_copy", "compass": "explore", "rewind": "history", "dot": "fiber_manual_record"};
-const ic = n => `<span class="ms" aria-hidden="true">${ICONS[n] || n}</span>`;
+const ICONS = {moon:'moon', sun:'sun', book:'book-open-text', check:'check-circle', star:'star', starfill:'star-fill', link:'link-simple', chart:'chart-line-up', bell:'bell', flame:'fire', heart:'heart', scroll:'scroll', bulb:'lightbulb', lock:'lock-simple', clock:'clock', shield:'seal-check', skip:'skip-forward', pen:'pencil-simple-line', map:'graph', sparkle:'sparkle', lang:'translate', user:'user-circle', calendar:'calendar-blank', chev:'caret-right', x:'x', close:'x', leaf:'leaf', layers:'stack', cloud:'cloud-check', search:'magnifying-glass', download:'download-simple', copy:'copy', compass:'compass', rewind:'clock-counter-clockwise', dot:'dot', notifications:'bell-ringing', dark_mode:'moon-stars', minus:'minus', plus:'plus', books:'books'};
+const ic = n => `<svg class="ms" aria-hidden="true" focusable="false"><use href="#i-${ICONS[n] || n}"/></svg>`;
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const P = arr => (arr||[]).map(t=>`<p>${t}</p>`).join('');
-let OWL_N = 0;
+// Maskot "Lentera": burung hantu flat dua warna (tanpa gradien), warna lewat token CSS.
 function owl(mood = 'sleepy', size = 96){
-  const k = 'ow' + (OWL_N++);
   const eyes = mood === 'happy'
-    ? `<path d="M38 55 Q46 47 54 55" stroke="#2A1F5C" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M66 55 Q74 47 82 55" stroke="#2A1F5C" stroke-width="3.6" fill="none" stroke-linecap="round"/>`
+    ? `<path class="ow-ink-s" d="M37 56 Q46 47 55 56M65 56 Q74 47 83 56"/>`
     : mood === 'awake'
-    ? `<circle cx="46" cy="54" r="7.5" fill="#2A1F5C"/><circle cx="74" cy="54" r="7.5" fill="#2A1F5C"/><circle cx="48.5" cy="51" r="2.6" fill="#fff"/><circle cx="76.5" cy="51" r="2.6" fill="#fff"/>`
-    : `<path d="M37 54 Q46 61 55 54" stroke="#2A1F5C" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M65 54 Q74 61 83 54" stroke="#2A1F5C" stroke-width="3.6" fill="none" stroke-linecap="round"/>`;
+    ? `<circle class="ow-ink" cx="46" cy="55" r="7"/><circle class="ow-ink" cx="74" cy="55" r="7"/><circle class="ow-hi" cx="48.5" cy="52.5" r="2.4"/><circle class="ow-hi" cx="76.5" cy="52.5" r="2.4"/>`
+    : `<path class="ow-ink-s" d="M37 54 Q46 61 55 54M65 54 Q74 61 83 54"/>`;
   const extra = mood === 'happy'
-    ? `<path d="M102 20l2.4 5.6 5.6 2.4-5.6 2.4-2.4 5.6-2.4-5.6-5.6-2.4 5.6-2.4z" fill="#FFC247"/><path d="M14 30l1.6 3.8 3.8 1.6-3.8 1.6-1.6 3.8-1.6-3.8-3.8-1.6 3.8-1.6z" fill="#FF8FB8"/>`
-    : mood === 'sleepy' ? `<text x="92" y="22" font-family="Plus Jakarta Sans,sans-serif" font-weight="800" font-size="15" fill="#9B87FF">z</text><text x="103" y="10" font-family="Plus Jakarta Sans,sans-serif" font-weight="800" font-size="11" fill="#9B87FF">z</text>` : '';
-  return `<svg class="owl" width="${size}" height="${size}" viewBox="0 0 120 120" aria-hidden="true">
-  <defs>
-    <linearGradient id="${k}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8E7BFF"/><stop offset="1" stop-color="#5A45D6"/></linearGradient>
-    <linearGradient id="${k}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6E58E8"/><stop offset="1" stop-color="#3F2DAE"/></linearGradient>
-    <radialGradient id="${k}g" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFD66B" stop-opacity=".95"/><stop offset="1" stop-color="#FFB020" stop-opacity="0"/></radialGradient>
-  </defs>
-  <circle cx="100" cy="86" r="22" fill="url(#${k}g)"/>
-  <path d="M28 34 L33 12 L47 28 Z" fill="#5A45D6"/><path d="M92 34 L87 12 L73 28 Z" fill="#5A45D6"/>
-  <path d="M60 20 C89 20 98 44 98 68 C98 94 82 110 60 110 C38 110 22 94 22 68 C22 44 31 20 60 20Z" fill="url(#${k}b)"/>
-  <path d="M24 66 C14 78 18 96 32 102 C30 88 32 76 36 68Z" fill="url(#${k}w)"/>
-  <path d="M96 66 C102 74 102 84 98 90 L90 76Z" fill="url(#${k}w)"/>
-  <ellipse cx="60" cy="84" rx="24" ry="22" fill="#FFE9C7"/>
-  <path d="M48 78 q4 4 8 0 M60 78 q4 4 8 0 M52 88 q4 4 8 0 M64 88 q4 4 8 0" stroke="#F3C58A" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <circle cx="46" cy="54" r="15" fill="#FFF6EA"/><circle cx="74" cy="54" r="15" fill="#FFF6EA"/>
+    ? `<path class="ow-lamp" d="M104 18l2.2 5 5 2.2-5 2.2-2.2 5-2.2-5-5-2.2 5-2.2z"/><path class="ow-plum" d="M13 32l1.5 3.4 3.4 1.5-3.4 1.5L13 41.8l-1.5-3.4-3.4-1.5 3.4-1.5z"/>`
+    : mood === 'asleep' ? `<text class="ow-z" x="94" y="24">z</text><text class="ow-z ow-z2" x="105" y="12">z</text>` : '';
+  return `<svg class="owl owl-${mood}" width="${size}" height="${size}" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+  <path class="ow-body-d" d="M28 34 L33 12 L47 28 Z M92 34 L87 12 L73 28 Z"/>
+  <path class="ow-body" d="M60 20 C89 20 98 44 98 68 C98 94 82 110 60 110 C38 110 22 94 22 68 C22 44 31 20 60 20Z"/>
+  <path class="ow-body-d" d="M24 66 C14 78 18 96 32 102 C30 88 32 76 36 68Z M96 66 C102 74 102 84 98 90 L90 76Z"/>
+  <ellipse class="ow-belly" cx="60" cy="85" rx="24" ry="21"/>
+  <path class="ow-belly-s" d="M48 79 q4 4 8 0 M60 79 q4 4 8 0 M52 89 q4 4 8 0 M64 89 q4 4 8 0"/>
+  <circle class="ow-face" cx="46" cy="55" r="15"/><circle class="ow-face" cx="74" cy="55" r="15"/>
   ${eyes}
-  <ellipse cx="36" cy="68" rx="5" ry="3" fill="#FF8FB8" opacity=".8"/><ellipse cx="84" cy="68" rx="5" ry="3" fill="#FF8FB8" opacity=".8"/>
-  <path d="M55 62 L65 62 L60 70 Z" fill="#FF9F43"/>
-  <path d="M50 108 l-3 6 M54 108 l0 7 M58 108 l3 6 M62 108 l-3 6 M66 108 l0 7 M70 108 l3 6" stroke="#FF9F43" stroke-width="3" stroke-linecap="round"/>
-  <path d="M100 58 v8" stroke="#3B2E86" stroke-width="2.5"/><path d="M93 66 h14 l-2 4 h-10z" fill="#3B2E86"/>
-  <rect x="94" y="70" width="12" height="16" rx="3" fill="#FFC247"/><rect x="96.5" y="72.5" width="7" height="11" rx="2" fill="#FFF2C2"/>
-  <path d="M93 86 h14 l-2 3 h-10z" fill="#3B2E86"/>
-  <path d="M88 76 C92 70 98 70 100 74" stroke="#5A45D6" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path class="ow-beak" d="M55 63 L65 63 L60 71 Z"/>
+  <path class="ow-feet" d="M50 108 l-3 6 M54 108 v7 M58 108 l3 6 M62 108 l-3 6 M66 108 v7 M70 108 l3 6"/>
+  <g class="ow-lantern"><path class="ow-metal" d="M100 58 v8 M93 66 h14 l-2 4 h-10z M93 86 h14 l-2 3 h-10z"/><rect class="ow-glass" x="94" y="70" width="12" height="16" rx="3"/><circle class="ow-flame" cx="100" cy="78" r="3"/></g>
+  <path class="ow-wing" d="M88 76 C92 70 98 70 100 74"/>
   ${extra}
+</svg>`;
+}
+
+// Lentera kunang-kunang: makin terang seiring jumlah malam yang sudah dibaca (maks. 365).
+function lantern(count, size = 120, opts = {}){
+  const lv = Math.min(1, count / 365);
+  const n = Math.min(count, 28); let dots = '';
+  for (let i = 0; i < n; i++){ const x = 36 + ((i * 37) % 48), y = 50 + ((i * 53) % 46); dots += `<circle class="ln-fly" cx="${x}" cy="${y}" r="${1.6 + (i % 3) * .5}" style="--d:${(i % 7) * .4}s"/>`; }
+  return `<svg class="lantern ${opts.cls || ''}" width="${size}" height="${size * 1.25}" viewBox="0 0 120 150" style="--lv:${(.18 + .82 * lv).toFixed(3)}" aria-hidden="true" focusable="false">
+  <defs><radialGradient id="lnGlow${opts.id || ''}"><stop offset="0" class="ln-g0"/><stop offset="1" class="ln-g1"/></radialGradient></defs>
+  <circle class="ln-halo" cx="60" cy="82" r="58" fill="url(#lnGlow${opts.id || ''})"/>
+  <path class="ln-metal" d="M60 6 a10 10 0 0 1 0 20 a10 10 0 0 1 0-20 M60 26 v8"/>
+  <path class="ln-cap" d="M34 40 h52 l-8 -8 h-36 z"/>
+  <rect class="ln-glass" x="30" y="40" width="60" height="70" rx="12"/>
+  <g class="ln-flies">${dots}</g>
+  <path class="ln-wick ${count ? 'on' : ''}" d="M60 96 c-6 -8 -2 -16 0 -22 c2 6 6 14 0 22z"/>
+  <path class="ln-cap" d="M30 110 h60 l-6 10 h-48 z"/>
 </svg>`;
 }
 
@@ -118,7 +124,8 @@ const chapter = (b, c) => BIBLE[b].c[c-1] || [];
 function fmtRefs(list){
   const out = [];
   for (const [b,c] of list){ const last = out[out.length-1]; if (last && last[0]===b && last[2]===c-1) last[2]=c; else out.push([b,c,c]); }
-  return out.map(([b,s,e]) => `${bookName(b)} ${s}${e!==s?'–'+e:''}`).join(' · ');
+  const parts = out.map(([b,s,e]) => `${bookName(b)} ${s}${e!==s?'–'+e:''}`);
+  return parts.length > 1 ? parts.slice(0,-1).join(', ') + ' dan ' + parts[parts.length-1] : parts.join('');
 }
 const verseHTML = t => esc(t).replace(/\((\d+-\d+)\)/g, '<span class="hv">($1)</span>');
 const titleHTML = t => esc(t).replace(/&lt;br\s*\/?&gt;/g, ' · ');
@@ -155,7 +162,10 @@ function renderChrome(){
   const c = cur();
   document.getElementById('nav').innerHTML = VIEWS.map(v => `<button data-go="${v.id}" ${v.id===c?'aria-current="page"':''}>${ic(v.icon)}<span>${v.label}</span></button>`).join('');
   const st = streakInfo();
-  document.getElementById('streak').innerHTML = `${ic('flame')}<span>${st.cur}</span>`;
+  const k = Object.keys(S.data.read).length;
+  const el = document.getElementById('streak');
+  el.innerHTML = `${lantern(k, 22, {cls:'ln-top', id:'t'})}<span>${st.cur}</span>`;
+  el.setAttribute('aria-label', `Lentera menyala ${st.cur} malam berturut-turut, berisi ${k} kunang-kunang`);
 }
 
 function vLogin(){
@@ -218,112 +228,150 @@ function vWelcome(){
   </div>`;
 }
 
+function readMinutes(day, dv, deep){
+  let w = 0; for (const [b,c] of day.r) for (const v of chapter(b,c)) w += v[1].split(/\s+/).length;
+  if (dv && typeof dv === 'object') w += [...(deep ? dv.kisah : dv.kisah.slice(0,1)), ...(deep ? dv.hidup : dv.hidup.slice(0,1))].join(' ').split(/\s+/).length;
+  return Math.max(5, Math.round(w / 200));
+}
 function vMalam(){
   GL_SEEN = new Set();
   const PG = arr => (arr||[]).map(t=>`<p>${glossLink(t)}</p>`).join('');
   const date = viewDate(); const idx = planIndexFor(date); const day = PLAN[idx];
   loadDevo(day.t);
   const dv = S.devo[day.t];
+  const ok = dv && typeof dv === 'object';
   const deep = S.data.mode === 'mendalam';
   const done = !!S.data.read[day.t];
   const st = streakInfo();
   const isToday = date === TODAY();
   const before = TODAY() < START;
-  const focusVs = dv && dv.fokus ? chapter(dv.fokus.b, dv.fokus.c).filter(v => v[0]>=dv.fokus.v1 && v[0]<=dv.fokus.v2) : [];
+  const fireflies = Object.keys(S.data.read).length;
+  const focusVs = ok && dv.fokus ? chapter(dv.fokus.b, dv.fokus.c).filter(v => v[0]>=dv.fokus.v1 && v[0]<=dv.fokus.v2) : [];
   const allRefs = day.r;
+  const era = eraOf(day.r[0][0], day.r[0][1]);
+  const nama = (S.data.nama || '').trim().split(/\s+/)[0];
 
-  let banner = '';
-  if (before) banner = `<div class="banner">${ic('calendar')}<span><b>Rencana dimulai besok, Minggu, 1 November 2026.</b> Anda dapat membaca Hari 1 lebih awal, tetapi streak dihitung dari hari ketika Anda menandainya.</span></div>`;
-  else if (!isToday && date < TODAY()) banner = `<div class="banner">${ic('clock')}<span>Anda sedang membuka bacaan <b>${fmtDate(date)}</b>. <button class="mini" data-act="today">Kembali ke hari ini</button></span></div>`;
-  if (!before && isToday && !done && st.cur > 0) banner += `<div class="banner warn">${ic('flame')}<span>Streak <b>${st.cur} malam</b> akan kembali ke nol jika bacaan malam ini tidak ditandai sebelum pukul 24.00.</span></div>`;
+  /* ---- Zona Main: kepala malam ini ---- */
+  let note = '';
+  if (before) note = `<p class="tn-note">${ic('calendar')}<span>Rencana dimulai Minggu, 1 November 2026. Hari 1 boleh dibaca lebih awal; streak dihitung dari hari Anda menandainya.</span></p>`;
+  else if (!isToday && date < TODAY()) note = `<p class="tn-note">${ic('clock')}<span>Anda sedang membuka bacaan ${fmtDate(date)}.</span><button class="btn-text" data-act="today">Kembali ke hari ini</button></p>`;
+  else if (isToday && !done && st.cur > 0) note = `<p class="tn-note">${lantern(fireflies, 18, {cls:'ln-inline', id:'n'})}<span>Lentera Anda sudah menyala ${st.cur} malam berturut-turut. Malam ini tinggal satu langkah lagi.</span></p>`;
+  const title = isToday || before ? (nama ? `Selamat malam, ${esc(nama)}` : 'Selamat malam') : `Bacaan ${fmtShort(day.t)}`;
+  const header = `
+  <header class="tn">
+    <div class="tn-chips">
+      <span class="chip-s">Hari ${day.d} dari 365</span>
+      <span class="chip-s">${esc(day.g)}</span>
+      ${era ? `<button class="chip-s chip-btn" data-era="${day.r[0][0]}:${day.r[0][1]}">${ic('clock')}${esc(era.n)}</button>` : ''}
+    </div>
+    <div class="tn-owl">${owl(done ? 'asleep' : 'sleepy', 104)}</div>
+    <h1 class="tn-hello">${title}</h1>
+    <p class="tn-line">${done ? 'Bacaan malam ini sudah selesai. Selamat beristirahat.' : `${isToday || before ? 'Malam ini ' : ''}${fmtRefs(allRefs)}, sekitar ${readMinutes(day, dv, deep)} menit.`}</p>
+    ${done ? '' : `<button class="btn-primary" data-act="tobaca">${ic('book')}Mulai baca</button>`}
+    ${note}
+  </header>`;
 
-  const hero = dv && dv.fokus ? `
-    <section class="hero" aria-label="Bacaan fokus">
-      <div class="moonbig"></div>
-      <div class="tagrow"><span class="tag">${ic('moon')}${esc(dv.tema)}</span></div>
-      <div class="passage">${focusVs.map(v => `<p data-ref="${dv.fokus.b}:${dv.fokus.c}:${v[0]}" class="${dv.fokus.key.includes(v[0])?'key':''} ${isFav(dv.fokus.b,dv.fokus.c,v[0])?'fav':''}"><sup>${v[0]}</sup>${verseHTML(v[1])}</p>`).join('')}</div>
-      <div class="ref"><b>${bookName(dv.fokus.b)} ${dv.fokus.c}:${dv.fokus.v1}-${dv.fokus.v2}</b><small>Ayat fokus · AYT</small></div>
-      <div class="owlperch">${owl(done ? 'happy' : 'sleepy', 92)}</div>
-    </section>` : `
-    <section class="hero" aria-label="Bacaan hari ini">
-      <div class="moonbig"></div>
-      <div class="tagrow"><span class="tag">${ic('book')}Bacaan hari ini</span></div>
-      <div class="passage"><p class="key">${fmtRefs(allRefs)}</p></div>
-      <div class="owlperch">${owl(done ? 'happy' : 'sleepy', 92)}</div>
-    </section>`;
-
-  const reading = `
-    <section class="card c-amber">
-      <div class="sechead"><div class="bubble b-moon">${ic('book')}</div><div><h2>Bacaan Alkitab hari ini</h2><small>${allRefs.length} pasal · ketuk untuk membuka</small></div></div>
-      <div class="readlist">${allRefs.map(([b,c]) => `
-        <details class="chap" ${deep && allRefs.length===1?'open':''}><summary><span class="nm">${bookName(b)} ${c}</span><small>${chapter(b,c).length} ayat</small><svg class="i chev"><use href="#chev"/></svg></summary>
-        <div class="chaptext">${chapterHTML(b,c, dv && dv.fokus && dv.fokus.b===b && dv.fokus.c===c ? dv.fokus.key : null)}</div></details>`).join('')}
-      </div>
-    </section>`;
-
-  let devo = '';
-  if (dv === undefined || S.devoLoading[day.t]) devo = `<div class="loading"><span class="spin"></span>Memuat renungan…</div>`;
-  else if (dv === 'timeout') devo = `<section class="card"><div class="empty"><div class="bubble b-lilac">${ic('cloud')}</div><b>Renungan belum dapat dimuat</b><p class="small">Periksa koneksi Anda. Bacaan Alkitab di atas tetap dapat dibaca.</p></div></section>`;
-  else if (!dv) devo = `<section class="card"><div class="empty">${owl('sleepy', 80)}<b>Renungan untuk hari ini sedang disiapkan</b><p class="small">Renungan ditulis per minggu dan diperbarui setiap Jumat. Sementara itu, bacalah pasal-pasal hari ini dan tuliskan refleksi Anda di bawah.</p></div></section>`;
-  else devo = `
-    <section class="fact" aria-label="Fakta hari ini">
-      <svg class="i sparkle"><use href="#sparkle"/></svg>
-      <div class="ft"><span class="kind">${esc(dv.fakta.kind)}</span><span class="small muted" style="font-weight:700">Fakta hari ini</span></div>
-      <h2>${esc(dv.fakta.title)}</h2><p>${glossLink(dv.fakta.text)}</p>
-    </section>
-    <section class="card c-violet">
-      <div class="sechead"><div class="bubble b-pink">${ic('scroll')}</div><div><h2>Latar kisah</h2><small>Konteks sejarah dan sastra</small></div></div>
-      <div class="prose">${PG(deep ? dv.kisah : dv.kisah.slice(0,1))}</div>
-    </section>
-    ${deep ? `<section class="card c-teal">
-      <div class="sechead"><div class="bubble b-lilac">${ic('lang')}</div><div><h2>Telaah kata</h2><small>Makna dalam bahasa asli</small></div></div>
-      <div class="words">${dv.kata.map(k=>`<div class="word"><div class="w"><b>${esc(k.w)}</b><span>${esc(k.l)}</span></div><p>${glossLink(k.d)}</p></div>`).join('')}</div>
-    </section>` : ''}
-    <section class="card c-coral">
-      <div class="sechead"><div class="bubble b-mint">${ic('bulb')}</div><div><h2>Penerapan dalam hidup</h2><small>Kaitannya dengan keseharian</small></div></div>
-      ${deep && dv.isu ? `<div class="issue"><span class="small muted" style="font-weight:800;letter-spacing:.05em;text-transform:uppercase">Isu terkini</span><b>${esc(dv.isu.judul)}</b><p>${glossLink(esc(dv.isu.teks))}</p></div>` : ''}
-      <div class="prose">${PG(deep ? dv.hidup : dv.hidup.slice(0,1))}</div>
-    </section>`;
-
-  const journal = `
-    <section class="card c-sky reflect journal">
-      <div class="sechead"><div class="bubble b-moon">${ic('pen')}</div><div><h2>Refleksi malam ini</h2><small>Jawaban Anda tersimpan otomatis</small></div></div>
-      ${dv && dv.tanya ? `<p class="q">${esc(dv.tanya)}</p>` : `<p class="q">Ayat atau peristiwa apa dari bacaan hari ini yang paling menyentuh Anda, dan mengapa?</p>`}
-      ${dv && dv.coba && deep ? `<div class="try">${ic('check')}<span><b>Langkah konkret:</b> ${esc(dv.coba)}</span></div>` : ''}
-      <label class="small muted" for="jurnal" style="font-weight:700">Jurnal ${fmtShort(day.t)}</label>
-      <textarea id="jurnal" data-date="${day.t}" placeholder="Tuliskan refleksi Anda di sini…">${esc(S.journal[day.t] || '')}</textarea>
-      <div class="saved" id="jsaved" aria-live="polite"></div>
-    </section>`;
-
-  const links = dv && deep && dv.kaitan ? `
-    <section class="card c-pink">
-      <div class="sechead"><div class="bubble b-moon">${ic('link')}</div><div><h2>Ayat yang berkaitan</h2><small>Teks lengkap dan hubungannya</small></div></div>
-      <div class="rel">${dv.kaitan.map((l,i) => `<article class="relcard" style="--c:var(${LINK_COLORS[i%3]})">
-        <div class="rh"><b>${refText(l.b,l.c,l.v)}</b><button class="mini" data-maplink="${i}">${ic('map')}Peta</button></div>
-        <p class="rt">${chapter(l.b,l.c).filter(v=>l.v.includes(v[0])).map(v=>verseHTML(v[1])).join(' ')}</p>
-        <p class="why">${ic('link')}<span>${esc(l.why)}</span></p></article>`).join('')}</div>
-    </section>` : '';
-
-  const prayer = dv && dv.doa ? `<section class="card c-night"><div class="sechead"><div class="bubble b-lilac">${ic('heart')}</div><div><h2>Doa sebelum tidur</h2></div></div><p class="prayer">${esc(dv.doa)}</p></section>` : '';
-  const sources = dv && dv.sumber && dv.sumber.length ? `<section class="card c-teal"><div class="sechead"><div class="bubble b-mint">${ic('shield')}</div><div><h2>Sumber bacaan</h2><small>Untuk memeriksa fakta dan isu</small></div></div>
-      <ol class="srclist">${dv.sumber.map(s=>`<li><a href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a></li>`).join('')}</ol></section>` : '';
-
-  const cta = done
-    ? `<section class="celebrate"><div class="celowl">${owl('happy', 84)}</div><div><b>Bacaan malam ini selesai!</b><p>Ditandai ${fmtShort(S.data.read[day.t].on)}. Streak Anda ${streakInfo().cur} malam. Selamat beristirahat.</p></div></section><button class="cta done" disabled>${ic('check')} Sudah dibaca</button>`
-    : `<button class="cta" data-act="read" data-date="${day.t}">${ic('star')} Tandai sudah dibaca</button>`;
-
-  return `
-    <section class="sky"><div class="moon" aria-hidden="true"></div><div class="stars" aria-hidden="true">${'<i></i>'.repeat(14)}</div><div class="cloud c1" aria-hidden="true"></div><div class="cloud c2" aria-hidden="true"></div>
-    <div class="dayline"><span class="daypill">Hari ${day.d} / 365</span><span class="daypill">${esc(day.g)}</span>${(() => { const e = eraOf(day.r[0][0], day.r[0][1]); return e ? `<button class="daypill era" data-era="${day.r[0][0]}:${day.r[0][1]}">${ic('clock')}${esc(e.n)}</button>` : ''; })()}<span class="daypill">${fmtDate(day.t)}</span></div>
-    ${head(isToday || before ? greet() : 'Bacaan ' + fmtShort(day.t), fmtRefs(allRefs))}
-    </section>
-    ${banner}
-    <div class="modeseg" role="group" aria-label="Mode bacaan">
+  /* ---- Zona Baca ---- */
+  const tools = `
+  <div class="rd-tools">
+    <div class="seg" role="group" aria-label="Mode bacaan">
       <button data-mode="ringkas" aria-pressed="${!deep}">${ic('leaf')}Ringkas</button>
       <button data-mode="mendalam" aria-pressed="${deep}">${ic('layers')}Mendalam</button>
     </div>
-    ${hero}${introCards(day)}${prevCard(day, dv)}${devo}${reading}${journal}${links}${prayer}${cta}${sources}
-    <p class="srcnote">${ic('shield')}<span>Teks Alkitab: Alkitab Yang Terbuka (AYT) © YLSA, untuk penggunaan non-komersial. <button data-act="source">Tentang sumber</button></span></p>`;
+    <div class="fs" role="group" aria-label="Ukuran teks">
+      <button data-fs="-1" aria-label="Perkecil teks" ${S.data.fs === 17 ? 'disabled' : ''}>${ic('minus')}</button>
+      <button data-fs="1" aria-label="Perbesar teks" ${S.data.fs === 21 ? 'disabled' : ''}>${ic('plus')}</button>
+    </div>
+  </div>`;
+
+  const focus = ok && dv.fokus ? `
+  <section class="rd-focus" aria-labelledby="fokush">
+    <h2 class="rd-theme" id="fokush">${esc(dv.tema)}</h2>
+    <div class="rd-verses">${focusVs.map(v => `<p data-ref="${dv.fokus.b}:${dv.fokus.c}:${v[0]}" class="${dv.fokus.key.includes(v[0])?'key':''} ${isFav(dv.fokus.b,dv.fokus.c,v[0])?'fav':''}"><sup>${dv.fokus.key.includes(v[0]) ? ic('sparkle') : ''}${v[0]}</sup>${verseHTML(v[1])}</p>`).join('')}</div>
+    <p class="rd-ref">${bookName(dv.fokus.b)} ${dv.fokus.c}:${dv.fokus.v1}–${dv.fokus.v2}, ayat fokus (AYT). Ketuk ayat untuk menyimpan atau menyalin.</p>
+  </section>` : '';
+
+  const reading = `
+  <section class="rd-sec" aria-labelledby="pasalh">
+    <h2 class="rd-h" id="pasalh">${ic('book')}Bacaan Alkitab hari ini</h2>
+    <p class="rd-note">${allRefs.length} pasal. Ketuk untuk membuka.</p>
+    <div class="rd-chaps">${allRefs.map(([b,c]) => `
+      <details class="chap" ${deep && allRefs.length===1?'open':''}><summary><span class="nm">${bookName(b)} ${c}</span><small>${chapter(b,c).length} ayat</small><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg></summary>
+      <div class="chaptext">${chapterHTML(b,c, ok && dv.fokus && dv.fokus.b===b && dv.fokus.c===c ? dv.fokus.key : null)}</div></details>`).join('')}
+    </div>
+  </section>`;
+
+  let devo = '', bonus = '';
+  if (dv === undefined || S.devoLoading[day.t]) devo = `<div class="rd-skel" aria-label="Memuat renungan" role="status"><i></i><i></i><i></i><i></i></div>`;
+  else if (dv === 'timeout') devo = `<div class="rd-empty">${owl('awake', 72)}<p><b>Renungan belum dapat dimuat.</b> Periksa koneksi Anda. Bacaan Alkitab di atas tetap bisa dibaca.</p></div>`;
+  else if (!dv) devo = `<div class="rd-empty">${owl('sleepy', 72)}<p><b>Renungan untuk hari ini sedang disiapkan.</b> Renungan ditulis per minggu dan diperbarui setiap Jumat. Sementara itu, bacalah pasal-pasal hari ini dan tuliskan refleksi Anda di bawah.</p></div>`;
+  else {
+    devo = `
+  <section class="rd-sec" aria-labelledby="kisahh">
+    <h2 class="rd-h" id="kisahh">${ic('scroll')}Latar kisah</h2>
+    <div class="rd-prose">${PG(deep ? dv.kisah : dv.kisah.slice(0,1))}</div>
+  </section>
+  ${deep ? `<section class="rd-sec" aria-labelledby="katah">
+    <h2 class="rd-h" id="katah">${ic('lang')}Telaah kata</h2>
+    <dl class="rd-words">${dv.kata.map(k=>`<div><dt><b>${esc(k.w)}</b><span>${esc(k.l)}</span></dt><dd>${glossLink(k.d)}</dd></div>`).join('')}</dl>
+  </section>` : ''}
+  <section class="rd-sec" aria-labelledby="hiduph">
+    <h2 class="rd-h" id="hiduph">${ic('bulb')}Penerapan dalam hidup</h2>
+    ${deep && dv.isu ? `<aside class="rd-issue" aria-label="Isu terkini"><p class="rd-issue-k">Isu terkini</p><p class="rd-issue-t">${esc(dv.isu.judul)}</p><p>${glossLink(esc(dv.isu.teks))}</p></aside>` : ''}
+    <div class="rd-prose">${PG(deep ? dv.hidup : dv.hidup.slice(0,1))}</div>
+  </section>`;
+    bonus = `
+  <section class="bn-fact" aria-labelledby="faktah">
+    <p class="bn-kind">${ic('sparkle')}${esc(dv.fakta.kind)}</p>
+    <h2 class="bn-h" id="faktah">${esc(dv.fakta.title)}</h2>
+    <p>${glossLink(dv.fakta.text)}</p>
+  </section>
+  ${deep && dv.kaitan ? `<section class="rd-sec" aria-labelledby="kaitanh">
+    <h2 class="rd-h" id="kaitanh">${ic('link')}Ayat yang berkaitan</h2>
+    <ol class="rd-links">${dv.kaitan.map((l,i) => `<li>
+      <p class="rd-links-ref">${refText(l.b,l.c,l.v)}</p>
+      <p class="rd-links-v">${chapter(l.b,l.c).filter(v=>l.v.includes(v[0])).map(v=>verseHTML(v[1])).join(' ')}</p>
+      <p class="rd-links-why">${esc(l.why)}</p>
+      <button class="btn-text" data-maplink="${i}">${ic('map')}Lihat di peta kaitan</button></li>`).join('')}</ol>
+  </section>` : ''}`;
+  }
+
+  const journal = `
+  <section class="rd-sec journal" aria-labelledby="refh">
+    <h2 class="rd-h" id="refh">${ic('pen')}Refleksi malam ini</h2>
+    <p class="rd-q">${ok && dv.tanya ? esc(dv.tanya) : 'Ayat atau peristiwa apa dari bacaan hari ini yang paling menyentuh Anda, dan mengapa?'}</p>
+    ${ok && dv.coba && deep ? `<p class="rd-try">${ic('check')}<span><b>Langkah konkret:</b> ${esc(dv.coba)}</span></p>` : ''}
+    <label class="field-l" for="jurnal">Jurnal ${fmtShort(day.t)}</label>
+    <textarea id="jurnal" data-date="${day.t}" placeholder="Tuliskan refleksi Anda di sini…">${esc(S.journal[day.t] || '')}</textarea>
+    <p class="saved" id="jsaved" aria-live="polite"></p>
+  </section>`;
+
+  const prayer = ok && dv.doa ? `<section class="rd-sec rd-pray" aria-labelledby="doah"><h2 class="rd-h" id="doah">${ic('moon')}Doa sebelum tidur</h2><p class="prayer">${esc(dv.doa)}</p></section>` : '';
+  const sources = ok && dv.sumber && dv.sumber.length ? `<section class="rd-sec" aria-labelledby="sumberh"><h2 class="rd-h" id="sumberh">${ic('shield')}Sumber bacaan</h2>
+      <ol class="srclist">${dv.sumber.map(s=>`<li><a href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a></li>`).join('')}</ol></section>` : '';
+
+  /* ---- Signature: lentera kunang-kunang ---- */
+  const finish = done ? `
+  <section class="fin fin-done ${S.justDone === day.t ? 'just' : ''}" aria-labelledby="finh">
+    <div class="fin-art">${lantern(fireflies, 112, {cls:'ln-big', id:'f'})}<div class="fin-owl">${owl(S.justDone === day.t ? 'happy' : 'asleep', 76)}</div></div>
+    <h2 class="fin-h" id="finh">${isToday ? `Malam ke-${st.cur}. Selamat tidur${nama ? ', ' + esc(nama) : ''}.` : 'Bacaan ini sudah selesai.'}</h2>
+    <p class="fin-p">Ditandai ${fmtShort(S.data.read[day.t].on)}. Lentera Anda kini berisi ${fireflies} kunang-kunang; ${Math.max(0, 365 - fireflies)} lagi sampai akhir tahun.</p>
+  </section>` : `
+  <section class="fin" aria-labelledby="finh">
+    <div class="fin-art">${lantern(fireflies, 112, {cls:'ln-big', id:'f'})}</div>
+    <h2 class="fin-h" id="finh">Selesai membaca?</h2>
+    <p class="fin-p">Tandai bacaan ini, dan satu kunang-kunang lagi masuk ke lentera Anda.</p>
+    <button class="btn-primary" data-act="read" data-date="${day.t}">${ic('check')}Selesai membaca</button>
+  </section>`;
+
+  return `${header}
+  <article class="rd" id="baca" style="--fs-read:${S.data.fs || 19}px" aria-label="Bacaan dan renungan">
+    ${tools}${introCards(day)}${focus}${reading}${prevCard(day, dv)}${devo}${journal}${prayer}
+  </article>
+  ${finish}
+  <div class="bonus">${bonus}${sources}
+    <p class="srcnote">${ic('shield')}<span>Teks Alkitab: Alkitab Yang Terbuka (AYT) © YLSA, untuk penggunaan non-komersial.</span><button class="btn-text" data-act="source">Tentang sumber</button></p>
+  </div>`;
 }
 
 function vArsip(){
@@ -575,9 +623,9 @@ function introHTML(x){
     <h3 class="mini-h">Tema besar</h3><ul class="dots">${x.tema.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
     <h3 class="mini-h">Susunan kitab</h3><div class="outline">${x.susunan.map(s=>`<div><b>${esc(s[0])}</b><span>${esc(s[1])}</span></div>`).join('')}</div>
     <h3 class="mini-h">Tokoh utama</h3><div class="chips">${x.tokoh.map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div>
-    ${x.kunci ? `<div class="try">${ic('book')}<span><b>Ayat kunci · ${refText(x.kunci.b,x.kunci.c,x.kunci.v)}:</b> ${chapter(x.kunci.b,x.kunci.c).filter(v=>x.kunci.v.includes(v[0])).map(v=>verseHTML(v[1])).join(' ')}</span></div>` : ''}
+    ${x.kunci ? `<div class="try">${ic('book')}<span><b>Ayat kunci ${refText(x.kunci.b,x.kunci.c,x.kunci.v)}:</b> ${chapter(x.kunci.b,x.kunci.c).filter(v=>x.kunci.v.includes(v[0])).map(v=>verseHTML(v[1])).join(' ')}</span></div>` : ''}
     ${x.catatan ? `<p class="small muted">${x.catatan}</p>` : ''}
-    ${x.sumber && x.sumber.length ? `<p class="small muted">Sumber: ${x.sumber.map(s=>`<a href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a>`).join(' · ')}</p>` : ''}`;
+    ${x.sumber && x.sumber.length ? `<p class="small muted">Sumber: ${x.sumber.map(s=>`<a href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a>`).join(', ')}</p>` : ''}`;
 }
 function introSheet(b){
   loadIntro(b); const x = INTRO[b];
@@ -588,8 +636,8 @@ function introCards(day){
   return books.map(b => {
     loadIntro(b);
     const isFirst = firstDayOfBook(b) === day.d; const x = INTRO[b];
-    if (isFirst && x) return `<section class="card intro"><div class="sechead"><div class="bubble b-pink">${ic('compass')}</div><div><h2>Pengantar ${esc(bookName(b))}</h2><small>Kitab baru dimulai hari ini</small></div></div>${introHTML(x)}</section>`;
-    return `<button class="ghost" data-intro="${b}">${ic('compass')} Tentang kitab ${esc(bookName(b))}</button>`;
+    if (isFirst && x) return `<section class="rd-sec rd-intro" aria-labelledby="in${b}"><h2 class="rd-h" id="in${b}">${ic('compass')}Kitab baru: ${esc(bookName(b))}</h2>${introHTML(x)}</section>`;
+    return `<button class="btn-quiet" data-intro="${b}">${ic('compass')}Tentang kitab ${esc(bookName(b))}</button>`;
   }).join('');
 }
 function prevCard(day, dv){
@@ -599,11 +647,12 @@ function prevCard(day, dv){
   const chs = prev.r.filter(x => x[0] === b);
   const titles = chs.flatMap(([bb,c]) => chapter(bb,c).filter(v => v[2]).map(v => titleHTML(v[2])));
   const read = S.data.read[prev.t];
-  return `<section class="card c-violet">
-    <div class="sechead"><div class="bubble b-lilac">${ic('rewind')}</div><div><h2>Sebelumnya di kitab ini</h2><small>Hari ${prev.d} · ${fmtShort(prev.t)} · ${fmtRefs(chs)}${read ? '' : ' · belum dibaca'}</small></div></div>
-    ${dv && dv.sebelumnya ? `<p class="prose">${glossLink(esc(dv.sebelumnya))}</p>` : ''}
-    ${titles.length ? `<div class="outline">${titles.map(t => `<div><b>${ic('dot')}</b><span>${t}</span></div>`).join('')}</div>` : ''}
-    <button class="mini" data-open="${prev.t}">${ic('book')} Buka bacaan Hari ${prev.d}</button>
+  return `<section class="rd-sec" aria-labelledby="prevh">
+    <h2 class="rd-h" id="prevh">${ic('rewind')}Sebelumnya di kitab ini</h2>
+    <p class="rd-note">Hari ${prev.d}, ${fmtShort(prev.t)}: ${fmtRefs(chs)}.${read ? '' : ' Belum dibaca, bisa disusul kapan saja.'}</p>
+    ${dv && dv.sebelumnya ? `<div class="rd-prose"><p>${glossLink(esc(dv.sebelumnya))}</p></div>` : ''}
+    ${titles.length ? `<ul class="rd-outline">${titles.map(t => `<li>${t}</li>`).join('')}</ul>` : ''}
+    <button class="btn-quiet" data-open="${prev.t}">${ic('book')}Buka bacaan Hari ${prev.d}</button>
   </section>`;
 }
 /* tautan glosarium: setiap istilah hanya ditautkan sekali per tampilan */
@@ -673,13 +722,38 @@ function applyTheme(){
   if (S.data.theme) document.documentElement.setAttribute('data-theme', S.data.theme);
   const d = isDark(); const b = document.getElementById('themeBtn');
   b.innerHTML = ic(d ? 'sun' : 'dark_mode'); b.setAttribute('aria-label', d ? 'Ganti ke tampilan terang' : 'Ganti ke tampilan gelap');
-  document.querySelector('meta[name="theme-color"]').setAttribute('content', d ? '#0F0B26' : '#F3EEFF');
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute('content', bg));
 }
 
-function toast(msg){ document.querySelectorAll('.toast').forEach(t=>t.remove()); const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2400); }
+function toast(msg){ document.querySelectorAll('.toast').forEach(t=>t.remove()); const t=document.createElement('div'); t.className='toast'; t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),4000); }
+const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* Signature: satu kunang-kunang terbang dari tombol ke lentera di bilah atas. */
+function celebrate(from, date){
+  const st = streakInfo(); const nama = (S.data.nama || '').trim().split(/\s+/)[0];
+  const msg = date === TODAY() ? `Malam ke-${st.cur}. Selamat tidur${nama ? ', ' + nama : ''}.` : 'Tercatat. Terima kasih sudah menyusul bacaan ini.';
+  const top = document.getElementById('streak');
+  setTimeout(() => { if (S.justDone === date) { S.justDone = null; } }, 2600);
+  if (calm() || !top) { const f = document.querySelector('.fin'); if (f) f.scrollIntoView({ block: 'center' }); toast(msg); return; }
+  const fin = document.querySelector('.fin-art'); if (fin) fin.closest('.fin').scrollIntoView({ block: 'center' });
+  const a = (fin || document.body).getBoundingClientRect(); const b = top.getBoundingClientRect();
+  const x0 = (fin ? a.left + a.width / 2 : from.left + from.width / 2), y0 = (fin ? a.top + a.height * .45 : from.top);
+  const dx = b.left + 12 - x0, dy = b.top + 14 - y0;
+  const f = document.createElement('div'); f.className = 'firefly'; f.style.left = x0 + 'px'; f.style.top = y0 + 'px'; document.body.appendChild(f);
+  f.animate([
+    { transform: 'translate(0,0) scale(.4)', opacity: 0 },
+    { transform: `translate(${dx * .25 - 40}px, ${dy * .3}px) scale(1)`, opacity: 1, offset: .25 },
+    { transform: `translate(${dx * .6 + 30}px, ${dy * .65}px) scale(1)`, opacity: 1, offset: .6 },
+    { transform: `translate(${dx}px, ${dy}px) scale(.5)`, opacity: .2 }
+  ], { duration: 1100, easing: 'cubic-bezier(.2,.8,.2,1)', delay: 450 }).finished.then(() => {
+    f.remove(); top.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    toast(msg);
+  }).catch(() => f.remove());
+  burst(x0, y0);
+}
 function burst(x,y){
-  const cs=getComputedStyle(document.documentElement); const cols=['--moon','--pink','--mint','--lilac'].map(v=>cs.getPropertyValue(v).trim());
-  for(let i=0;i<14;i++){ const s=document.createElement('div'); s.className='burst';
+  const cs=getComputedStyle(document.documentElement); const cols=['--lamp','--plum','--lamp','--cream'].map(v=>cs.getPropertyValue(v).trim());
+  for(let i=0;i<10;i++){ const s=document.createElement('div'); s.className='burst';
     s.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="${cols[i%4]}"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>`;
     const a=Math.random()*Math.PI*2, d=60+Math.random()*90; s.style.left=x+'px'; s.style.top=y+'px';
     s.style.setProperty('--dx',Math.cos(a)*d+'px'); s.style.setProperty('--dy',Math.sin(a)*d-40+'px'); document.body.appendChild(s); setTimeout(()=>s.remove(),1100); }
@@ -708,10 +782,12 @@ document.addEventListener('click', e => {
   const a = t.dataset.act;
   if (a === 'start') { const n = document.getElementById('nama'); if (n) S.data.nama = n.value.trim(); S.data.welcomed = true; saveState(); render(); return; }
   if (a === 'read') {
-    const b = t.getBoundingClientRect(); burst(b.left+b.width/2, b.top);
-    S.data.read[t.dataset.date] = { on: TODAY(), at: new Date().toISOString() }; saveState(); render();
-    const st = streakInfo(); toast(st.today ? `Tercatat. Streak ${st.cur} malam.` : 'Tercatat sebagai bacaan susulan.'); return;
+    const from = t.getBoundingClientRect(); const date = t.dataset.date;
+    S.data.read[date] = { on: TODAY(), at: new Date().toISOString() }; S.justDone = date; saveState(); render();
+    celebrate(from, date); return;
   }
+  if (a === 'tobaca') { const el = document.getElementById('baca'); if (el) el.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'start' }); return; }
+  if (t.dataset.fs) { S.data.fs = Math.max(17, Math.min(21, (S.data.fs || 19) + 2 * Number(t.dataset.fs))); saveState(); render(); return; }
   if (a === 'export') { exportJournal(); return; }
   if (t.dataset.authmode) { S.authMode = t.dataset.authmode; S.authErr = ''; S.authInfo = ''; render(); return; }
   if (a === 'offline') { S.data.offline = true; lsSave(); render(); return; }
@@ -741,7 +817,16 @@ document.addEventListener('keydown', e => {
   const n = e.target.closest && e.target.closest('[data-node]');
   if (n && (e.key==='Enter'||e.key===' ')) { e.preventDefault(); S.mapSel = +n.dataset.node; render(); }
 });
-window.addEventListener('hashchange', () => { render(); window.scrollTo(0,0); });
+window.addEventListener('hashchange', () => { render(); window.scrollTo(0,0); const h = document.querySelector('#app h1'); if (h) { h.setAttribute('tabindex','-1'); h.focus({ preventScroll: true }); } });
+/* Di halaman baca, menu bawah menyingkir saat menggulir ke bawah dan kembali saat menggulir ke atas. */
+let lastY = 0;
+window.addEventListener('scroll', () => {
+  const y = window.scrollY, nav = document.querySelector('nav.bottom');
+  if (!nav) return;
+  if (cur() !== 'malam' || y < 360 || y < lastY - 4) nav.classList.remove('away');
+  else if (y > lastY + 4) nav.classList.add('away');
+  lastY = y;
+}, { passive: true });
 
 /* ---------- start ---------- */
 /* ---------- PWA & notifikasi ---------- */

@@ -21,9 +21,11 @@ self.addEventListener('notificationclick', event => {
 });
 
 /* ---------- cache offline ---------- */
-const CACHE = 'lentera-v1';
+const CACHE = 'lentera-v2';
 const SHELL = ['/', '/index.html', '/style.css', '/app.js', '/lib/streak.js', '/supabase-config.js', '/manifest.webmanifest',
-  '/data/alkitab.json', '/data/rencana.json', '/data/linimasa.json', '/data/glosarium.json', '/icons/icon-192.png'];
+  '/data/alkitab.json', '/data/rencana.json', '/data/linimasa.json', '/data/glosarium.json', '/icons/icon-192.png',
+  '/fonts/literata-latin-opsz-normal.woff2', '/fonts/literata-latin-opsz-italic.woff2', '/fonts/literata-latin-ext-opsz-normal.woff2', '/fonts/literata-latin-ext-opsz-italic.woff2',
+  '/fonts/nunito-latin-wght-normal.woff2', '/fonts/nunito-latin-ext-wght-normal.woff2', '/fonts/fraunces-latin-soft-normal.woff2'];
 
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
