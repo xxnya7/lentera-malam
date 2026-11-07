@@ -227,13 +227,13 @@ function renderChrome(){
 function vLogin(){
   const m = S.authMode;
   const title = m === 'daftar' ? 'Buat akun' : m === 'lupa' ? 'Atur ulang kata sandi' : m === 'baru' ? 'Kata sandi baru' : 'Selamat datang kembali';
-  const lead = m === 'daftar' ? 'Supaya lentera Anda ikut ke perangkat mana pun.' : m === 'lupa' ? 'Kami kirim tautan atur ulang ke email Anda.' : m === 'baru' ? 'Buat kata sandi baru untuk akun Anda.' : 'Masuk untuk melanjutkan bacaan malam ini.';
+  const lead = m === 'daftar' ? 'Supaya lenteramu ikut ke mana pun kamu membaca.' : m === 'lupa' ? 'Tautan untuk atur ulang kami kirim ke email kamu.' : m === 'baru' ? 'Buat kata sandi baru, yang kali ini gampang kamu ingat.' : 'Masuk dulu, lalu kita lanjut baca malam ini.';
   const err = S.authErr ? 'auth-err' : '';
   return `<div class="au">
     <header class="au-sky">${nightSky()}<div class="au-owl">${owl(S.authErr ? 'worried' : 'awake', 104)}</div>
       <h1 class="au-h">${title}</h1><p class="au-lead">${lead}</p></header>
     <form class="ws-panel au-form" id="authform" novalidate>
-      ${S.cloudDown ? `<p class="au-info au-warn" role="status">${ic('sinkron')}<span>Layanan akun sedang tidak bisa dihubungi. Anda tetap bisa membaca tanpa akun; data disimpan di perangkat ini dan bisa disambungkan ke akun nanti.</span></p>` : ''}
+      ${S.cloudDown ? `<p class="au-info au-warn" role="status">${ic('sinkron')}<span>Layanan akun sedang susah dihubungi. Kamu tetap bisa membaca tanpa akun. Datanya disimpan di HP ini dulu, dan bisa disambungkan ke akun nanti.</span></p>` : ''}
       ${S.authInfo ? `<p class="au-info" role="status">${ic('notifications')}<span>${esc(S.authInfo)}</span></p>` : ''}
       ${m !== 'baru' ? `<label class="field-l" for="email">Email</label>
       <input class="ws-input" id="email" type="email" autocomplete="email" inputmode="email" required placeholder="nama@email.com" ${err ? `aria-invalid="true" aria-describedby="${err}"` : ''}>` : ''}
@@ -248,17 +248,17 @@ function vLogin(){
     <button class="btn-text au-skip" data-act="offline">${ic('lock')}Lanjut tanpa akun (hanya di perangkat ini)</button>
   </div>`;
 }
-const AUTH_ERR = [[/invalid login credentials/i,'Email atau kata sandi salah.'],[/email not confirmed/i,'Email belum dikonfirmasi. Buka tautan konfirmasi di email Anda.'],[/already registered|already exists/i,'Email ini sudah terdaftar. Silakan masuk.'],[/password should be at least/i,'Kata sandi minimal 6 karakter.'],[/invalid.*email|unable to validate email/i,'Format email tidak valid.'],[/rate limit|too many/i,'Terlalu banyak percobaan. Coba lagi beberapa menit lagi.'],[/fetch|network|load failed/i,'Layanan akun tidak terjangkau. Periksa koneksi internet, lalu coba lagi.']];
-const authMsg = e => { const m = String((e && e.message) || ''); const hit = AUTH_ERR.find(([re]) => re.test(m)); return hit ? hit[1] : 'Terjadi kesalahan. Coba lagi.'; };
+const AUTH_ERR = [[/invalid login credentials/i,'Email atau kata sandinya belum cocok. Coba cek lagi pelan-pelan.'],[/email not confirmed/i,'Email kamu belum dikonfirmasi. Buka tautan konfirmasi di kotak masuk, lalu coba masuk lagi.'],[/already registered|already exists/i,'Email ini sudah punya akun. Langsung masuk saja, ya.'],[/password should be at least/i,'Kata sandinya minimal 6 karakter.'],[/invalid.*email|unable to validate email/i,'Sepertinya ada yang keliru di penulisan email. Cek lagi, ya.'],[/rate limit|too many/i,'Kebanyakan percobaan. Istirahat sebentar, lalu coba lagi beberapa menit lagi.'],[/fetch|network|load failed/i,'Layanan akun belum terjangkau. Cek koneksi internetmu, lalu coba lagi.']];
+const authMsg = e => { const m = String((e && e.message) || ''); const hit = AUTH_ERR.find(([re]) => re.test(m)); return hit ? hit[1] : 'Ada yang tersandung. Coba sekali lagi, ya.'; };
 async function submitAuth(){
   const email = (document.getElementById('email')?.value || '').trim(); const pw = document.getElementById('password')?.value || '';
   S.authErr = ''; S.authInfo = ''; S.authBusy = true; render();
   try {
     if (S.authMode === 'daftar') {
       const r = must(await sb.auth.signUp({ email, password: pw, options: { emailRedirectTo: location.origin } }));
-      if (!r.data.session) { S.authMode = 'masuk'; S.authInfo = 'Akun dibuat. Buka tautan konfirmasi yang dikirim ke email Anda, lalu masuk di sini.'; }
+      if (!r.data.session) { S.authMode = 'masuk'; S.authInfo = 'Akunmu sudah dibuat. Buka tautan konfirmasi di email kamu, lalu masuk di sini.'; }
     }
-    else if (S.authMode === 'lupa') { must(await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin })); S.authMode = 'masuk'; S.authInfo = 'Tautan atur ulang kata sandi sudah dikirim ke email Anda.'; }
+    else if (S.authMode === 'lupa') { must(await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin })); S.authMode = 'masuk'; S.authInfo = 'Tautan atur ulang kata sandi sudah terkirim. Cek email kamu, termasuk folder spam.'; }
     else if (S.authMode === 'baru') { must(await sb.auth.updateUser({ password: pw })); S.recovery = false; S.authMode = 'masuk'; toast('Kata sandi baru tersimpan'); }
     else must(await sb.auth.signInWithPassword({ email, password: pw }));
   } catch(e){ S.authErr = authMsg(e); }
@@ -271,24 +271,24 @@ function vWelcome(){
   const dots = `<ol class="wl-dots" aria-label="Langkah ${step + 1} dari 3">${[0,1,2].map(i => `<li class="${i === step ? 'on' : i < step ? 'done' : ''}"></li>`).join('')}</ol>`;
   const sky = `<div class="wl-sky">${nightSky()}<div class="wl-owl">${owl(step === 2 ? 'happy' : 'awake', 132)}</div></div>`;
   if (step === 0) return `<div class="wl">${sky}${dots}
-    <h1 class="wl-h">Halo, saya Lentera.</h1>
+    <h1 class="wl-h">Halo, aku Lentera.</h1>
     <div class="wl-talk">
-      <p>Saya akan menemani Anda membaca Alkitab satu perikop setiap malam, bergantian antarjenis kitab, dengan teks AYT lengkap. Tanpa tenggat: besok malam kita lanjut dari bacaan berikutnya.</p>
-      <p>Setiap malam ada renungan dengan sumber yang bisa diperiksa, dan jurnal refleksi pribadi yang tersimpan.</p>
-      <p>Setiap malam Anda membaca, satu kunang-kunang masuk ke lentera Anda.</p>
+      <p>Aku akan menemanimu membaca Alkitab, satu perikop setiap malam, bergantian antarjenis kitab dengan teks AYT lengkap. Tidak ada tenggat. Besok malam kita lanjut dari bacaan berikutnya.</p>
+      <p>Setiap bacaan ditemani renungan yang sumbernya bisa kamu cek, dan jurnal pribadi untuk menulis apa yang kamu renungkan.</p>
+      <p>Setiap malam kamu membaca, satu kunang-kunang masuk ke lenteramu.</p>
     </div>
     <div class="wl-act"><button class="btn-primary" data-wstep="1">Kenalan dulu</button><button class="btn-text" data-act="start">Lewati</button></div></div>`;
   if (step === 1) return `<div class="wl">${sky}${dots}
-    <h1 class="wl-h">Saya panggil Anda siapa?</h1>
+    <h1 class="wl-h">Aku panggil kamu siapa?</h1>
     <div class="ws-panel wl-form">
       <label class="field-l" for="nama">Nama panggilan</label>
       <input class="ws-input" id="nama" autocomplete="given-name" placeholder="Mis. Anya" value="${esc(S.data.nama || '')}">
-      <p class="ac-txt">${signed ? `Masuk sebagai ${esc(S.user.email)}. Progres, jurnal, dan pengaturan tersimpan di akun ini.` : 'Anda memakai mode tanpa akun. Progres hanya tersimpan di perangkat ini.'}</p>
+      <p class="ac-txt">${signed ? `Masuk sebagai ${esc(S.user.email)}. Progres, jurnal, dan pengaturan tersimpan di akun ini.` : 'Kamu memakai mode tanpa akun, jadi progresmu hanya tersimpan di HP ini.'}</p>
     </div>
     <div class="wl-act"><button class="btn-primary" data-wstep="2">Lanjut</button><button class="btn-text" data-wstep="0">Kembali</button></div></div>`;
   return `<div class="wl">${sky}${dots}
     <h1 class="wl-h">${S.data.nama ? `Siap, ${esc(S.data.nama.split(/\s+/)[0])}.` : 'Siap.'} Mau diingatkan setiap malam?</h1>
-    <div class="wl-talk"><p>Saya bisa mengirim pengingat lembut sekitar pukul 21.00 bila bacaan belum ditandai. Pengaturannya bisa diubah kapan saja di tab Akun.</p></div>
+    <div class="wl-talk"><p>Aku bisa mengetuk pelan sekitar pukul 21.00 kalau kamu belum membaca. Pengaturannya bisa diubah kapan saja di tab Akun.</p></div>
     ${signed ? `<div class="wl-act"><button class="btn-quiet" data-act="push">${ic('bell')}Nyalakan pengingat</button></div>` : ''}
     <div class="wl-act"><button class="btn-primary" data-act="start">${ic('moon')}Mulai membaca</button><button class="btn-text" data-wstep="1">Kembali</button></div></div>`;
 }
@@ -352,11 +352,11 @@ function vMalam(){
 
   /* ---- Zona Main: kepala malam ini ---- */
   let note = '';
-  if (past) note = `<p class="tn-note">${ic('clock')}<span>Anda sedang membuka bacaan ${fmtDate(past)}.</span><button class="btn-text" data-act="today">Kembali ke malam ini</button></p>`;
-  else if (!done && st.dim) note = `<p class="tn-note">${ic(flameIcon(1))}<span>Lentera Anda sedang redup. Satu bacaan malam ini menyalakannya lagi, dan satu bacaan tambahan membantu memulihkan streak ${st.streak} malam Anda. Masih ada ${dayDiff(night, st.deadline) + 1} malam untuk itu.</span></p>`;
-  else if (!done && st.restarted && st.restarted >= addDays(night, -1) && st.streak === 0) note = `<p class="tn-note">${ic(flameIcon(1))}<span>Lentera Anda menyala lagi mulai malam ini. ${unitsDone()} bacaan dan ${fireflies} kunang-kunang Anda tetap tersimpan.</span></p>`;
-  else if (!done && st.streak > 0) note = `<p class="tn-note">${ic(flameIcon(st.streak))}<span>Lentera Anda menyala ${st.streak} malam berturut-turut. Satu bacaan sudah cukup untuk malam ini.</span></p>`;
-  else if (!done && !fireflies) note = `<p class="tn-note">${ic(flameIcon(0))}<span>Mulai dari satu bacaan saja.</span></p>`;
+  if (past) note = `<p class="tn-note">${ic('clock')}<span>Kamu sedang membuka bacaan ${fmtDate(past)}.</span><button class="btn-text" data-act="today">Kembali ke malam ini</button></p>`;
+  else if (!done && st.dim) note = `<p class="tn-note">${ic(flameIcon(1))}<span>Lenteramu sedang redup, belum padam. Satu bacaan malam ini menyalakannya lagi. Kalau masih ada tenaga, satu bacaan tambahan ikut memulihkan streak ${st.streak} malammu. Waktunya masih ${dayDiff(night, st.deadline) + 1} malam, jadi santai saja.</span></p>`;
+  else if (!done && st.restarted && st.restarted >= addDays(night, -1) && st.streak === 0) note = `<p class="tn-note">${ic(flameIcon(1))}<span>Lenteramu menyala lagi mulai malam ini. ${unitsDone()} bacaan dan ${fireflies} kunang-kunang yang sudah terkumpul tetap aman.</span></p>`;
+  else if (!done && st.streak > 0) note = `<p class="tn-note">${ic(flameIcon(st.streak))}<span>Lenteramu sudah menyala ${st.streak} malam berturut-turut. Malam ini, satu bacaan sudah cukup.</span></p>`;
+  else if (!done && !fireflies) note = `<p class="tn-note">${ic(flameIcon(0))}<span>Mulai dari satu bacaan saja. Pelan-pelan juga sampai.</span></p>`;
   const title = past ? `Bacaan ${fmtShort(past)}` : (nama ? `Selamat malam, ${esc(nama)}` : 'Selamat malam');
   const header = `
   <header class="tn">
@@ -368,7 +368,7 @@ function vMalam(){
     </div>
     <div class="tn-owl ${S.fxPeek ? 'peek' : ''}">${owl(done ? 'asleep' : 'sleepy', 104)}</div>
     <h1 class="tn-hello">${title}</h1>
-    <p class="tn-line">${past ? `${refsOf(S.data.nights[past])}.` : done ? 'Bacaan malam ini sudah selesai. Selamat beristirahat.' : `Malam ini ${unitRef(first)}, sekitar ${readMinutes(first, dv, deep)} menit.`}</p>
+    <p class="tn-line">${past ? `${refsOf(S.data.nights[past])}.` : done ? 'Bacaan malam ini sudah beres. Selamat beristirahat.' : `Malam ini ${unitRef(first)}, sekitar ${readMinutes(first, dv, deep)} menit.`}</p>
     ${done ? '' : `<button class="btn-primary" data-act="tobaca">${ic('book')}Mulai baca</button>`}
     ${note}
   </header>`;
@@ -396,8 +396,8 @@ function vMalam(){
 
   let devo = '', bonus = '';
   if (dv === undefined || S.devoLoading[id]) devo = `<div class="rd-loading" role="status">${owl('reading', 72)}<div class="rd-skel" aria-label="Memuat renungan"><i></i><i></i><i></i><i></i></div></div>`;
-  else if (dv === 'timeout') devo = `<div class="rd-empty">${owl(navigator.onLine === false ? 'offline' : 'worried', 72)}<p><b>${navigator.onLine === false ? 'Sedang tanpa sinyal.' : 'Renungan belum dapat dimuat.'}</b> Periksa koneksi Anda. Bacaan Alkitab di atas tetap bisa dibaca.</p></div>`;
-  else if (!dv) devo = `<div class="rd-empty">${owl('sleepy', 72)}<p><b>Renungan untuk bacaan ini sedang disiapkan.</b> Bacalah perikopnya, lalu tuliskan refleksi Anda di bawah.</p></div>`;
+  else if (dv === 'timeout') devo = `<div class="rd-empty">${owl(navigator.onLine === false ? 'offline' : 'worried', 72)}<p><b>${navigator.onLine === false ? 'Sinyalnya sedang hilang.' : 'Renungannya belum mau muncul.'}</b> Cek koneksimu sebentar. Bacaan Alkitab di atas tetap bisa dibaca.</p></div>`;
+  else if (!dv) devo = `<div class="rd-empty">${owl('sleepy', 72)}<p><b>Renungan untuk bacaan ini masih ditulis.</b> Sambil menunggu, baca perikopnya dan tulis apa yang kamu tangkap di jurnal di bawah.</p></div>`;
   else {
     devo = `
   <section class="rd-sec t-plum" aria-labelledby="kisahh">
@@ -433,10 +433,10 @@ function vMalam(){
   const journal = `
   <section class="rd-sec journal t-lamp" aria-labelledby="refh">
     <h2 class="rd-h" id="refh">${ic('pen')}Refleksi malam ini</h2>
-    <p class="rd-q">${ok && dv.tanya ? esc(dv.tanya) : 'Ayat apa dari bacaan malam ini yang paling menyentuh Anda, dan mengapa?'}</p>
+    <p class="rd-q">${ok && dv.tanya ? esc(dv.tanya) : 'Ayat mana dari bacaan malam ini yang paling menyentuhmu, dan kenapa?'}</p>
     ${ok && dv.coba && deep ? `<p class="rd-try">${ic('check')}<span><b>Langkah konkret:</b> ${esc(dv.coba)}</span></p>` : ''}
     <label class="field-l" for="jurnal">Jurnal ${fmtShort(jd)}</label>
-    <textarea id="jurnal" data-date="${jd}" placeholder="Tuliskan refleksi Anda di sini…">${esc(S.journal[jd] || '')}</textarea>
+    <textarea id="jurnal" data-date="${jd}" placeholder="Tulis apa saja yang terlintas…">${esc(S.journal[jd] || '')}</textarea>
     <p class="saved" id="jsaved" aria-live="polite"></p>
   </section>`;
 
@@ -450,12 +450,12 @@ function vMalam(){
   <section class="fin blanket fin-done ${S.justDone === id ? 'just' : ''}" aria-labelledby="finh">${nightSky('sky-fin')}
     <div class="fin-art">${lan}<div class="fin-owl">${owl(S.justDone === id ? 'happy' : 'asleep', 76)}</div></div>
     <h2 class="fin-h" id="finh">${past ? 'Bacaan malam itu sudah selesai.' : `Malam ke-${st.streak}. Selamat tidur${nama ? ', ' + esc(nama) : ''}.`}</h2>
-    <p class="fin-p">${!past && S.justMended ? `Lentera Anda menyala penuh lagi. Streak ${S.justMended} malam tersambung kembali.` : `Lentera Anda kini berisi ${fireflies} kunang-kunang.`}</p>
+    <p class="fin-p">${!past && S.justMended ? `Lenteramu terang lagi. Streak ${S.justMended} malam tersambung kembali.` : `Sekarang ada ${fireflies} kunang-kunang di lenteramu.`}</p>
   </section>` : `
   <section class="fin blanket" aria-labelledby="finh">${nightSky('sky-fin')}
     <div class="fin-art">${lan}</div>
     <h2 class="fin-h" id="finh">Selesai membaca ${unitRef(first)}?</h2>
-    <p class="fin-p">Tandai bacaan ini, dan satu kunang-kunang lagi masuk ke lentera Anda.</p>
+    <p class="fin-p">Tandai bacaan ini, dan satu kunang-kunang lagi masuk ke lenteramu.</p>
     <button class="btn-primary" data-act="read" data-id="${id}" data-first="1">${ic('check')}Tandai sudah dibaca</button>
   </section>`;
 
@@ -463,13 +463,13 @@ function vMalam(){
   let more = '';
   if (done && second) {
     const owe = !past && !done2 && st.owed > 0;
-    const head2 = past ? `Juga dibaca malam itu: ${unitRef(second)}` : done2 ? `Bacaan kedua selesai: ${unitRef(second)}` : owe ? `Bacaan pemulihan: ${unitRef(second)}` : `Masih ingin membaca? ${unitRef(second)}`;
+    const head2 = past ? `Juga dibaca malam itu: ${unitRef(second)}` : done2 ? `Bacaan kedua selesai: ${unitRef(second)}` : owe ? `Bacaan pemulihan: ${unitRef(second)}` : `Masih kuat satu lagi? ${unitRef(second)}`;
     more = `<section class="rd-sec rd-more t-plum" aria-label="Bacaan kedua"><div class="rd-chaps">
       <details class="chap"><summary><span class="nm">${head2}</span><small>${minutes(second[4])} menit</small><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg></summary>
-      <div class="chaptext">${owe ? `<p class="rd-note">Membantu memulihkan streak ${st.streak} malam Anda. Boleh juga dibaca besok.</p>` : ''}${unitHTML(second)}
+      <div class="chaptext">${owe ? `<p class="rd-note">Bacaan ini ikut memulihkan streak ${st.streak} malammu. Kalau sudah mengantuk, besok juga boleh.</p>` : ''}${unitHTML(second)}
       ${past || done2 ? '' : `<button class="btn-quiet" data-act="read" data-id="${uid(second)}">${ic('check')}Tandai sudah dibaca</button>`}</div></details>
     </div></section>`;
-  } else if (done && !past && first[4] > LONG) more = `<p class="rd-note rd-more-note">Bacaan ini cukup panjang. Satu bacaan sudah cukup untuk malam ini.</p>`;
+  } else if (done && !past && first[4] > LONG) more = `<p class="rd-note rd-more-note">Bacaan malam ini lumayan panjang, jadi satu saja sudah cukup.</p>`;
 
   return `${header}
   <article class="rd" id="baca" style="--fs-read:${(S.data.fs || 19) + 1}px" aria-label="Bacaan dan renungan">
@@ -486,12 +486,12 @@ function vArsip(){
   const { first } = tonight(A.q, S.data.done || {}, TODAY());
   const i0 = first ? A.q.indexOf(first) : -1;
   const nextUp = i0 < 0 ? [] : A.q.slice(i0).filter(u => !S.data.done[uid(u)]).slice(0, 5);
-  return `${head('Riwayat bacaan', 'Malam-malam yang sudah Anda baca, dan bacaan berikutnya.')}
+  return `${head('Riwayat bacaan', 'Malam-malam yang sudah kamu baca, dan apa yang menunggu berikutnya.')}
     <ul class="ws-list">${nights.map(d => { const ids = (S.data.nights || {})[d] || []; return `<li>
       <button class="ws-row ${ids.length ? 'st-read' : ''}" data-open="${d}">
         <span class="ws-ic" aria-hidden="true">${ids.length ? ic('check') : ic('pen')}</span>
-        <span class="ws-meta"><b>${fmtDate(d)}</b><span>${ids.length ? refsOf(ids) : 'Jurnal tanpa bacaan yang ditandai'}</span>${S.journal[d] ? `<span class="ws-tag">${ic('pen')}Ada jurnal</span>` : ''}</span>
-      </button></li>`; }).join('') || `<li class="ws-empty">${owl('sleepy', 64)}<p>Belum ada malam yang tercatat. Malam pertama Anda akan muncul di sini.</p></li>`}
+        <span class="ws-meta"><b>${fmtDate(d)}</b><span>${ids.length ? refsOf(ids) : 'Hanya jurnal, tanpa bacaan yang ditandai'}</span>${S.journal[d] ? `<span class="ws-tag">${ic('pen')}Ada jurnal</span>` : ''}</span>
+      </button></li>`; }).join('') || `<li class="ws-empty">${owl('sleepy', 64)}<p>Masih kosong. Malam pertamamu nanti muncul di sini.</p></li>`}
     </ul>
     ${nextUp.length ? `<section class="ws-group" aria-labelledby="nexth"><h2 class="ws-h" id="nexth">Berikutnya di antrean</h2>
       <ul class="ws-list">${nextUp.map((u, k) => `<li><div class="ws-row ${k ? 'st-lock' : 'st-today'}"><span class="ws-ic" aria-hidden="true">${k ? ic('book') : ic('moon')}</span><span class="ws-meta"><b>${unitRef(u)}</b><span>${unitTitle(u) || esc(A.g[u[5]])}, sekitar ${minutes(u[4])} menit</span></span>${k ? '' : `<span class="ws-state">${streakInfo().litTonight ? 'Besok' : 'Malam ini'}</span>`}</div></li>`).join('')}</ul></section>` : ''}
@@ -503,7 +503,7 @@ function vKaitan(){
   const { first } = shownPair(); const id = uid(first);
   loadDevo(id); const dv = S.devo[id];
   const back = `<button class="btn-quiet" data-go="malam">${ic('moon')}Kembali ke bacaan</button>`;
-  if (!dv || !dv.kaitan) return `${head('Kaitan antar ayat', unitRef(first))}<div class="ws-empty">${owl('sleepy', 72)}<p><b>Peta kaitan belum tersedia.</b> Peta muncul bersama renungan bacaan ini.</p></div>${back}`;
+  if (!dv || !dv.kaitan) return `${head('Kaitan antar ayat', unitRef(first))}<div class="ws-empty">${owl('sleepy', 72)}<p><b>Petanya belum ada.</b> Peta kaitan muncul kalau renungan untuk bacaan ini sudah siap.</p></div>${back}`;
   const cx=170, cy=150, pos=[[62,58],[278,58],[170,262]], tone=['--plum','--sage','--skyblue'];
   const sel = S.mapSel; const fk = dv.fokus;
   const lines = dv.kaitan.map((l,i)=>`<path class="mp-line ${sel===i?'on':''}" d="M${cx} ${cy} L ${pos[i][0]} ${pos[i][1]}" style="stroke:var(${tone[i]})"/>`).join('');
@@ -555,16 +555,16 @@ function vProgres(){
   for (let d=1; d<=dim; d++){ const s = `${y}-${pad(m+1)}-${pad(d)}`; const r = lit.has(s); cells += `<div class="pg-d ${r?'r':''} ${s===t?'t':''}" aria-label="${d} ${BULAN[m]}${r ? ', sudah membaca' : ''}">${r ? ic('check') : d}</div>`; }
   const shelf = (from, to, title) => `<h3 class="pg-shelf-h">${title}</h3><ul class="pg-shelf">${books.slice(from, to).map(b => `<li><button class="pg-book ${b.r===b.tot?'done':''}" data-bk="${b.i}" style="--fill:${(b.part/b.tot*100).toFixed(1)}%" aria-label="${esc(b.n)}: ${b.r} dari ${b.tot} pasal"><span>${esc(b.a)}</span></button></li>`).join('')}</ul>`;
   const ms = milestones(k, books.some(b => b.r === b.tot));
-  const streakLine = st.dim ? `Lentera sedang redup. ${st.owed} bacaan tambahan memulihkan streak ${st.streak} malam, paling lambat ${fmtShort(st.deadline)}.`
-    : st.streak ? `Menyala ${st.streak} malam berturut-turut. Terpanjang ${st.best} malam.`
-    : st.restarted ? 'Streak dimulai lagi malam ini. Kunang-kunang dan bacaan Anda tetap tersimpan.' : 'Streak dimulai saat Anda menandai bacaan pertama.';
-  return `${head('Progres', 'Seluruh Alkitab, satu bacaan demi satu bacaan.')}
+  const streakLine = st.dim ? `Lentera sedang redup. ${st.owed} bacaan tambahan memulihkan streak ${st.streak} malammu, sampai ${fmtShort(st.deadline)}. Satu per malam, santai saja.`
+    : st.streak ? `Menyala ${st.streak} malam berturut-turut. Rekor terpanjangmu ${st.best} malam.`
+    : st.restarted ? 'Streak mulai lagi dari malam ini. Kunang-kunang dan bacaanmu tetap aman.' : 'Streak mulai menyala begitu kamu menandai bacaan pertama.';
+  return `${head('Progres', 'Seluruh Alkitab, sedikit demi sedikit, tanpa buru-buru.')}
     <section class="pg-hero" aria-labelledby="pgh">${nightSky('sky-pg')}
       <div class="pg-lantern ${S.fxGlow ? 'glow' : ''}">${lantern(k, 128, {cls:'ln-big', id:'p', dim: st.dim})}</div>
       <div class="pg-hero-t">
         <h2 class="pg-stat" id="pgh">${n}<span> pasal sudah dibaca</span></h2>
         <p>Putaran ke-${round}${pct >= 1 ? `, ${Math.floor(pct)}% dari seluruh Alkitab` : n ? ', baru dimulai' : ''}.</p>
-        <p>${k ? `Lentera Anda berisi ${k} kunang-kunang, satu untuk setiap malam Anda membaca.` : 'Lentera Anda menunggu kunang-kunang pertama malam ini.'}</p>
+        <p>${k ? `Ada ${k} kunang-kunang di lenteramu, satu untuk setiap malam kamu membaca.` : 'Lenteramu sedang menunggu kunang-kunang pertamanya.'}</p>
         <p class="pg-streak">${streakLine}</p>
       </div>
     </section>
@@ -573,7 +573,7 @@ function vProgres(){
       <p class="pg-legend"><span>${moonPhase('full')}Sudah dibaca</span><span>${moonPhase('crescent')}Malam ini</span><span>${moonPhase('mended')}Dipulihkan</span><span>${moonPhase('new')}Tidak membaca</span></p>
     </section>
     <section class="ws-panel" aria-labelledby="rakh"><h2 class="rd-h t-sky" id="rakh">${ic('progres')}Rak Alkitab</h2>
-      <p class="pg-lead">${n ? `${n} dari 1.189 pasal sudah dibaca.${cmp ? ` Sudah lebih panjang dari seluruh kitab ${esc(cmp.n)} (${cmp.tot} pasal).` : ''}` : 'Rak masih kosong. Setiap pasal yang dibaca mengisi satu kitab sedikit demi sedikit.'}</p>
+      <p class="pg-lead">${n ? `${n} dari 1.189 pasal sudah dibaca.${cmp ? ` Sudah lebih panjang dari seluruh kitab ${esc(cmp.n)} (${cmp.tot} pasal).` : ''}` : 'Raknya masih kosong. Setiap pasal yang kamu baca mengisi kitabnya sedikit demi sedikit.'}</p>
       ${shelf(0, 39, 'Perjanjian Lama')}${shelf(39, 66, 'Perjanjian Baru')}
     </section>
     <section class="ws-panel cloud-top" aria-labelledby="stkh"><h2 class="rd-h t-plum" id="stkh">${ic('pencapaian')}Pencapaian</h2>
@@ -589,15 +589,15 @@ function vAkun(){
     <section class="ws-panel ac-who" aria-labelledby="ach">
       <div class="ac-owl">${owl('awake', 64)}</div>
       ${u.signedIn
-        ? `<h2 class="ac-name" id="ach">${nama ? esc(nama) : 'Akun Anda'}</h2><p class="ac-mail">${esc(u.email)}</p>
+        ? `<h2 class="ac-name" id="ach">${nama ? esc(nama) : 'Akunmu'}</h2><p class="ac-mail">${esc(u.email)}</p>
            <p class="ac-sync ${S.sync==='cloud'?'ok':'local'}">${ic(S.sync==='cloud'?'cloud':'shield')}${S.sync==='cloud'?'Tersinkron ke akun':'Menyimpan di perangkat'}</p>
-           <p class="ac-txt">Progres, streak, mode bacaan, dan jurnal disimpan secara pribadi di akun ini dan hanya dapat dibaca oleh Anda.</p>
+           <p class="ac-txt">Progres, streak, mode bacaan, dan jurnal disimpan di akun ini, dan hanya kamu yang bisa membacanya.</p>
            <button class="btn-quiet" data-act="logout">${ic('close')}Keluar</button>`
         : S.cloudDown ? `<h2 class="ac-name" id="ach">Layanan akun terputus</h2><p class="ac-mail">Bacaan, streak, dan jurnal tetap tersimpan di perangkat ini.</p>
-           <p class="ac-txt">Layanan akun sedang tidak bisa dihubungi, mungkin karena koneksi lambat atau terputus. Begitu tersambung lagi, data di perangkat ini akan digabung ke akun Anda.</p>
+           <p class="ac-txt">Layanan akun sedang tidak bisa dihubungi. Mungkin koneksinya lambat atau terputus. Begitu tersambung lagi, data di HP ini digabung ke akunmu.</p>
            <button class="btn-primary" data-act="reload">${ic('cloud')}Sambungkan lagi</button>`
         : `<h2 class="ac-name" id="ach">Belum masuk</h2><p class="ac-mail">Progres tersimpan di peramban ini saja.</p>
-           <p class="ac-txt">Masuk dengan email agar progres tersimpan di akun dan tidak hilang saat cache dihapus atau ganti perangkat.</p>
+           <p class="ac-txt">Masuk dengan email supaya progresmu tidak ikut hilang saat cache dihapus atau saat ganti HP.</p>
            <button class="btn-primary" data-act="tologin">${ic('user')}Masuk atau buat akun</button>`}
     </section>
     <section class="ws-panel" aria-labelledby="bach"><h2 class="rd-h t-lamp" id="bach">${ic('book')}Membaca</h2>
@@ -621,7 +621,7 @@ function vAkun(){
           <button class="switch" role="switch" aria-checked="${S.data.notifMalam !== false}" aria-label="Pengingat malam" data-notifkind="notifMalam"></button></div>
         <button class="btn-text" data-act="push">${ic('notifications')}Daftarkan ulang perangkat ini</button>` : ''}
       </div>`
-        : `<p class="ac-txt">Masuk dengan akun terlebih dahulu untuk mengaktifkan notifikasi.</p>`}
+        : `<p class="ac-txt">Masuk dulu dengan akunmu untuk menyalakan notifikasi.</p>`}
     </section>
     <section class="ws-panel" aria-labelledby="jrnh"><h2 class="rd-h t-sky" id="jrnh">${ic('pen')}Jurnal</h2>
       <p class="ac-txt">${Object.values(S.journal).filter(t=>t&&t.trim()).length} catatan tersimpan.</p>
@@ -662,7 +662,7 @@ function searchResults(q){
   const ref = parseRef(q);
   if (ref){
     const ch = chapter(ref.b, ref.c).filter(v => ref.v1 == null || (v[0] >= ref.v1 && v[0] <= ref.v2));
-    if (!ch.length) return `<div class="ws-empty"><p><b>Ayat tidak ditemukan.</b> ${esc(bookName(ref.b))} ${ref.c} memiliki ${chapter(ref.b,ref.c).length} ayat.</p></div>`;
+    if (!ch.length) return `<div class="ws-empty"><p><b>Ayatnya tidak ketemu.</b> ${esc(bookName(ref.b))} ${ref.c} memiliki ${chapter(ref.b,ref.c).length} ayat.</p></div>`;
     return `<p class="sr-count">${esc(bookName(ref.b))} ${ref.c}${ref.v1?':'+ref.v1+(ref.v2!==ref.v1?'-'+ref.v2:''):''}. Ketuk ayat untuk menandai favorit.</p><ul class="sr-list">${ch.map(v => verseRow(ref.b, ref.c, v[0], v[1])).join('')}</ul>`;
   }
   if (q.length < 3) return `<p class="sr-count">Ketik minimal 3 huruf untuk mencari kata.</p>`;
@@ -670,7 +670,7 @@ function searchResults(q){
   for (let b = 0; b < BIBLE.length; b++) for (let c = 0; c < BIBLE[b].c.length; c++) for (const v of BIBLE[b].c[c]){
     if (v[1].toLowerCase().includes(needle)){ total++; if (out.length < 100) out.push([b, c+1, v[0], v[1]]); }
   }
-  if (!total) return `<div class="ws-empty">${owl('sleepy', 64)}<p><b>Tidak ada hasil untuk “${esc(q)}”.</b> Coba kata lain atau periksa ejaannya.</p></div>`;
+  if (!total) return `<div class="ws-empty">${owl('sleepy', 64)}<p><b>Tidak ada hasil untuk “${esc(q)}”.</b> Coba kata lain, atau cek lagi ejaannya.</p></div>`;
   const re = new RegExp(needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
   const hl = t => esc(t).replace(re, m => `<mark>${m}</mark>`);
   return `<p class="sr-count">${total.toLocaleString('id-ID')} ayat ditemukan${total > 100 ? ', menampilkan 100 pertama' : ''}.</p><ul class="sr-list">${out.map(r => verseRow(r[0], r[1], r[2], r[3], hl)).join('')}</ul>`;
@@ -703,7 +703,7 @@ function verseSheet(ref){
 }
 async function exportJournal(){
   const dates = Object.keys(S.journal).filter(d => S.journal[d] && S.journal[d].trim()).sort();
-  if (!dates.length){ toast('Belum ada jurnal untuk diekspor'); return; }
+  if (!dates.length){ toast('Jurnalnya masih kosong, belum ada yang bisa diekspor'); return; }
   let md = `# Jurnal Lentera Malam\n\nDiekspor ${fmtDate(TODAY())}\n`;
   for (const d of dates){
     const ids = (S.data.nights || {})[d] || []; const dv = ids[0] && S.devo[ids[0]];
@@ -755,7 +755,7 @@ function introHTML(x){
 }
 function introSheet(b){
   loadIntro(b); const x = INTRO[b];
-  sheet(`<h2 class="sh-h">Pengantar ${esc(bookName(b))}</h2>${x ? introHTML(x) : `<p class="sh-def">Pengantar kitab ini sedang disiapkan dan akan muncul sebelum kitab ini mulai dibaca.</p>`}`);
+  sheet(`<h2 class="sh-h">Pengantar ${esc(bookName(b))}</h2>${x ? introHTML(x) : `<p class="sh-def">Pengantar kitab ini masih ditulis, dan akan siap sebelum kamu mulai membacanya.</p>`}`);
 }
 function introCards(u){
   const b = u[0]; loadIntro(b); const x = INTRO[b];
@@ -770,7 +770,7 @@ function prevCard(u, dv){
   const title = unitTitle(prev);
   return `<section class="rd-sec t-plum" aria-labelledby="prevh">
     <h2 class="rd-h" id="prevh">${ic('rewind')}Sebelumnya di kitab ini</h2>
-    <p class="rd-note">${unitRef(prev)}${title ? `: ${title}` : ''}.${S.data.done[uid(prev)] ? '' : ' Bacaan ini masih menunggu di antrean.'}</p>
+    <p class="rd-note">${unitRef(prev)}${title ? `: ${title}` : ''}.${S.data.done[uid(prev)] ? '' : ' Bacaan ini masih menunggumu di antrean.'}</p>
     ${dv && dv.sebelumnya ? `<div class="rd-prose"><p>${glossLink(esc(dv.sebelumnya))}</p></div>` : ''}
     <button class="btn-quiet" data-unit="${uid(prev)}">${ic('book')}Baca ${unitRef(prev)}</button>
   </section>`;
@@ -815,7 +815,7 @@ function timelineHTML(){
   const f = shownPair().first; const cur = f ? eraOf(f[0], f[1]) : null;
   const counts = {}; Object.keys(S.data.done || {}).forEach(id => { const u = byId(id); const e = u && eraOf(u[0], u[1]); if (e) counts[e.id] = (counts[e.id]||0) + 1; });
   return `<section class="ws-panel" aria-labelledby="linh"><h2 class="rd-h t-ember" id="linh">${ic('clock')}Lini masa Alkitab</h2>
-    <p class="ac-txt">Tanggal adalah perkiraan; sebagian masih diperdebatkan para ahli. Bacaan Anda berpindah-pindah era karena pola rotasi.</p>
+    <p class="ac-txt">Tanggal adalah perkiraan; sebagian masih diperdebatkan para ahli. Bacaanmu berpindah-pindah zaman karena pola rotasi kitab.</p>
     <ol class="pg-tl">${LINI.eras.map(e => `<li class="${cur && cur.id===e.id ? 'now' : ''}"><span class="pg-tl-dot" aria-hidden="true"></span><div><b>${esc(e.n)}</b><p class="pg-tl-meta"><span>${esc(e.t)}</span>${counts[e.id] ? `<span>${counts[e.id]} bacaan</span>` : ''}${cur && cur.id===e.id ? `<span class="now-tag">Bacaan malam ini</span>` : ''}</p><p>${esc(e.d)}</p></div></li>`).join('')}</ol></section>`;
 }
 
@@ -832,7 +832,7 @@ function fx(){
     FX.add('malam');
     // Burung hantu mengintip sekali saat beranda dibuka.
     S.fxPeek = true; const o = document.querySelector('.tn-owl'); if (o) o.classList.add('peek');
-    // Bulan bergeser dari fase malam terakhir Anda membuka aplikasi ke fase malam ini.
+    // Bulan bergeser dari fase malam terakhir aplikasi dibuka ke fase malam ini.
     const t = TODAY(), last = lsGet('lentera-moon'); lsSet('lentera-moon', t);
     if (date === t && last && last < t && !calm()){
       const gap = Math.min(14, dayDiff(last, t)); let p0 = lunarPhase(addDays(t, -gap)), p1 = lunarPhase(t);
@@ -904,7 +904,7 @@ const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* Signature: satu kunang-kunang terbang dari tombol ke lentera di bilah atas. */
 function celebrate(from, date){
   const st = streakInfo(); const nama = (S.data.nama || '').trim().split(/\s+/)[0];
-  const msg = S.justMended ? `Lentera Anda menyala penuh lagi. Streak ${S.justMended} malam tersambung kembali.` : `Malam ke-${st.streak}. Selamat tidur${nama ? ', ' + nama : ''}.`;
+  const msg = S.justMended ? `Lenteramu terang lagi. Streak ${S.justMended} malam tersambung kembali.` : `Malam ke-${st.streak}. Selamat tidur${nama ? ', ' + nama : ''}.`;
   const top = document.getElementById('streak');
   setTimeout(() => { if (S.justDone === date) { S.justDone = null; S.justMended = 0; }
     // Setelah perayaan, burung hantu tertidur pelan-pelan.
@@ -971,7 +971,7 @@ document.addEventListener('click', e => {
   if (t.dataset.gl) { glossSheet(t.dataset.gl); return; }
   if (t.dataset.favtoggle) { const k = t.dataset.favtoggle; S.data.fav = S.data.fav || {}; if (S.data.fav[k]) delete S.data.fav[k]; else S.data.fav[k] = TODAY(); saveState(); closeSheet(); render(); toast(S.data.fav[k] ? 'Ditandai sebagai favorit' : 'Dihapus dari favorit'); return; }
   if (t.dataset.copy) { const [b,c,v] = t.dataset.copy.split(':').map(Number); const x = chapter(b,c).find(y=>y[0]===v); const txt = `${x[1]} (${bookName(b)} ${c}:${v}, AYT)`;
-    navigator.clipboard.writeText(txt).then(()=>toast('Ayat disalin')).catch(()=>toast('Tidak dapat menyalin di tampilan ini')); return; }
+    navigator.clipboard.writeText(txt).then(()=>toast('Ayat disalin')).catch(()=>toast('Belum bisa menyalin di tampilan ini')); return; }
   if (t.dataset.tab) { S.tabCari = t.dataset.tab; render(); return; }
   if (t.dataset.bk) { toast(t.getAttribute('aria-label').replace(':', ',') + ' sudah dibaca.'); return; }
   if (t.dataset.wstep) { const n = document.getElementById('nama'); if (n) S.data.nama = n.value.trim(); S.wStep = +t.dataset.wstep; render(); const h = document.querySelector('#app h1'); if (h) { h.setAttribute('tabindex','-1'); h.focus(); } return; }
@@ -985,7 +985,7 @@ document.addEventListener('click', e => {
     const after = streakInfo(); const mended = before.dim && !after.dim ? after.streak : 0;
     if (t.dataset.first) { S.justDone = id; S.justMended = mended; render(); celebrate(from, id); return; }
     render();
-    toast(mended ? `Lentera Anda menyala penuh lagi. Streak ${mended} malam tersambung kembali.` : before.owed > after.owed ? `Satu malam dipulihkan. Tinggal ${after.owed} lagi, boleh dilanjutkan besok.` : 'Tercatat. Selamat tidur.');
+    toast(mended ? `Lenteramu terang lagi. Streak ${mended} malam tersambung kembali.` : before.owed > after.owed ? `Satu malam dipulihkan. Tinggal ${after.owed} lagi, besok juga boleh.` : 'Tercatat. Selamat tidur.');
     return;
   }
   if (a === 'tobaca') { const el = document.getElementById('baca'); if (el) el.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'start' }); return; }
@@ -1046,13 +1046,13 @@ async function registerSW(){
 }
 const b64ToU8 = b => { const p = '='.repeat((4 - b.length % 4) % 4); const r = atob((b + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from([...r].map(c => c.charCodeAt(0))); };
 async function enablePush(){
-  if (!S.user.signedIn) { toast('Masuk terlebih dahulu'); return; }
+  if (!S.user.signedIn) { toast('Masuk dulu, ya'); return; }
   if (isIOS() && !isStandalone()) { toast('Pasang ke Layar Utama dulu, lalu buka dari ikonnya'); return; }
   if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) { toast('Perangkat atau peramban ini belum mendukung notifikasi web'); return; }
   S.pushBusy = true; render();
   try {
     const perm = await Notification.requestPermission();
-    if (perm !== 'granted') { toast('Izin notifikasi tidak diberikan'); return; }
+    if (perm !== 'granted') { toast('Izin notifikasinya belum diberikan'); return; }
     const reg = swReg || await registerSW(); await navigator.serviceWorker.ready;
     const { publicKey } = await fetch('/api/vapid-public').then(r => r.json());
     if (!publicKey) throw new Error('vapid-missing');
@@ -1065,7 +1065,7 @@ async function enablePush(){
     const json = sub.toJSON();
     must(await sb.from('push_subscriptions').upsert({ endpoint: json.endpoint, user_id: S.user.id, subscription: json, user_agent: navigator.userAgent.slice(0, 200) }));
     S.data.notif = true; saveState(); toast('Notifikasi aktif');
-  } catch(e) { toast(String(e && e.message).includes('vapid') ? 'Kunci notifikasi server belum diatur (lihat panduan bagian 4.6)' : 'Gagal mengaktifkan notifikasi. Coba lagi.'); }
+  } catch(e) { toast(String(e && e.message).includes('vapid') ? 'Kunci notifikasi server belum diatur (lihat panduan bagian 4.6)' : 'Notifikasinya belum berhasil dinyalakan. Coba lagi, ya.'); }
   finally { S.pushBusy = false; render(); }
 }
 
@@ -1085,7 +1085,7 @@ async function logout(){
   const uid = S.user.id;
   saveState(); await writing;
   try { if (uid) await syncJournals(uid); } catch(e) { S.sync = 'local'; }
-  if (S.sync !== 'cloud') { toast('Belum semua data tersinkron. Periksa koneksi, lalu coba Keluar lagi.'); return; }
+  if (S.sync !== 'cloud') { toast('Masih ada data yang belum tersimpan ke akun. Cek koneksimu, lalu coba Keluar lagi.'); return; }
   try { // perangkat ini berhenti menerima pengingat akun yang keluar
     const sub = swReg && await swReg.pushManager.getSubscription();
     if (sub) { await sb.from('push_subscriptions').delete().eq('endpoint', sub.endpoint); await sub.unsubscribe(); }
@@ -1141,6 +1141,6 @@ async function loadCloud(uid){
   try { const [l, g] = await Promise.all([fetch('/data/linimasa.json').then(r=>r.json()), fetch('/data/glosarium.json').then(r=>r.json())]); LINI = l; GLOS = g; glossInit(); } catch(e) {}
   BIBLE = bible; PLAN = plan; A = antrean;
   if (A) { UNIT = new Map(A.q.map(u => [uid(u), u])); const before = JSON.stringify(S.data); S.data = upgrade(S.data); if (JSON.stringify(S.data) !== before) saveState(); }
-  if (!BIBLE) { document.getElementById('app').innerHTML = `<div class="ws-empty">${owl(navigator.onLine === false ? 'offline' : 'worried', 72)}<p><b>Alkitab gagal dimuat.</b> Periksa koneksi lalu muat ulang halaman.</p></div>`; return; }
+  if (!BIBLE) { document.getElementById('app').innerHTML = `<div class="ws-empty">${owl(navigator.onLine === false ? 'offline' : 'worried', 72)}<p><b>Alkitabnya belum berhasil dimuat.</b> Cek koneksimu, lalu muat ulang halaman ini.</p></div>`; return; }
   render();
 })();

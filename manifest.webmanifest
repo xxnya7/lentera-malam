@@ -1,7 +1,7 @@
 {
   "name": "Lentera Malam",
   "short_name": "Lentera",
-  "description": "Renungan Alkitab harian sebelum tidur: seluruh Alkitab dalam satu tahun.",
+  "description": "Teman baca Alkitab sebelum tidur: satu perikop setiap malam, tanpa tenggat.",
   "lang": "id",
   "start_url": "/",
   "scope": "/",

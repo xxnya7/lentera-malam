@@ -3,7 +3,7 @@ self.addEventListener('push', event => {
   let d = {};
   try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data && event.data.text() }; }
   event.waitUntil(self.registration.showNotification(d.title || 'Lentera Malam', {
-    body: d.body || 'Renungan malam ini sudah siap.',
+    body: d.body || 'Bacaan malam ini sudah menunggumu.',
     icon: '/icons/icon-192.png',
     badge: '/icons/badge-96.png',
     tag: d.tag || 'lentera',

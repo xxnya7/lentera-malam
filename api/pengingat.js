@@ -32,8 +32,8 @@ export default async function handler(req, res) {
 
     const nama = (data.nama || '').split(' ')[0];
     const payload = JSON.stringify(st.dim
-      ? { title: 'Lentera Anda menunggu', body: `Satu bacaan malam ini menyalakannya lagi. Kalau sempat, satu bacaan tambahan memulihkan streak ${st.streak} malam Anda.`, tag: 'malam', link: '/' }
-      : { title: nama ? `Selamat malam, ${nama}` : 'Selamat malam', body: `${ref(first)} menunggu Anda, sekitar ${minutes(first[4])} menit. Satu bacaan sudah cukup.`, tag: 'malam', link: '/' });
+      ? { title: 'Lenteramu menunggu', body: `Satu bacaan malam ini menyalakannya lagi. Kalau sempat, satu bacaan tambahan ikut memulihkan streak ${st.streak} malammu.`, tag: 'malam', link: '/' }
+      : { title: nama ? `Selamat malam, ${nama}` : 'Selamat malam', body: `${ref(first)} sudah menunggumu, sekitar ${minutes(first[4])} menit. Satu bacaan saja sudah cukup.`, tag: 'malam', link: '/' });
 
     const { data: subs } = await sb.from('push_subscriptions').select('endpoint, subscription').eq('user_id', row.user_id);
     if (!subs || !subs.length) { skipped++; continue; }
