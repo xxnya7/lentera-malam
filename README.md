@@ -19,7 +19,6 @@ Panduan deploy lengkap ada di dokumen Word **Panduan Deploy Lentera Malam**.
 | `content/renungan/YYYY-MM-DD.json` | Renungan harian (ditambah setiap minggu) |
 | `content/kitab/<indeks>.json` | Pengantar kitab (0 = Kejadian … 65 = Wahyu) |
 | `api/pengingat.js` | Fungsi Vercel pengirim notifikasi (dipanggil Vercel Cron) |
-| `api/buat-vapid.js` | Membuat pasangan kunci VAPID sekali (nonaktif setelah `VAPID_PRIVATE_KEY` diisi) |
 | `api/vapid-public.js` | Menyediakan kunci publik VAPID ke aplikasi |
 | `vercel.json` | Jadwal cron dan header |
 
@@ -31,7 +30,7 @@ Panduan deploy lengkap ada di dokumen Word **Panduan Deploy Lentera Malam**.
 | `SUPABASE_SERVICE_ROLE_KEY` | Kunci service_role (rahasia, hanya di Vercel) |
 | `CRON_SECRET` | String acak panjang; Vercel otomatis mengirimnya ke fungsi cron |
 | `VAPID_SUBJECT` | `mailto:email-anda` |
-| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Dari `/api/buat-vapid` setelah deploy pertama, lalu Redeploy |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Sudah terpasang. Bila perlu kunci baru: `npx web-push generate-vapid-keys`, lalu Redeploy (semua perangkat harus mendaftar ulang) |
 
 ## Jadwal notifikasi (Vercel Hobby)
 
