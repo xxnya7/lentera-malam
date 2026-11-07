@@ -719,7 +719,7 @@ document.addEventListener('click', e => {
   if (t.dataset.authmode) { S.authMode = t.dataset.authmode; S.authErr = ''; S.authInfo = ''; render(); return; }
   if (a === 'offline') { S.data.offline = true; lsSave(); render(); return; }
   if (a === 'tologin') { S.data.offline = false; lsSave(); render(); return; }
-  if (a === 'logout') { sb.auth.signOut().then(() => { S.data = { read: {}, fav: {}, mode: 'mendalam', theme: S.data.theme, welcomed: false }; S.journal = {}; lsSave(); location.hash = ''; render(); }); return; }
+  if (a === 'logout') { logout(); return; }
   if (a === 'push') { enablePush(); return; }
   if (a === 'pushoff' || (a === 'pushtoggle' && S.data.notif)) { S.data.notif = false; saveState(); render(); toast('Notifikasi dimatikan'); return; }
   if (a === 'pushtoggle') { enablePush(); return; }
@@ -788,6 +788,16 @@ async function syncJournals(uid){
   lsSave();
 }
 
+// Keluar hanya setelah semua data terkirim; kalau gagal, data di perangkat tidak dihapus.
+async function logout(){
+  const uid = S.user.id;
+  saveState(); await writing;
+  try { if (uid) await syncJournals(uid); } catch(e) { S.sync = 'local'; }
+  if (S.sync !== 'cloud') { toast('Belum semua data tersinkron. Periksa koneksi, lalu coba Keluar lagi.'); return; }
+  await sb.auth.signOut();
+  S.data = { read: {}, fav: {}, mode: 'mendalam', theme: S.data.theme, welcomed: false }; S.journal = {}; S.journalAt = {}; lsSave(); location.hash = ''; render();
+}
+
 async function loadCloud(uid){
   try {
     const st = must(await sb.from('user_state').select('data').eq('user_id', uid).maybeSingle());
@@ -795,7 +805,7 @@ async function loadCloud(uid){
     if (cloud) { const localRead = S.data.read; S.data = Object.assign({}, S.data, cloud); S.data.read = Object.assign({}, localRead, cloud.read || {}); }
     await syncJournals(uid);
     S.sync = 'cloud';
-    if (!cloud && (S.data.welcomed || Object.keys(S.data.read).length)) saveState();
+    if (S.data.welcomed || Object.keys(S.data.read).length) saveState(); // kirim juga progres yang dibuat sebelum masuk
     applyTheme();
   } catch(e) { S.sync = 'local'; }
 }
