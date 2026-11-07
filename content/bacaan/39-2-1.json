@@ -1,0 +1,95 @@
+{
+ "id": "39-2-1",
+ "bacaan": {
+  "b": 39,
+  "c": 2,
+  "v1": 1,
+  "v2": 12
+ },
+ "tema": "Sukacita para pencari",
+ "fokus": {
+  "b": 39,
+  "c": 2,
+  "v1": 9,
+  "v2": 11,
+  "key": [
+   10
+  ]
+ },
+ "kisah": [
+  "Yesus lahir di Betlehem pada zaman Raja Herodes. Orang-orang Majus dari timur datang ke Yerusalem mencari “Raja orang Yahudi yang baru lahir” (ayat 2). Pertanyaan ini membuat Herodes gelisah. Ia adalah raja yang diangkat dengan dukungan Roma, dan sangat waspada terhadap siapa pun yang dapat mengancam takhtanya.",
+  "Para imam kepala dan ahli Taurat tahu jawabannya dari Kitab Suci: Mesias akan lahir di Betlehem, seperti dinubuatkan dalam Mikha 5:1. Ironisnya, mereka yang paling paham Kitab Suci tidak berangkat ke Betlehem, yang jaraknya hanya sekitar sembilan kilometer. Justru orang-orang asing dari jauh yang menempuh perjalanan untuk menyembah.",
+  "Ketika bintang itu kembali menuntun mereka, Matius menulis bahwa mereka “bersukacita dengan sukacita yang sangat besar” (ayat 10). Mereka tersungkur menyembah, lalu mempersembahkan emas, kemenyan, dan mur. Pemberian ini mengingatkan pada Yesaya 60:6 dan Mazmur 72:10–11, yang membayangkan bangsa-bangsa datang membawa persembahan kepada Raja Allah."
+ ],
+ "kata": [
+  {
+   "w": "magoi",
+   "l": "Yunani · “orang-orang Majus”",
+   "d": "Sebutan untuk golongan imam dan ahli dari Persia dan Media yang dikenal mempelajari bintang dan menafsirkan mimpi. Matius tidak menyebut jumlah mereka; angka tiga dalam tradisi gereja berasal dari tiga jenis persembahan."
+  },
+  {
+   "w": "proskyneō",
+   "l": "Yunani · “menyembah, sujud”",
+   "d": "Arti dasarnya adalah membungkuk atau sujud sebagai tanda hormat tertinggi. Kata ini muncul tiga kali dalam perikop ini (ayat 2, 8, 11): para Majus sungguh menyembah, sedangkan Herodes hanya berpura-pura ingin menyembah."
+  }
+ ],
+ "isu": null,
+ "hidup": [
+  "Perikop ini memperlihatkan dua cara menanggapi kabar tentang Yesus. Herodes merasa terancam dan berusaha mengendalikan keadaan. Para pemimpin agama tahu banyak tetapi tidak bergerak. Para Majus mencari dengan sungguh-sungguh, menempuh perjalanan jauh, dan akhirnya menyembah dengan sukacita.",
+  "Mengenal fakta tentang Yesus berbeda dengan datang kepada-Nya. Kebiasaan membaca firman setiap malam bukan sekadar menambah pengetahuan, tetapi undangan untuk datang mendekat, seperti para Majus. Sukacita mereka lahir bukan dari perjalanan yang mudah, tetapi dari menemukan Pribadi yang mereka cari."
+ ],
+ "tanya": "Persembahan apa yang dapat Anda bawa kepada Yesus minggu ini: waktu, perhatian, atau sesuatu yang lain?",
+ "coba": "Pilih satu waktu tetap besok untuk berdoa selama lima menit tanpa membuka ponsel, sebagai persembahan kecil Anda.",
+ "doa": "Tuhan Yesus, Raja yang lahir di Betlehem, jadikan aku pencari yang tekun seperti para Majus. Jauhkan aku dari hati yang sekadar tahu tetapi tidak datang. Terimalah sembah dan sukacitaku malam ini. Amin.",
+ "fakta": {
+  "kind": "Fakta sejarah",
+  "title": "Siapa orang Majus?",
+  "text": "Sejarawan Yunani Herodotus menyebut kaum Majus sebagai salah satu suku Media yang kemudian dikenal sebagai golongan imam di Persia. Mereka terkenal karena keahlian membaca tanda-tanda langit dan menafsirkan mimpi. Matius menyebut mereka datang “dari timur”, tanpa menyebut negeri asal atau jumlahnya."
+ },
+ "kaitan": [
+  {
+   "b": 32,
+   "c": 5,
+   "v": [
+    1
+   ],
+   "why": "Nubuat tentang pemimpin yang akan bangkit dari Betlehem Efrata."
+  },
+  {
+   "b": 22,
+   "c": 60,
+   "v": [
+    6
+   ],
+   "why": "Bangsa-bangsa datang membawa emas dan kemenyan."
+  },
+  {
+   "b": 18,
+   "c": 72,
+   "v": [
+    10,
+    11
+   ],
+   "why": "Raja-raja dari jauh membawa persembahan dan sujud kepada raja pilihan Allah."
+  }
+ ],
+ "sumber": [
+  {
+   "t": "Bible Hub: Strong’s Greek 3097 (magos)",
+   "u": "https://biblehub.com/greek/3097.htm"
+  },
+  {
+   "t": "Bible Hub: Strong’s Greek 4352 (proskyneō)",
+   "u": "https://biblehub.com/greek/4352.htm"
+  },
+  {
+   "t": "Britannica: Magus",
+   "u": "https://www.britannica.com/topic/magus"
+  },
+  {
+   "t": "Wikipedia: Magi",
+   "u": "https://en.wikipedia.org/wiki/Magi"
+  }
+ ],
+ "sebelumnya": "Kisah sebelumnya (Matius 1:18–25): Yusuf hendak memutuskan pertunangan dengan Maria secara diam-diam, tetapi malaikat Tuhan memintanya mengambil Maria sebagai istri. Anak itu dinamai Yesus, dan kelahiran-Nya menggenapi nubuat tentang Imanuel, “Allah beserta kita”."
+}

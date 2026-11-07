@@ -1,0 +1,94 @@
+{
+ "id": "39-1-18",
+ "bacaan": {
+  "b": 39,
+  "c": 1,
+  "v1": 18,
+  "v2": 25
+ },
+ "tema": "Allah beserta kita",
+ "fokus": {
+  "b": 39,
+  "c": 1,
+  "v1": 20,
+  "v2": 23,
+  "key": [
+   23
+  ]
+ },
+ "kisah": [
+  "Matius menceritakan kelahiran Yesus dari sudut pandang Yusuf. Maria sudah bertunangan dengan Yusuf, tetapi mereka belum hidup bersama ketika Maria ternyata mengandung (ayat 18). Bagi Yusuf, kabar ini pasti mengguncang. Ayat 19 menyebutnya “orang yang benar”: ia setia pada hukum Taurat, tetapi juga tidak mau mempermalukan Maria di depan umum. Karena itu ia memilih jalan yang paling lembut yang ia tahu, yaitu memutuskan pertunangan secara diam-diam.",
+  "Di tengah pergumulan itu, Allah berbicara melalui mimpi. Malaikat menyapa Yusuf sebagai “anak Daud” (ayat 20), mengingatkan silsilah yang baru saja kita baca. Melalui Yusuf, Anak ini akan tercatat secara hukum sebagai keturunan Daud. Yusuf diberi tugas menamai Anak itu Yesus, “karena Dia akan menyelamatkan umat-Nya dari dosa-dosa mereka” (ayat 21).",
+  "Matius lalu mengutip Yesaya 7:14: seorang perawan akan mengandung, dan Anak itu akan disebut Imanuel, “Allah beserta kita”. Nama ini menjadi bingkai seluruh Injil Matius. Di akhir Injil, Yesus yang bangkit berjanji, “Aku selalu bersamamu, bahkan sampai akhir zaman” (Matius 28:20). Dari awal sampai akhir, kabar baiknya sama: Allah datang dan tinggal bersama umat-Nya."
+ ],
+ "kata": [
+  {
+   "w": "Iēsous",
+   "l": "Yunani · “Yesus”",
+   "d": "Bentuk Yunani dari nama Ibrani <em>Yehoshua</em> (Yosua), yang berarti “TUHAN adalah keselamatan”. Karena itu malaikat menjelaskan nama ini dengan kata kerja “menyelamatkan” di ayat 21."
+  },
+  {
+   "w": "Emmanouēl",
+   "l": "Yunani dari Ibrani · “Allah beserta kita”",
+   "d": "Gabungan kata Ibrani <em>immanu</em> (beserta kita) dan <em>El</em> (Allah). Matius sendiri menerjemahkannya bagi pembaca yang tidak mengerti bahasa Ibrani."
+  }
+ ],
+ "isu": null,
+ "hidup": [
+  "Yusuf menghadapi situasi yang tidak ia rencanakan dan tidak ia pahami. Ia tidak bertindak gegabah. Ia menimbang (ayat 20), lalu ketika Allah berbicara, ia taat tanpa menunda: ia bangun dan melakukan seperti yang diperintahkan (ayat 24). Iman sering tampak dalam ketaatan yang sederhana seperti ini, bahkan sebelum semua pertanyaan terjawab.",
+  "Nama Imanuel juga ditujukan kepada kita. Malam ini mungkin Anda membawa kekhawatiran yang belum selesai, keputusan yang belum jelas, atau rasa lelah setelah hari yang panjang. Allah tidak menjanjikan bahwa semua akan langsung mudah, tetapi Ia berjanji hadir. Anda tidak menghadapinya sendirian."
+ ],
+ "tanya": "Dalam hal apa Anda sedang seperti Yusuf, harus melangkah taat sebelum semuanya jelas?",
+ "coba": "Sebelum tidur, ucapkan perlahan: “Imanuel, Allah beserta aku,” sambil menyebut satu hal yang sedang Anda khawatirkan.",
+ "doa": "Allah yang beserta kami, terima kasih karena Engkau tidak menjauh dari hidupku. Seperti Yusuf, beri aku hati yang mau mendengar dan taat, walaupun aku belum memahami semuanya. Amin.",
+ "fakta": {
+  "kind": "Fakta budaya",
+  "title": "Bertunangan, tetapi sudah terikat",
+  "text": "Dalam tradisi Yahudi masa itu, pertunangan bukan sekadar janji. Pasangan yang bertunangan sudah dianggap terikat secara hukum, walaupun belum tinggal serumah. Karena itu Matius menyebut Yusuf sebagai “suami” Maria (ayat 19), dan memutuskan pertunangan memerlukan surat cerai."
+ },
+ "kaitan": [
+  {
+   "b": 22,
+   "c": 7,
+   "v": [
+    14
+   ],
+   "why": "Nubuat tentang perawan yang mengandung dan Anak bernama Imanuel."
+  },
+  {
+   "b": 41,
+   "c": 1,
+   "v": [
+    31
+   ],
+   "why": "Lukas mencatat pesan yang sama kepada Maria tentang nama Yesus."
+  },
+  {
+   "b": 39,
+   "c": 28,
+   "v": [
+    20
+   ],
+   "why": "Janji penyertaan yang menutup Injil Matius."
+  }
+ ],
+ "sumber": [
+  {
+   "t": "Bible Hub: Strong’s Greek 2424 (Iēsous)",
+   "u": "https://biblehub.com/greek/2424.htm"
+  },
+  {
+   "t": "Bible Hub: Strong’s Greek 1694 (Emmanouēl)",
+   "u": "https://biblehub.com/greek/1694.htm"
+  },
+  {
+   "t": "Bible Hub: Marriage, Betrothal a Quasi-Marriage (Nave’s Topical Bible)",
+   "u": "https://biblehub.com/topical/naves/m/marriage--betrothal_a_quasi-marriage.htm"
+  },
+  {
+   "t": "Craig Keener: Mary, Joseph, and the virgin birth of Jesus (Matthew 1:18–25)",
+   "u": "https://craigkeener.com/mary-joseph-and-the-virgin-birth-of-jesus-matthew-118-25/"
+  }
+ ],
+ "sebelumnya": "Kisah sebelumnya (Matius 1:1–17): Matius membuka Injilnya dengan silsilah Yesus, dari Abraham melalui Daud sampai pembuangan ke Babel dan seterusnya, disusun dalam tiga kelompok empat belas keturunan. Di dalamnya tercatat Tamar, Rahab, Rut, dan Batsyeba."
+}

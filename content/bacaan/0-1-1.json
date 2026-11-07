@@ -1,0 +1,96 @@
+{
+ "id": "0-1-1",
+ "bacaan": {
+  "b": 0,
+  "c": 1,
+  "v1": 1,
+  "v2": 31
+ },
+ "tema": "Diciptakan menurut rupa-Nya",
+ "fokus": {
+  "b": 0,
+  "c": 1,
+  "v1": 26,
+  "v2": 28,
+  "key": [
+   27
+  ]
+ },
+ "kisah": [
+  "Kalimat pertama Alkitab sederhana dan agung: “Pada mulanya, Allah menciptakan langit dan bumi.” Bumi mula-mula tidak berbentuk dan kosong (ayat 2). Dalam enam hari, Allah memberi bentuk dan mengisi kekosongan itu: tiga hari pertama memisahkan terang dan gelap, langit dan air, laut dan darat; tiga hari berikutnya mengisi ruang-ruang itu dengan benda-benda penerang, burung dan ikan, lalu binatang darat dan manusia.",
+  "Allah menciptakan dengan firman: “Jadilah terang”, dan terang itu jadi. Matahari dan bulan bahkan tidak disebut namanya, hanya “benda penerang yang besar” dan “yang kecil” (ayat 16). Bagi bangsa-bangsa di sekitar Israel, matahari dan bulan adalah dewa yang disembah. Kejadian 1 menyatakan dengan tenang bahwa semuanya hanyalah ciptaan yang ditempatkan Allah untuk melayani.",
+  "Puncaknya adalah manusia. Hanya manusia yang diciptakan “menurut rupa Allah”, laki-laki dan perempuan (ayat 27). Manusia diberkati, diberi tugas untuk beranak cucu dan berkuasa atas bumi sebagai wakil Allah yang merawat ciptaan-Nya. Di akhir hari keenam, Allah melihat segala yang dibuat-Nya, dan “itu sangat baik!” (ayat 31)."
+ ],
+ "kata": [
+  {
+   "w": "bara",
+   "l": "Ibrani · “menciptakan”",
+   "d": "Dalam Perjanjian Lama, kata kerja ini hanya dipakai dengan Allah sebagai pelakunya. Manusia dapat membuat sesuatu dari bahan yang sudah ada, tetapi hanya Allah yang menciptakan dalam arti ini."
+  },
+  {
+   "w": "tselem",
+   "l": "Ibrani · “rupa, gambar”",
+   "d": "Kata ini juga dipakai untuk patung atau gambar yang mewakili seseorang. Raja-raja kuno menaruh patung dirinya di wilayah kekuasaannya. Allah tidak menaruh patung; Ia menempatkan manusia sebagai gambar-Nya yang hidup di bumi."
+  }
+ ],
+ "isu": null,
+ "hidup": [
+  "Setiap orang yang Anda temui hari ini membawa rupa Allah: rekan kerja yang menyebalkan, orang asing di jalan, dan juga diri Anda sendiri. Martabat manusia tidak bergantung pada prestasi, penampilan, atau kegunaannya, tetapi pada siapa yang menciptakannya.",
+  "Kejadian 1 juga mengingatkan bahwa kerja dan istirahat sama-sama bagian dari rancangan Allah. Manusia diberi tugas yang mulia untuk merawat bumi, tetapi kisah ini berujung pada hari ketujuh, hari perhentian. Mengakhiri hari dengan tenang, menyerahkan pekerjaan yang belum selesai kepada Allah, adalah cara kita hidup sebagai ciptaan, bukan pencipta."
+ ],
+ "tanya": "Bagaimana kebenaran bahwa setiap orang diciptakan menurut rupa Allah mengubah cara Anda memandang diri sendiri dan orang yang sulit Anda hormati?",
+ "coba": "Besok, pilih satu orang yang biasanya Anda abaikan dan perlakukan ia dengan hormat yang disengaja, misalnya dengan menyapa namanya atau mengucapkan terima kasih.",
+ "doa": "Allah Pencipta, terima kasih karena Engkau menciptakan dunia ini baik, dan menciptakan aku menurut rupa-Mu. Ajari aku menghormati sesamaku dan merawat ciptaan-Mu. Malam ini aku beristirahat dalam tangan-Mu. Amin.",
+ "fakta": {
+  "kind": "Fakta sejarah",
+  "title": "Kisah penciptaan dari Babel",
+  "text": "Bangsa Babel mempunyai kisah penciptaan sendiri, <em>Enuma Elish</em>. Di sana dunia terbentuk dari peperangan para dewa: Dewa Marduk membelah tubuh Dewi Tiamat untuk membentuk langit dan bumi, lalu manusia dibuat supaya para dewa tidak perlu bekerja. Kejadian 1 menceritakan hal yang sangat berbeda: satu Allah yang menciptakan dengan firman tanpa perlawanan, dan manusia yang diberkati serta diberi martabat sebagai gambar-Nya."
+ },
+ "kaitan": [
+  {
+   "b": 18,
+   "c": 8,
+   "v": [
+    5,
+    6,
+    7
+   ],
+   "why": "Mazmur mengagumi manusia yang dimahkotai kemuliaan dan diberi kuasa atas ciptaan."
+  },
+  {
+   "b": 42,
+   "c": 1,
+   "v": [
+    3
+   ],
+   "why": "Segala sesuatu diciptakan melalui Firman, yaitu Kristus."
+  },
+  {
+   "b": 50,
+   "c": 1,
+   "v": [
+    16
+   ],
+   "why": "Segala sesuatu di surga dan di bumi diciptakan oleh dan untuk Kristus."
+  }
+ ],
+ "sumber": [
+  {
+   "t": "Bible Hub: Strong’s Hebrew 1254 (bara)",
+   "u": "https://biblehub.com/hebrew/1254.htm"
+  },
+  {
+   "t": "Bible Hub: Strong’s Hebrew 6754 (tselem)",
+   "u": "https://biblehub.com/hebrew/6754.htm"
+  },
+  {
+   "t": "New World Encyclopedia: Enûma Elish",
+   "u": "https://www.newworldencyclopedia.org/entry/Enuma_Elish"
+  },
+  {
+   "t": "EBSCO Research Starters: Enuma elish, the Babylonian Creation Myth",
+   "u": "https://www.ebsco.com/research-starters/religion-and-philosophy/enuma-elish-babylonian-creation-myth"
+  }
+ ],
+ "sebelumnya": null
+}

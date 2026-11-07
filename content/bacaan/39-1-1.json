@@ -1,0 +1,90 @@
+{
+ "id": "39-1-1",
+ "bacaan": {
+  "b": 39,
+  "c": 1,
+  "v1": 1,
+  "v2": 17
+ },
+ "tema": "Nama-nama yang tidak dilupakan",
+ "fokus": {
+  "b": 39,
+  "c": 1,
+  "v1": 5,
+  "v2": 6,
+  "key": [
+   5
+  ]
+ },
+ "kisah": [
+  "Injil Matius dibuka bukan dengan kisah, melainkan dengan daftar nama. Bagi pembaca Yahudi abad pertama, silsilah adalah cara memperkenalkan seseorang: dari mana ia berasal, dan janji apa yang melekat pada keluarganya. Matius langsung menyebut dua nama kunci, Daud dan Abraham (ayat 1). Kepada Abraham, Allah berjanji bahwa melalui keturunannya semua bangsa akan diberkati (Kejadian 12:3). Kepada Daud, Allah berjanji bahwa takhtanya akan tegak selamanya (2 Samuel 7:16).",
+  "Silsilah ini disusun dalam tiga kelompok yang masing-masing berisi empat belas keturunan (ayat 17): dari Abraham sampai Daud, dari Daud sampai pembuangan ke Babel, dan dari pembuangan sampai Kristus. Susunan ini sengaja dibuat rapi supaya mudah diingat. Sejarah Israel, dengan masa jaya dan masa runtuhnya, digambarkan bergerak menuju satu titik, yaitu kedatangan Yesus.",
+  "Yang mengejutkan, Matius mencantumkan empat perempuan selain Maria: Tamar, Rahab, Rut, dan “bekas istri Uria”, yaitu Batsyeba. Silsilah kuno biasanya hanya menyebut laki-laki. Keempat perempuan ini punya kisah yang rumit, dan beberapa di antaranya bukan orang Israel: Rahab orang Kanaan, dan Rut orang Moab. Sejak halaman pertama, Matius menunjukkan bahwa rencana Allah merangkul orang-orang yang mungkin dianggap tidak layak."
+ ],
+ "kata": [
+  {
+   "w": "biblos geneseōs",
+   "l": "Yunani · “kitab asal-usul”",
+   "d": "Ungkapan pembuka Matius 1:1 sama dengan yang dipakai terjemahan Yunani Perjanjian Lama di Kejadian 2:4 dan 5:1. Matius seolah-olah memulai “kitab Kejadian” yang baru: sebuah permulaan baru di dalam Yesus."
+  },
+  {
+   "w": "Christos",
+   "l": "Yunani · “yang diurapi”",
+   "d": "Terjemahan Yunani dari kata Ibrani <em>mashiach</em> (Mesias). Raja dan imam di Israel diurapi dengan minyak sebagai tanda dipilih Allah. Menyebut Yesus “Kristus” berarti menyebut-Nya Raja yang dinantikan dari keturunan Daud."
+  }
+ ],
+ "isu": null,
+ "hidup": [
+  "Banyak orang merasa masa lalunya terlalu berantakan untuk dipakai Allah. Silsilah ini menjawab perasaan itu dengan tenang. Nama Rahab dan Rut tidak disembunyikan; keduanya justru dicatat dengan sengaja di garis keturunan Mesias. Allah tidak menulis kisah-Nya hanya melalui orang-orang yang riwayatnya rapi.",
+  "Daftar panjang ini juga mengingatkan bahwa iman diwariskan dari generasi ke generasi. Sebagian besar nama di sini tidak kita kenal kisahnya, tetapi kesetiaan mereka, sekecil apa pun, menjadi bagian dari jalan menuju Kristus. Kesetiaan Anda malam ini, membaca satu bagian firman sebelum tidur, juga tidak pernah sia-sia di mata Allah."
+ ],
+ "tanya": "Bagian mana dari kisah hidup Anda yang terasa terlalu rumit untuk dipakai Allah, dan apa artinya bahwa Rahab dan Rut tercatat di silsilah Yesus?",
+ "coba": "Tuliskan nama dua orang yang mewariskan iman kepada Anda, lalu ucapkan syukur untuk mereka dalam doa malam ini.",
+ "doa": "Tuhan Yesus, terima kasih karena Engkau datang melalui sejarah yang nyata, dengan nama-nama yang tidak sempurna. Terimalah kisah hidupku juga, dan pakailah aku dalam rencana-Mu yang setia. Amin.",
+ "fakta": {
+  "kind": "Fakta bahasa",
+  "title": "Mengapa empat belas?",
+  "text": "Dalam bahasa Ibrani, huruf juga dipakai sebagai angka. Nama Daud ditulis dengan tiga huruf, <em>dalet-waw-dalet</em>, yang nilainya 4 + 6 + 4 = 14. Banyak penafsir melihat susunan tiga kali empat belas keturunan sebagai cara Matius menekankan bahwa Yesus adalah Anak Daud, Raja yang dijanjikan. Untuk menjaga pola itu, Matius juga melewatkan beberapa nama raja yang tercatat di Perjanjian Lama."
+ },
+ "kaitan": [
+  {
+   "b": 0,
+   "c": 12,
+   "v": [
+    3
+   ],
+   "why": "Janji kepada Abraham bahwa semua bangsa akan diberkati melalui keturunannya."
+  },
+  {
+   "b": 9,
+   "c": 7,
+   "v": [
+    16
+   ],
+   "why": "Janji kepada Daud tentang takhta yang tegak selamanya."
+  },
+  {
+   "b": 7,
+   "c": 4,
+   "v": [
+    17
+   ],
+   "why": "Rut, perempuan Moab, menjadi nenek buyut Raja Daud."
+  }
+ ],
+ "sumber": [
+  {
+   "t": "Bible Hub: Strong’s Greek 1078 (genesis)",
+   "u": "https://biblehub.com/greek/1078.htm"
+  },
+  {
+   "t": "Bible Hub: Why is 14 important in Matthew 1:17?",
+   "u": "https://biblehub.com/q/Why_is_14_important_in_Matthew_1_17.htm"
+  },
+  {
+   "t": "Blue Letter Bible: The Bible Says, Matthew 1:17",
+   "u": "https://www.blueletterbible.org/comm/tbs/meaning/mat-1-v17.cfm"
+  }
+ ],
+ "sebelumnya": null
+}
