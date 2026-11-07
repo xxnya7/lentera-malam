@@ -808,3 +808,10 @@ nav.bottom button[aria-current="page"] svg.ms{color:var(--text)}
   .fin-owl.doze .ow-z{animation:fadeIn 120ms both!important}
 }
 @keyframes fadeIn{from{opacity:0}}
+
+/* ---- Harden: teks panjang, nama panjang, layanan akun terputus ---- */
+body{overflow-wrap:break-word}
+.tn-hello,.fin-h,.ac-name,.ph-h,.au-h,.wl-h,.sh-h,.rd-theme{overflow-wrap:anywhere}
+.au-warn{background:color-mix(in srgb,var(--skyblue) 16%,transparent)}
+.au-warn svg.ms{color:var(--skyblue);flex:none}
+.ws-state{white-space:nowrap;max-width:none}

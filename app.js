@@ -1,7 +1,22 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
 import { currentStreak } from '/lib/streak.js';
 
-const sb = createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+// Supabase dimuat dari CDN. Kalau CDN atau layanan akun tidak terjangkau (offline, diblokir, sangat lambat),
+// aplikasi tetap jalan dengan data di perangkat, bukan layar kosong.
+const SB_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+function offlineClient(){
+  const err = { message: 'network: layanan akun tidak terjangkau' };
+  const res = Promise.resolve({ data: null, error: err });
+  const q = { select: () => q, eq: () => q, delete: () => q, maybeSingle: () => res, upsert: () => res, then: (a, b) => res.then(a, b) };
+  const fail = async () => ({ data: {}, error: err });
+  return { from: () => q, auth: { getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe(){} } } }),
+    signInWithPassword: fail, signUp: fail, resetPasswordForEmail: fail, updateUser: fail, signOut: async () => ({}) } };
+}
+let sb, cloudDown = false;
+try {
+  if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) throw new Error('config');
+  const { createClient } = await Promise.race([import(SB_URL), new Promise((_, no) => setTimeout(() => no(new Error('timeout')), 9000))]);
+  sb = createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+} catch(e) { sb = offlineClient(); cloudDown = true; }
 
 const ICONS = {moon:'malam', sun:'terang', dark_mode:'gelap', book:'pasal', check:'selesai', star:'favorit', starfill:'favorit', link:'kaitan', chart:'progres', bell:'notif', notifications:'notif', flame:'lentera2', heart:'doa', scroll:'kisah', bulb:'penerapan', lock:'kunci', clock:'linimasa', shield:'sumber', skip:'lanjut', chev:'lanjut', pen:'jurnal', map:'kaitan', sparkle:'bintang', lang:'kata', user:'akun', calendar:'minggu', x:'tutup', close:'keluar', leaf:'ringkas', layers:'mendalam', cloud:'sinkron', search:'cari', download:'ekspor', copy:'salin', compass:'pengantar', rewind:'sebelumnya', dot:'titik', minus:'kurang', plus:'tambah', books:'arsip'};
 const ic = n => `<svg class="ms" aria-hidden="true" focusable="false"><use href="#i-${ICONS[n] || n}"/></svg>`;
@@ -124,7 +139,7 @@ const S = {
   view: null, viewDate: null, mapSel: null, filter: 'semua', tabCari: 'cari', q: '',
   user: { id: null, email: '', signedIn: false }, authChecked: false, authMode: 'masuk', authErr: '', authBusy: false,
   data: { read: {}, fav: {}, mode: 'mendalam', theme: null, welcomed: false },
-  journal: {}, journalAt: {}, devo: {}, devoLoading: {}, sync: 'local', dbErr: false
+  journal: {}, journalAt: {}, devo: {}, devoLoading: {}, sync: 'local', dbErr: false, cloudDown
 };
 
 
@@ -229,6 +244,7 @@ function vLogin(){
     <header class="au-sky">${nightSky()}<div class="au-owl">${owl(S.authErr ? 'worried' : 'awake', 104)}</div>
       <h1 class="au-h">${title}</h1><p class="au-lead">${lead}</p></header>
     <form class="ws-panel au-form" id="authform" novalidate>
+      ${S.cloudDown ? `<p class="au-info au-warn" role="status">${ic('sinkron')}<span>Layanan akun sedang tidak bisa dihubungi. Anda tetap bisa membaca tanpa akun; data disimpan di perangkat ini dan bisa disambungkan ke akun nanti.</span></p>` : ''}
       ${S.authInfo ? `<p class="au-info" role="status">${ic('notifications')}<span>${esc(S.authInfo)}</span></p>` : ''}
       ${m !== 'baru' ? `<label class="field-l" for="email">Email</label>
       <input class="ws-input" id="email" type="email" autocomplete="email" inputmode="email" required placeholder="nama@email.com" ${err ? `aria-invalid="true" aria-describedby="${err}"` : ''}>` : ''}
@@ -243,7 +259,7 @@ function vLogin(){
     <button class="btn-text au-skip" data-act="offline">${ic('lock')}Lanjut tanpa akun (hanya di perangkat ini)</button>
   </div>`;
 }
-const AUTH_ERR = [[/invalid login credentials/i,'Email atau kata sandi salah.'],[/email not confirmed/i,'Email belum dikonfirmasi. Buka tautan konfirmasi di email Anda.'],[/already registered|already exists/i,'Email ini sudah terdaftar. Silakan masuk.'],[/password should be at least/i,'Kata sandi minimal 6 karakter.'],[/invalid.*email|unable to validate email/i,'Format email tidak valid.'],[/rate limit|too many/i,'Terlalu banyak percobaan. Coba lagi beberapa menit lagi.'],[/fetch|network/i,'Tidak ada koneksi internet.']];
+const AUTH_ERR = [[/invalid login credentials/i,'Email atau kata sandi salah.'],[/email not confirmed/i,'Email belum dikonfirmasi. Buka tautan konfirmasi di email Anda.'],[/already registered|already exists/i,'Email ini sudah terdaftar. Silakan masuk.'],[/password should be at least/i,'Kata sandi minimal 6 karakter.'],[/invalid.*email|unable to validate email/i,'Format email tidak valid.'],[/rate limit|too many/i,'Terlalu banyak percobaan. Coba lagi beberapa menit lagi.'],[/fetch|network|load failed/i,'Layanan akun tidak terjangkau. Periksa koneksi internet, lalu coba lagi.']];
 const authMsg = e => { const m = String((e && e.message) || ''); const hit = AUTH_ERR.find(([re]) => re.test(m)); return hit ? hit[1] : 'Terjadi kesalahan. Coba lagi.'; };
 async function submitAuth(){
   const email = (document.getElementById('email')?.value || '').trim(); const pw = document.getElementById('password')?.value || '';
@@ -541,6 +557,9 @@ function vAkun(){
            <p class="ac-sync ${S.sync==='cloud'?'ok':'local'}">${ic(S.sync==='cloud'?'cloud':'shield')}${S.sync==='cloud'?'Tersinkron ke akun':'Menyimpan di perangkat'}</p>
            <p class="ac-txt">Progres, streak, mode bacaan, dan jurnal disimpan secara pribadi di akun ini dan hanya dapat dibaca oleh Anda.</p>
            <button class="btn-quiet" data-act="logout">${ic('close')}Keluar</button>`
+        : S.cloudDown ? `<h2 class="ac-name" id="ach">Layanan akun terputus</h2><p class="ac-mail">Bacaan, streak, dan jurnal tetap tersimpan di perangkat ini.</p>
+           <p class="ac-txt">Layanan akun sedang tidak bisa dihubungi, mungkin karena koneksi lambat atau terputus. Begitu tersambung lagi, data di perangkat ini akan digabung ke akun Anda.</p>
+           <button class="btn-primary" data-act="reload">${ic('cloud')}Sambungkan lagi</button>`
         : `<h2 class="ac-name" id="ach">Belum masuk</h2><p class="ac-mail">Progres tersimpan di peramban ini saja.</p>
            <p class="ac-txt">Masuk dengan email agar progres tersimpan di akun dan tidak hilang saat cache dihapus atau ganti perangkat.</p>
            <button class="btn-primary" data-act="tologin">${ic('user')}Masuk atau buat akun</button>`}
@@ -817,7 +836,9 @@ function render(){
   if (!BIBLE || !PLAN) { app.innerHTML = `<div class="loading"><span class="spin"></span>Memuat Alkitab…</div>`; return; }
   if (!S.authChecked) { app.innerHTML = `<div class="loading"><span class="spin"></span>Memeriksa akun…</div>`; return; }
   if (S.recovery) { S.authMode = 'baru'; app.innerHTML = `<div class="view">${vLogin()}</div>`; document.querySelector('nav.bottom').hidden = true; return; }
-  if (!S.user.signedIn && !S.data.offline) { app.innerHTML = `<div class="view">${vLogin()}</div>`; document.querySelector('nav.bottom').hidden = true; return; }
+  // Layanan akun mati tetapi perangkat ini sudah punya bacaan: tetap bisa membaca, sinkron menyusul.
+  const localOnly = S.cloudDown && S.data.welcomed;
+  if (!S.user.signedIn && !S.data.offline && !localOnly) { app.innerHTML = `<div class="view">${vLogin()}</div>`; document.querySelector('nav.bottom').hidden = true; return; }
   if (!S.data.welcomed) { app.innerHTML = `<div class="view">${vWelcome()}</div>`; document.querySelector('nav.bottom').hidden = true; return; }
   document.querySelector('nav.bottom').hidden = false;
   const openState = {}; app.querySelectorAll('details.chap').forEach((d,i)=>{ openState[i]=d.open; });
@@ -935,6 +956,7 @@ document.addEventListener('click', e => {
   if (a === 'offline') { S.data.offline = true; lsSave(); render(); return; }
   if (a === 'tologin') { S.data.offline = false; lsSave(); render(); return; }
   if (a === 'logout') { logout(); return; }
+  if (a === 'reload') { location.reload(); return; }
   if (a === 'push') { enablePush(); return; }
   if (a === 'pushoff' || (a === 'pushtoggle' && S.data.notif)) { S.data.notif = false; saveState(); render(); toast('Notifikasi dimatikan'); return; }
   if (a === 'pushtoggle') { enablePush(); return; }
@@ -1060,7 +1082,9 @@ async function loadCloud(uid){
     S.authChecked = true; render();
   };
   sb.auth.onAuthStateChange((event, session) => { setTimeout(() => onSession(event, session), 0); });
-  sb.auth.getSession().then(({ data }) => onSession('INITIAL', data.session));
+  const authTimer = setTimeout(() => { if (!S.authChecked) { S.cloudDown = true; S.authChecked = true; render(); } }, 9000);
+  sb.auth.getSession().then(({ data }) => onSession('INITIAL', data && data.session))
+    .catch(() => { S.cloudDown = true; S.authChecked = true; render(); }).finally(() => clearTimeout(authTimer));
   // Aplikasi di HP bisa berhari-hari di latar; ambil data terbaru setiap kali dibuka lagi.
   window.addEventListener('online', () => { if (S.user.id && S.sync !== 'cloud') saveState(); }); // coba kirim ulang setelah sinyal kembali
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.user.id) loadCloud(S.user.id).then(render); });
