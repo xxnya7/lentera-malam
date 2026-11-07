@@ -66,13 +66,13 @@ const S = {
   view: null, viewDate: null, mapSel: null, filter: 'semua', tabCari: 'cari', q: '',
   user: { id: null, name: '', email: '', avatar: '', signedIn: false }, authChecked: false, authMode: 'masuk', authErr: '', authBusy: false,
   data: { read: {}, fav: {}, mode: 'mendalam', theme: null, welcomed: false },
-  journal: {}, devo: {}, devoLoading: {}, sync: 'local', dbErr: false
+  journal: {}, journalAt: {}, devo: {}, devoLoading: {}, sync: 'local', dbErr: false
 };
 
 
 const LS = 'lentera-v4';
 function lsLoad(){ try { return JSON.parse(localStorage.getItem(LS) || 'null'); } catch(e){ return null; } }
-function lsSave(){ try { localStorage.setItem(LS, JSON.stringify({ data: S.data, journal: S.journal })); } catch(e){} }
+function lsSave(){ try { localStorage.setItem(LS, JSON.stringify({ data: S.data, journal: S.journal, journalAt: S.journalAt })); } catch(e){} }
 
 const stateDoc = () => S.user.id ? true : null;
 const journalDoc = date => S.user.id ? true : null;
@@ -94,12 +94,12 @@ function saveState(){
 }
 const jTimers = {};
 function saveJournal(date, text){
-  S.journal[date] = text; lsSave();
+  S.journal[date] = text; S.journalAt[date] = new Date().toISOString(); lsSave();
   clearTimeout(jTimers[date]);
   jTimers[date] = setTimeout(async () => {
     const ref = journalDoc(date); const el = document.getElementById('jsaved');
     if (!ref) { if (el) el.textContent = 'Tersimpan di perangkat ini'; return; }
-    try { must(await sb.from('journals').upsert({ user_id: S.user.id, date, text, updated_at: new Date().toISOString() })); if (el) el.textContent = 'Tersimpan di akun'; }
+    try { must(await sb.from('journals').upsert({ user_id: S.user.id, date, text, updated_at: S.journalAt[date] })); if (el) el.textContent = 'Tersimpan di akun'; }
     catch(e){ if (el) el.textContent = 'Tersimpan di perangkat ini (gagal sinkron)'; }
   }, 900);
 }
@@ -777,13 +777,23 @@ async function enablePush(){
   finally { S.pushBusy = false; render(); }
 }
 
+// Jurnal: versi yang paling baru menang, lalu kirim versi perangkat yang belum ada di cloud.
+async function syncJournals(uid){
+  const t = d => Date.parse(d || 0) || 0;
+  const js = must(await sb.from('journals').select('date,text,updated_at').eq('user_id', uid));
+  const cloudAt = {};
+  (js.data || []).forEach(x => { cloudAt[x.date] = x.updated_at; if (t(x.updated_at) > t(S.journalAt[x.date])) { S.journal[x.date] = x.text; S.journalAt[x.date] = x.updated_at; } });
+  const up = Object.keys(S.journal).filter(d => S.journal[d] && (!cloudAt[d] || t(S.journalAt[d]) > t(cloudAt[d])));
+  if (up.length) must(await sb.from('journals').upsert(up.map(d => ({ user_id: uid, date: d, text: S.journal[d], updated_at: S.journalAt[d] || new Date().toISOString() }))));
+  lsSave();
+}
+
 async function loadCloud(uid){
   try {
     const st = must(await sb.from('user_state').select('data').eq('user_id', uid).maybeSingle());
     const cloud = st.data ? st.data.data : null;
     if (cloud) { const localRead = S.data.read; S.data = Object.assign({}, S.data, cloud); S.data.read = Object.assign({}, localRead, cloud.read || {}); }
-    const js = must(await sb.from('journals').select('date,text').eq('user_id', uid));
-    (js.data || []).forEach(x => { if (x.text) S.journal[x.date] = x.text; });
+    await syncJournals(uid);
     S.sync = 'cloud';
     if (!cloud && (S.data.welcomed || Object.keys(S.data.read).length)) saveState();
     applyTheme();
@@ -791,7 +801,7 @@ async function loadCloud(uid){
 }
 
 (async function init(){
-  const local = lsLoad(); if (local) { Object.assign(S.data, local.data || {}); S.journal = local.journal || {}; }
+  const local = lsLoad(); if (local) { Object.assign(S.data, local.data || {}); S.journal = local.journal || {}; S.journalAt = local.journalAt || {}; }
   applyTheme(); render();
   registerSW();
   let lastUid = null;
