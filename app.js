@@ -827,6 +827,7 @@ async function loadCloud(uid){
   sb.auth.onAuthStateChange((event, session) => { setTimeout(() => onSession(event, session), 0); });
   sb.auth.getSession().then(({ data }) => onSession('INITIAL', data.session));
   // Aplikasi di HP bisa berhari-hari di latar; ambil data terbaru setiap kali dibuka lagi.
+  window.addEventListener('online', () => { if (S.user.id && S.sync !== 'cloud') saveState(); }); // coba kirim ulang setelah sinyal kembali
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.user.id) loadCloud(S.user.id).then(render); });
   const [bible, plan] = await Promise.all([fetch('/data/alkitab.json').then(r=>r.json()), fetch('/data/rencana.json').then(r=>r.json())]).catch(()=>[null,null]);
   try { const [l, g] = await Promise.all([fetch('/data/linimasa.json').then(r=>r.json()), fetch('/data/glosarium.json').then(r=>r.json())]); LINI = l; GLOS = g; glossInit(); } catch(e) {}
