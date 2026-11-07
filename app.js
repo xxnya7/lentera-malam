@@ -33,6 +33,21 @@ function owl(mood = 'sleepy', size = 96){
 </svg>`;
 }
 
+// Langit malam: bulan, awan, dan bintang statis (ilustrasi, bukan gradien).
+function nightSky(cls = ''){
+  const st = [[22,30,1.4],[70,16,1],[118,52,1.2],[170,22,1.6],[208,70,1],[40,96,1],[150,110,1.3],[236,30,1],[96,150,.9],[200,160,1.1],[330,150,1.2],[262,128,.9],[20,200,1]];
+  return `<svg class="sky-art ${cls}" viewBox="0 0 360 460" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+  ${st.map(([x,y,r]) => `<circle class="sk-star" cx="${x}" cy="${y}" r="${r}"/>`).join('')}
+  <path class="sk-star" d="M250 92l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>
+  <circle class="sk-glow" cx="282" cy="66" r="64" opacity=".35"/><circle class="sk-glow" cx="282" cy="66" r="46" opacity=".55"/>
+  <circle class="sk-moon" cx="282" cy="66" r="27"/>
+  <circle class="sk-crater" cx="273" cy="59" r="4.5"/><circle class="sk-crater" cx="289" cy="76" r="3.2"/><circle class="sk-crater" cx="292" cy="56" r="2.3"/>
+  <path class="sk-cloud2" d="M-20 410c0-14 12-24 25-21 5-12 19-18 31-12 10-10 28-7 34 6 13-1 24 8 24 20 0 4-1 7-2 7H-18c-1 0-2 0-2 0z"/>
+  <path class="sk-cloud" d="M196 470c0-20 17-34 36-30 7-17 27-26 44-17 14-14 40-10 48 9 19-2 34 11 34 28 0 6-1 10-3 10H199c-2 0-3 0-3 0z"/>
+  <path class="sk-cloud" d="M40 470c0-12 10-20 21-18 4-10 16-15 26-10 8-8 23-6 28 5 11-1 20 7 20 17 0 3-1 6-2 6H43c-2 0-3 0-3 0z"/>
+</svg>`;
+}
+
 // Lentera kunang-kunang: makin terang seiring jumlah malam yang sudah dibaca (maks. 365).
 function lantern(count, size = 120, opts = {}){
   const lv = Math.min(1, count / 365);
@@ -259,6 +274,7 @@ function vMalam(){
   const title = isToday || before ? (nama ? `Selamat malam, ${esc(nama)}` : 'Selamat malam') : `Bacaan ${fmtShort(day.t)}`;
   const header = `
   <header class="tn">
+    ${nightSky()}
     <div class="tn-chips">
       <span class="chip-s">Hari ${day.d} dari 365</span>
       <span class="chip-s">${esc(day.g)}</span>
@@ -285,14 +301,14 @@ function vMalam(){
   </div>`;
 
   const focus = ok && dv.fokus ? `
-  <section class="rd-focus" aria-labelledby="fokush">
-    <h2 class="rd-theme" id="fokush">${esc(dv.tema)}</h2>
+  <section class="rd-focus t-lamp" aria-labelledby="fokush">
+    <h2 class="rd-h rd-theme" id="fokush">${ic('moon')}${esc(dv.tema)}</h2>
     <div class="rd-verses">${focusVs.map(v => `<p data-ref="${dv.fokus.b}:${dv.fokus.c}:${v[0]}" class="${dv.fokus.key.includes(v[0])?'key':''} ${isFav(dv.fokus.b,dv.fokus.c,v[0])?'fav':''}"><sup>${dv.fokus.key.includes(v[0]) ? ic('sparkle') : ''}${v[0]}</sup>${verseHTML(v[1])}</p>`).join('')}</div>
     <p class="rd-ref">${bookName(dv.fokus.b)} ${dv.fokus.c}:${dv.fokus.v1}–${dv.fokus.v2}, ayat fokus (AYT). Ketuk ayat untuk menyimpan atau menyalin.</p>
   </section>` : '';
 
   const reading = `
-  <section class="rd-sec" aria-labelledby="pasalh">
+  <section class="rd-sec t-lamp" aria-labelledby="pasalh">
     <h2 class="rd-h" id="pasalh">${ic('book')}Bacaan Alkitab hari ini</h2>
     <p class="rd-note">${allRefs.length} pasal. Ketuk untuk membuka.</p>
     <div class="rd-chaps">${allRefs.map(([b,c]) => `
@@ -307,15 +323,15 @@ function vMalam(){
   else if (!dv) devo = `<div class="rd-empty">${owl('sleepy', 72)}<p><b>Renungan untuk hari ini sedang disiapkan.</b> Renungan ditulis per minggu dan diperbarui setiap Jumat. Sementara itu, bacalah pasal-pasal hari ini dan tuliskan refleksi Anda di bawah.</p></div>`;
   else {
     devo = `
-  <section class="rd-sec" aria-labelledby="kisahh">
+  <section class="rd-sec t-plum" aria-labelledby="kisahh">
     <h2 class="rd-h" id="kisahh">${ic('scroll')}Latar kisah</h2>
     <div class="rd-prose">${PG(deep ? dv.kisah : dv.kisah.slice(0,1))}</div>
   </section>
-  ${deep ? `<section class="rd-sec" aria-labelledby="katah">
+  ${deep ? `<section class="rd-sec t-sky" aria-labelledby="katah">
     <h2 class="rd-h" id="katah">${ic('lang')}Telaah kata</h2>
     <dl class="rd-words">${dv.kata.map(k=>`<div><dt><b>${esc(k.w)}</b><span>${esc(k.l)}</span></dt><dd>${glossLink(k.d)}</dd></div>`).join('')}</dl>
   </section>` : ''}
-  <section class="rd-sec" aria-labelledby="hiduph">
+  <section class="rd-sec t-sage" aria-labelledby="hiduph">
     <h2 class="rd-h" id="hiduph">${ic('bulb')}Penerapan dalam hidup</h2>
     ${deep && dv.isu ? `<aside class="rd-issue" aria-label="Isu terkini"><p class="rd-issue-k">Isu terkini</p><p class="rd-issue-t">${esc(dv.isu.judul)}</p><p>${glossLink(esc(dv.isu.teks))}</p></aside>` : ''}
     <div class="rd-prose">${PG(deep ? dv.hidup : dv.hidup.slice(0,1))}</div>
@@ -326,7 +342,7 @@ function vMalam(){
     <h2 class="bn-h" id="faktah">${esc(dv.fakta.title)}</h2>
     <p>${glossLink(dv.fakta.text)}</p>
   </section>
-  ${deep && dv.kaitan ? `<section class="rd-sec" aria-labelledby="kaitanh">
+  ${deep && dv.kaitan ? `<section class="rd-sec t-sky" aria-labelledby="kaitanh">
     <h2 class="rd-h" id="kaitanh">${ic('link')}Ayat yang berkaitan</h2>
     <ol class="rd-links">${dv.kaitan.map((l,i) => `<li>
       <p class="rd-links-ref">${refText(l.b,l.c,l.v)}</p>
@@ -337,7 +353,7 @@ function vMalam(){
   }
 
   const journal = `
-  <section class="rd-sec journal" aria-labelledby="refh">
+  <section class="rd-sec journal t-lamp" aria-labelledby="refh">
     <h2 class="rd-h" id="refh">${ic('pen')}Refleksi malam ini</h2>
     <p class="rd-q">${ok && dv.tanya ? esc(dv.tanya) : 'Ayat atau peristiwa apa dari bacaan hari ini yang paling menyentuh Anda, dan mengapa?'}</p>
     ${ok && dv.coba && deep ? `<p class="rd-try">${ic('check')}<span><b>Langkah konkret:</b> ${esc(dv.coba)}</span></p>` : ''}
@@ -346,18 +362,18 @@ function vMalam(){
     <p class="saved" id="jsaved" aria-live="polite"></p>
   </section>`;
 
-  const prayer = ok && dv.doa ? `<section class="rd-sec rd-pray" aria-labelledby="doah"><h2 class="rd-h" id="doah">${ic('moon')}Doa sebelum tidur</h2><p class="prayer">${esc(dv.doa)}</p></section>` : '';
-  const sources = ok && dv.sumber && dv.sumber.length ? `<section class="rd-sec" aria-labelledby="sumberh"><h2 class="rd-h" id="sumberh">${ic('shield')}Sumber bacaan</h2>
+  const prayer = ok && dv.doa ? `<section class="rd-sec rd-pray t-plum" aria-labelledby="doah"><h2 class="rd-h" id="doah">${ic('moon')}Doa sebelum tidur</h2><p class="prayer">${esc(dv.doa)}</p></section>` : '';
+  const sources = ok && dv.sumber && dv.sumber.length ? `<section class="rd-sec t-sage" aria-labelledby="sumberh"><h2 class="rd-h" id="sumberh">${ic('shield')}Sumber bacaan</h2>
       <ol class="srclist">${dv.sumber.map(s=>`<li><a href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a></li>`).join('')}</ol></section>` : '';
 
   /* ---- Signature: lentera kunang-kunang ---- */
   const finish = done ? `
-  <section class="fin fin-done ${S.justDone === day.t ? 'just' : ''}" aria-labelledby="finh">
+  <section class="fin fin-done ${S.justDone === day.t ? 'just' : ''}" aria-labelledby="finh">${nightSky('sky-fin')}
     <div class="fin-art">${lantern(fireflies, 112, {cls:'ln-big', id:'f'})}<div class="fin-owl">${owl(S.justDone === day.t ? 'happy' : 'asleep', 76)}</div></div>
     <h2 class="fin-h" id="finh">${isToday ? `Malam ke-${st.cur}. Selamat tidur${nama ? ', ' + esc(nama) : ''}.` : 'Bacaan ini sudah selesai.'}</h2>
     <p class="fin-p">Ditandai ${fmtShort(S.data.read[day.t].on)}. Lentera Anda kini berisi ${fireflies} kunang-kunang; ${Math.max(0, 365 - fireflies)} lagi sampai akhir tahun.</p>
   </section>` : `
-  <section class="fin" aria-labelledby="finh">
+  <section class="fin" aria-labelledby="finh">${nightSky('sky-fin')}
     <div class="fin-art">${lantern(fireflies, 112, {cls:'ln-big', id:'f'})}</div>
     <h2 class="fin-h" id="finh">Selesai membaca?</h2>
     <p class="fin-p">Tandai bacaan ini, dan satu kunang-kunang lagi masuk ke lentera Anda.</p>
@@ -636,7 +652,7 @@ function introCards(day){
   return books.map(b => {
     loadIntro(b);
     const isFirst = firstDayOfBook(b) === day.d; const x = INTRO[b];
-    if (isFirst && x) return `<section class="rd-sec rd-intro" aria-labelledby="in${b}"><h2 class="rd-h" id="in${b}">${ic('compass')}Kitab baru: ${esc(bookName(b))}</h2>${introHTML(x)}</section>`;
+    if (isFirst && x) return `<section class="rd-sec rd-intro t-sky" aria-labelledby="in${b}"><h2 class="rd-h" id="in${b}">${ic('compass')}Kitab baru: ${esc(bookName(b))}</h2>${introHTML(x)}</section>`;
     return `<button class="btn-quiet" data-intro="${b}">${ic('compass')}Tentang kitab ${esc(bookName(b))}</button>`;
   }).join('');
 }
@@ -647,7 +663,7 @@ function prevCard(day, dv){
   const chs = prev.r.filter(x => x[0] === b);
   const titles = chs.flatMap(([bb,c]) => chapter(bb,c).filter(v => v[2]).map(v => titleHTML(v[2])));
   const read = S.data.read[prev.t];
-  return `<section class="rd-sec" aria-labelledby="prevh">
+  return `<section class="rd-sec t-plum" aria-labelledby="prevh">
     <h2 class="rd-h" id="prevh">${ic('rewind')}Sebelumnya di kitab ini</h2>
     <p class="rd-note">Hari ${prev.d}, ${fmtShort(prev.t)}: ${fmtRefs(chs)}.${read ? '' : ' Belum dibaca, bisa disusul kapan saja.'}</p>
     ${dv && dv.sebelumnya ? `<div class="rd-prose"><p>${glossLink(esc(dv.sebelumnya))}</p></div>` : ''}

@@ -1,4 +1,4 @@
-/* Hallmark · direction: "Lampu Tidur" (DS 02, dikunci) · shape: long document untuk baca, catalogue/conversational untuk zona main
+/* Hallmark · direction: "Lampu Tidur" revisi 1: langit malam biru tinta + lentera kuning (DS 02, direvisi atas masukan pengguna) · shape: long document untuk baca, catalogue/conversational untuk zona main
    genre: editorial (Zona Baca) + playful (Zona Main) · signature: lentera kunang-kunang, satu kunang-kunang per malam selesai, makin terang menuju 365
    self-critique: halaman Malam ini sudah memakai sistem baru; Cari/Arsip/Progres/Akun/Login masih memakai aturan lama lewat alias token sampai giliran redesignnya
    waive · dua-family-max · DS 02 dikunci memakai tiga peran huruf (Literata baca, Nunito antarmuka, Fraunces momen besar) · sistem pengguna menang
@@ -15,10 +15,11 @@
 
 /* ---------- token (DS 02 §3) ---------- */
 :root{
-  --bg:#15110E; --surface:#211B16; --surface-2:#2C241D; --line:#3A2F25; --line-strong:#7A6A58;
-  --text:#EDE3D3; --text-read:#DCCFBC; --text-2:#C2B5A3; --muted:#9A8C7A; --verse-num:#8F8170;
-  --lamp:#F0B35A; --on-lamp:#2A1A06; --lamp-soft:rgba(240,179,90,.12); --lamp-glow:rgba(240,179,90,.55); --lamp-text:#F0B35A;
-  --plum:#B79CDB; --plum-deep:#8A6FB3; --sage:#7CC8AE; --ember:#F0907A; --cream:#F6E3C0; --shade:rgba(0,0,0,.5);
+  --bg:#13152B; --surface:#1D2142; --surface-2:#292E57; --line:#343A66; --line-strong:#6E76A6;
+  --text:#EFE9DD; --text-read:#DED7C9; --text-2:#C9C4D6; --muted:#A29FBF; --verse-num:#9592B3;
+  --lamp:#F5B95E; --on-lamp:#2A1A06; --lamp-soft:rgba(245,185,94,.14); --lamp-glow:rgba(245,185,94,.55); --lamp-text:#F5B95E;
+  --plum:#BBA6F2; --plum-deep:#8E74D6; --sage:#86D4B8; --ember:#F59E89; --skyblue:#93BDF2; --cream:#F6E3C0; --shade:rgba(5,6,18,.55);
+  --sky:#0F1126; --cloud:#262B52; --cloud-2:#30366A; --star:#F6E3C0; --moon-glow:rgba(246,227,192,.22);
   --font-read:"Literata",Georgia,serif; --font-ui:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif; --font-display:"Fraunces","Literata",Georgia,serif;
   --fs-xs:13px; --fs-sm:15px; --fs-md:17px; --fs-read:19px; --fs-key:23px; --fs-h3:20px; --fs-h2:26px; --fs-h1:34px; --fs-stat:56px;
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px;
@@ -28,7 +29,7 @@
   --elev-1:0 -8px 24px rgba(0,0,0,.35);
   /* alias untuk aturan lama, supaya halaman yang belum diredesign ikut palet baru */
   --surface2:var(--surface-2); --paper:var(--bg); --paperInk:var(--text-read); --ink:var(--text); --soft:var(--text-2);
-  --amber:var(--lamp); --coral:var(--ember); --violet:var(--plum); --teal:var(--sage); --sky:var(--sage); --pinkc:var(--plum);
+  --amber:var(--lamp); --coral:var(--ember); --violet:var(--plum); --teal:var(--sage); --pinkc:var(--plum);
   --accent:var(--lamp); --accentInk:var(--on-lamp); --invert:var(--text); --invertInk:var(--bg);
   --glass:var(--surface); --glassLine:var(--line); --skyTop:var(--surface); --skyBot:var(--surface); --skyInk:var(--text);
   --pink:var(--ember); --mint:var(--sage); --lilac:var(--plum); --flame:var(--lamp);
@@ -38,17 +39,19 @@
   color-scheme:dark;
 }
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
-  --bg:#FBF6EE; --surface:#FFFDF8; --surface-2:#F3EADB; --line:#E6DAC7; --line-strong:#8C7B69;
-  --text:#2A211A; --text-read:#2A211A; --text-2:#5A4D40; --muted:#75685B; --verse-num:#75685B;
+  --bg:#F6F2EA; --surface:#FFFDF8; --surface-2:#EFEAF6; --line:#E3DDEC; --line-strong:#8E89A6;
+  --text:#2A2440; --text-read:#2A2440; --text-2:#514B66; --muted:#6E6A85; --verse-num:#6E6A85;
   --lamp:#E9A23B; --on-lamp:#2A1A06; --lamp-soft:rgba(233,162,59,.16); --lamp-glow:rgba(233,162,59,.45); --lamp-text:#9A5B0E;
-  --plum:#6E4FA3; --plum-deep:#4F3780; --sage:#1F7A62; --ember:#B4472E; --cream:#F6E3C0; --shade:rgba(42,33,26,.35);
-  --elev-1:0 -8px 24px rgba(42,33,26,.12); color-scheme:light}}
+  --plum:#6A4FB0; --plum-deep:#4F3790; --sage:#1E7A61; --ember:#B4472E; --skyblue:#2F63A8; --cream:#F6E3C0; --shade:rgba(42,36,64,.35);
+  --sky:#DCE4F7; --cloud:#FFFFFF; --cloud-2:#EEF2FB; --star:#9A5B0E; --moon-glow:rgba(233,162,59,.25);
+  --elev-1:0 -8px 24px rgba(42,36,64,.10); color-scheme:light}}
 :root[data-theme="light"]{
-  --bg:#FBF6EE; --surface:#FFFDF8; --surface-2:#F3EADB; --line:#E6DAC7; --line-strong:#8C7B69;
-  --text:#2A211A; --text-read:#2A211A; --text-2:#5A4D40; --muted:#75685B; --verse-num:#75685B;
+  --bg:#F6F2EA; --surface:#FFFDF8; --surface-2:#EFEAF6; --line:#E3DDEC; --line-strong:#8E89A6;
+  --text:#2A2440; --text-read:#2A2440; --text-2:#514B66; --muted:#6E6A85; --verse-num:#6E6A85;
   --lamp:#E9A23B; --on-lamp:#2A1A06; --lamp-soft:rgba(233,162,59,.16); --lamp-glow:rgba(233,162,59,.45); --lamp-text:#9A5B0E;
-  --plum:#6E4FA3; --plum-deep:#4F3780; --sage:#1F7A62; --ember:#B4472E; --cream:#F6E3C0; --shade:rgba(42,33,26,.35);
-  --elev-1:0 -8px 24px rgba(42,33,26,.12); color-scheme:light}
+  --plum:#6A4FB0; --plum-deep:#4F3790; --sage:#1E7A61; --ember:#B4472E; --skyblue:#2F63A8; --cream:#F6E3C0; --shade:rgba(42,36,64,.35);
+  --sky:#DCE4F7; --cloud:#FFFFFF; --cloud-2:#EEF2FB; --star:#9A5B0E; --moon-glow:rgba(233,162,59,.25);
+  --elev-1:0 -8px 24px rgba(42,36,64,.10); color-scheme:light}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{min-height:100%}
@@ -667,3 +670,45 @@ nav.bottom button[aria-current="page"]::before{content:"";position:absolute;top:
   .firefly,.burst{display:none}
   .fin-done.just .ln-big .ln-halo{opacity:var(--lv)}
 }
+
+/* ---- Revisi 1 (masukan pengguna): langit di kepala, bagian baca berpanel, warna per bagian ---- */
+.tn{background:var(--sky);border:1px solid var(--line);align-content:start;padding-bottom:128px}
+.tn::before{display:none}
+.sky-art{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+.sk-star{fill:var(--star);opacity:.75}
+.sk-glow{fill:var(--moon-glow)}
+.sky-fin .sk-moon,.sky-fin .sk-crater,.sky-fin .sk-glow{display:none}
+.sk-moon{fill:var(--cream)}
+.sk-crater{fill:var(--lamp);opacity:.35}
+.sk-cloud{fill:var(--cloud)}
+.sk-cloud2{fill:var(--cloud-2);opacity:.9}
+.tn-owl{right:18px;top:auto;bottom:10px;transform:none}
+.tn-hello{max-width:11ch}
+.tn-line,.tn-note{max-width:26ch}
+.tn-note{max-width:30ch}
+.tn-chips{padding-right:0;max-width:calc(100% - 96px)}
+
+.t-lamp{--acc:var(--lamp)} .t-plum{--acc:var(--plum)} .t-sky{--acc:var(--skyblue)} .t-sage{--acc:var(--sage)} .t-ember{--acc:var(--ember)}
+.rd{gap:var(--s5)}
+.rd-sec,.rd-focus{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--s5) var(--s5) var(--s6);box-shadow:0 10px 24px -18px var(--shade)}
+.rd-h{gap:12px}
+.rd-h svg.ms{width:38px;height:38px;padding:9px;border-radius:50%;background:color-mix(in srgb,var(--acc,var(--muted)) 18%,transparent);color:var(--acc,var(--muted));font-size:20px;box-sizing:border-box}
+.rd-theme{font-family:var(--font-display);font-variation-settings:"SOFT" 100;font-weight:650;font-size:var(--fs-h2);line-height:1.2}
+.rd-verses p:hover{background:var(--surface-2)}
+.rd > .btn-quiet{margin-top:0}
+
+/* isi panel tanpa kartu bersarang */
+.rd-chaps{gap:0}
+.rd-chaps details.chap{background:none;border-radius:0;border-top:1px solid var(--line)}
+.rd-chaps details.chap:last-child{border-bottom:1px solid var(--line)}
+.rd-chaps details.chap summary{padding:0 2px}
+.rd-chaps .chaptext{padding:4px 2px var(--s5)}
+.rd-issue{background:none;border-radius:0;padding:0 0 var(--s4);border-bottom:1px solid var(--line)}
+.rd-issue-k{color:var(--acc)}
+.journal textarea{background:var(--bg)}
+
+.fin{background:var(--sky);border:1px solid var(--line);overflow:hidden;margin-top:var(--s5)}
+.sky-fin{opacity:.9}
+.bonus{gap:var(--s5);margin-top:var(--s5)}
+.bn-fact{border:1px solid color-mix(in srgb,var(--lamp) 30%,transparent)}
+.bonus > .rd-sec{margin:0}

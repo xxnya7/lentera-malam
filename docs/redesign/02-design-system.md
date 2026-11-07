@@ -4,6 +4,12 @@ Tanggal: 7 November 2026 · Dasar: kode di branch `redesign` (commit `c092716`) 
 
 > Catatan jujur: semua rekomendasi di sini adalah hasil penalaran desain, bukan hasil pencarian dari basis data palet atau font. Rasio kontras di bawah **dihitung** dengan rumus WCAG 2.x dari nilai hex yang tertulis, bukan perkiraan.
 
+> **Revisi 1 (7 November 2026, atas masukan pengguna):** versi pertama terasa terlalu polos dan terlalu cokelat, dan bagian-bagiannya menyatu. Revisi ini **mengalahkan** bagian 3–4 di bawah untuk hal-hal berikut:
+> - **Palet gelap** berganti dari cokelat-arang ke **langit malam biru tinta**. Warna teks kertas tua dan aksen lentera tetap. Token: `--bg #13152B`, `--surface #1D2142`, `--surface-2 #292E57`, `--line #343A66`, `--line-strong #6E76A6`, `--text #EFE9DD`, `--text-read #DED7C9`, `--text-2 #C9C4D6`, `--muted #A29FBF`, `--verse-num #9592B3`, `--lamp #F5B95E`, `--plum #BBA6F2`, `--sage #86D4B8`, `--ember #F59E89`, `--skyblue #93BDF2`, langit `--sky #0F1126`, awan `--cloud #262B52`. Semua pasangan teks lolos AA (dihitung: teks baca di atas panel 10,88:1, *muted* di atas panel 6,12:1, *muted* di atas `--surface-2` 5,08:1).
+> - **Mode terang:** krem `--bg #F6F2EA`, langit `--sky #DCE4F7`, dan teks `#2A2440` (13,2:1).
+> - **Kepala halaman** memakai ilustrasi langit: bulan, awan, dan bintang statis dalam SVG (bukan gradien). Maskot duduk di atas awan.
+> - **Zona Baca memakai panel.** Setiap bagian berada di panel `--surface` dengan garis 1 px, radius 28 px, dan jarak 24 px antarpanel, supaya batas antarbagian jelas. Setiap bagian punya warna aksen ikon sendiri: kisah dan doa plum, telaah kata dan ayat kaitan biru langit, penerapan dan sumber hijau, pasal dan refleksi lentera. Isi panel tetap tanpa kartu bersarang (memakai garis pemisah, bukan kotak).
+
 **Cara memakai dokumen ini:**
 - Dokumen ini adalah **Master**: aturan bawaan untuk semua halaman.
 - Bagian **Zona Baca** dan **Zona Main** (bagian 4) berisi aturan khusus. Kalau aturan zona bertentangan dengan Master, aturan zona yang berlaku.
