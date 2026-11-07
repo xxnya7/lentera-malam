@@ -303,7 +303,7 @@ function vMalam(){
   const focus = ok && dv.fokus ? `
   <section class="rd-focus t-lamp" aria-labelledby="fokush">
     <h2 class="rd-h rd-theme" id="fokush">${ic('moon')}${esc(dv.tema)}</h2>
-    <div class="rd-verses">${focusVs.map(v => `<p data-ref="${dv.fokus.b}:${dv.fokus.c}:${v[0]}" class="${dv.fokus.key.includes(v[0])?'key':''} ${isFav(dv.fokus.b,dv.fokus.c,v[0])?'fav':''}"><sup>${dv.fokus.key.includes(v[0]) ? ic('sparkle') : ''}${v[0]}</sup>${verseHTML(v[1])}</p>`).join('')}</div>
+    <div class="rd-verses">${focusVs.map(v => `<p tabindex="0" role="button" data-ref="${dv.fokus.b}:${dv.fokus.c}:${v[0]}" class="${dv.fokus.key.includes(v[0])?'key':''} ${isFav(dv.fokus.b,dv.fokus.c,v[0])?'fav':''}"><sup>${dv.fokus.key.includes(v[0]) ? ic('sparkle') : ''}${v[0]}</sup>${verseHTML(v[1])}</p>`).join('')}</div>
     <p class="rd-ref">${bookName(dv.fokus.b)} ${dv.fokus.c}:${dv.fokus.v1}–${dv.fokus.v2}, ayat fokus (AYT). Ketuk ayat untuk menyimpan atau menyalin.</p>
   </section>` : '';
 
@@ -585,10 +585,13 @@ function vCari(){
 function verseSheet(ref){
   const [b,c,v] = ref.split(':').map(Number); const x = chapter(b,c).find(y => y[0]===v); if (!x) return;
   const fav = isFav(b,c,v);
-  sheet(`<h2>${esc(bookName(b))} ${c}:${v}</h2>
-    <p class="prose" style="font-family:var(--serif);font-size:18px;line-height:1.6;color:var(--ink)">${verseHTML(x[1])}</p>
-    <button class="cta ${fav?'done':''}" data-favtoggle="${ref}">${ic('star')} ${fav ? 'Hapus dari favorit' : 'Tandai favorit'}</button>
-    <button class="ghost" data-copy="${ref}">${ic('copy')} Salin ayat</button>`);
+  sheet(`<h2 class="sh-h">${esc(bookName(b))} ${c}:${v}</h2>
+    <p class="sh-verse">${verseHTML(x[1])}</p>
+    <p class="sh-cite">Alkitab Yang Terbuka (AYT)</p>
+    <div class="sh-actions">
+      <button class="btn-quiet ${fav ? 'on' : ''}" data-favtoggle="${ref}" aria-pressed="${fav}">${ic(fav ? 'starfill' : 'star')}${fav ? 'Hapus dari favorit' : 'Tandai favorit'}</button>
+      <button class="btn-text" data-copy="${ref}">${ic('copy')}Salin ayat</button>
+    </div>`);
 }
 async function exportJournal(){
   const dates = Object.keys(S.journal).filter(d => S.journal[d] && S.journal[d].trim()).sort();
@@ -623,9 +626,9 @@ const eraIndex = id => LINI ? LINI.eras.findIndex(e => e.id === id) : -1;
 function eraSheet(b, c){
   const e = eraOf(b, c); if (!e) return;
   const note = LINI.era_note[String(b)];
-  sheet(`<h2>${esc(e.n)}</h2><span class="daypill" style="align-self:flex-start">${esc(e.t)}</span>
-    <p class="prose">${esc(e.d)}</p>${note ? `<div class="banner">${ic('clock')}<span>${esc(note)}</span></div>` : ''}
-    <button class="ghost" data-go="progres">${ic('chart')} Lihat lini masa lengkap</button>`);
+  sheet(`<h2 class="sh-h">${esc(e.n)}</h2><p class="sh-period">${ic('clock')}<span>${esc(e.t)}</span></p>
+    <p class="sh-def">${esc(e.d)}</p>${note ? `<p class="sh-note">${esc(note)}</p>` : ''}
+    <div class="sh-actions"><button class="btn-quiet" data-go="progres">${ic('chart')}Lihat lini masa lengkap</button></div>`);
 }
 const firstDayOfBook = b => { for (const p of PLAN) if (p.r.some(x => x[0] === b)) return p.d; return null; };
 function loadIntro(b){
@@ -634,18 +637,18 @@ function loadIntro(b){
   fetch(`/content/kitab/${b}.json`, { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(x => { INTRO[b] = x; }).catch(() => { INTRO[b] = null; }).finally(() => { introLoading[b] = false; render(); });
 }
 function introHTML(x){
-  return `<p class="prose" style="font-family:var(--serif);font-size:17px;color:var(--ink)">${esc(x.ringkas)}</p>
-    <dl class="facts"><dt>Penulis</dt><dd>${esc(x.penulis)}</dd><dt>Waktu</dt><dd>${esc(x.waktu)}</dd><dt>Pembaca pertama</dt><dd>${esc(x.pembaca)}</dd></dl>
-    <h3 class="mini-h">Tema besar</h3><ul class="dots">${x.tema.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
-    <h3 class="mini-h">Susunan kitab</h3><div class="outline">${x.susunan.map(s=>`<div><b>${esc(s[0])}</b><span>${esc(s[1])}</span></div>`).join('')}</div>
-    <h3 class="mini-h">Tokoh utama</h3><div class="chips">${x.tokoh.map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div>
-    ${x.kunci ? `<div class="try">${ic('book')}<span><b>Ayat kunci ${refText(x.kunci.b,x.kunci.c,x.kunci.v)}:</b> ${chapter(x.kunci.b,x.kunci.c).filter(v=>x.kunci.v.includes(v[0])).map(v=>verseHTML(v[1])).join(' ')}</span></div>` : ''}
-    ${x.catatan ? `<p class="small muted">${x.catatan}</p>` : ''}
-    ${x.sumber && x.sumber.length ? `<p class="small muted">Sumber: ${x.sumber.map(s=>`<a href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a>`).join(', ')}</p>` : ''}`;
+  return `<div class="ib"><p class="ib-lead">${esc(x.ringkas)}</p>
+    <dl class="ib-facts"><div><dt>Penulis</dt><dd>${esc(x.penulis)}</dd></div><div><dt>Waktu</dt><dd>${esc(x.waktu)}</dd></div><div><dt>Pembaca pertama</dt><dd>${esc(x.pembaca)}</dd></div></dl>
+    <h3 class="ib-h">Tema besar</h3><ul class="ib-list">${x.tema.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
+    <h3 class="ib-h">Susunan kitab</h3><dl class="ib-outline">${x.susunan.map(s=>`<div><dt>${esc(s[0])}</dt><dd>${esc(s[1])}</dd></div>`).join('')}</dl>
+    <h3 class="ib-h">Tokoh utama</h3><ul class="ib-chips">${x.tokoh.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
+    ${x.kunci ? `<figure class="ib-key"><blockquote>${chapter(x.kunci.b,x.kunci.c).filter(v=>x.kunci.v.includes(v[0])).map(v=>verseHTML(v[1])).join(' ')}</blockquote><figcaption>Ayat kunci: ${refText(x.kunci.b,x.kunci.c,x.kunci.v)}</figcaption></figure>` : ''}
+    ${x.catatan ? `<p class="ib-note">${x.catatan}</p>` : ''}
+    ${x.sumber && x.sumber.length ? `<p class="ib-src">Sumber: ${x.sumber.map(s=>`<a href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a>`).join(', ')}</p>` : ''}</div>`;
 }
 function introSheet(b){
   loadIntro(b); const x = INTRO[b];
-  sheet(`<h2>Pengantar ${esc(bookName(b))}</h2>${x ? introHTML(x) : `<p class="prose">Pengantar kitab ini sedang disiapkan dan akan muncul sebelum kitab ini mulai dibaca.</p>`}`);
+  sheet(`<h2 class="sh-h">Pengantar ${esc(bookName(b))}</h2>${x ? introHTML(x) : `<p class="sh-def">Pengantar kitab ini sedang disiapkan dan akan muncul sebelum kitab ini mulai dibaca.</p>`}`);
 }
 function introCards(day){
   const books = [...new Set(day.r.map(x => x[0]))];
@@ -692,7 +695,7 @@ function glossLink(html){
 }
 function glossSheet(id){
   const g = GLOS.find(x => x.id === id); if (!g) return;
-  sheet(`<h2>${esc(g.w)}</h2><p class="prose">${esc(g.d)}</p><button class="ghost" data-go="cari" data-tabset="istilah">${ic('search')} Lihat semua istilah</button>`);
+  sheet(`<h2 class="sh-h">${esc(g.w)}</h2><p class="sh-def">${esc(g.d)}</p><p class="sh-cite">Istilah dalam glosarium Lentera Malam</p><div class="sh-actions"><button class="btn-text" data-go="cari" data-tabset="istilah">${ic('search')}Lihat semua istilah</button></div>`);
 }
 function vIstilah(){
   const q = (S.qg || '').toLowerCase();
@@ -742,7 +745,7 @@ function applyTheme(){
   document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute('content', bg));
 }
 
-function toast(msg){ document.querySelectorAll('.toast').forEach(t=>t.remove()); const t=document.createElement('div'); t.className='toast'; t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),4000); }
+function toast(msg){ document.querySelectorAll('.toast').forEach(t=>t.remove()); const t=document.createElement('div'); t.className='toast' + (document.getElementById('layer').innerHTML ? ' top' : ''); t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),4000); }
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* Signature: satu kunang-kunang terbang dari tombol ke lentera di bilah atas. */
 function celebrate(from, date){
@@ -774,7 +777,26 @@ function burst(x,y){
     const a=Math.random()*Math.PI*2, d=60+Math.random()*90; s.style.left=x+'px'; s.style.top=y+'px';
     s.style.setProperty('--dx',Math.cos(a)*d+'px'); s.style.setProperty('--dy',Math.sin(a)*d-40+'px'); document.body.appendChild(s); setTimeout(()=>s.remove(),1100); }
 }
-function sheet(inner){ document.getElementById('layer').innerHTML=`<div class="sheet"><div class="panel" role="dialog" aria-modal="true"><div class="grab"></div>${inner}<button class="cta" data-close="1">Tutup</button></div></div>`; }
+/* Sheet: judul jadi label dialog, fokus pindah ke dalam dan kembali ke pemicu saat ditutup. */
+let sheetReturn = null;
+function sheet(inner){
+  sheetReturn = document.activeElement;
+  const layer = document.getElementById('layer');
+  layer.innerHTML = `<div class="sheet"><div class="panel" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="sh-top"><span class="grab" aria-hidden="true"></span><button class="sh-x" data-close="1" aria-label="Tutup">${ic('x')}</button></div>
+    <div class="sh-body">${inner}</div></div></div>`;
+  const h = layer.querySelector('h2'); if (h) { h.id = 'sheet-title'; h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+  const panel = layer.querySelector('.panel'); let y0 = null;
+  panel.addEventListener('touchstart', e => { if (panel.scrollTop <= 0) y0 = e.touches[0].clientY; }, { passive: true });
+  panel.addEventListener('touchmove', e => { if (y0 === null) return; const dy = e.touches[0].clientY - y0; if (dy > 0) panel.style.transform = `translateY(${dy}px)`; }, { passive: true });
+  panel.addEventListener('touchend', e => { if (y0 === null) return; const dy = e.changedTouches[0].clientY - y0; y0 = null; if (dy > 90) closeSheet(); else panel.style.transform = ''; });
+}
+function closeSheet(){
+  const layer = document.getElementById('layer'); if (!layer.innerHTML) return;
+  layer.innerHTML = '';
+  if (sheetReturn && document.contains(sheetReturn)) sheetReturn.focus({ preventScroll: true });
+  sheetReturn = null;
+}
 
 /* ---------- interaksi ---------- */
 document.getElementById('themeBtn').addEventListener('click', ()=>{ S.data.theme = isDark() ? 'light' : 'dark'; applyTheme(); saveState(); render(); });
@@ -783,18 +805,18 @@ document.addEventListener('input', e => { if (e.target.id === 'qg') { S.qg = e.t
 document.addEventListener('input', e => { if (e.target.id === 'jurnal') { const el = document.getElementById('jsaved'); if (el) el.textContent = 'Menyimpan…'; saveJournal(e.target.dataset.date, e.target.value); } });
 document.addEventListener('click', e => {
   const t = e.target.closest('button,[data-node],[data-ref],.sheet'); if (!t) return;
-  if (t.classList.contains('sheet')) { if (e.target === t) document.getElementById('layer').innerHTML=''; return; }
-  if (t.dataset.close) { document.getElementById('layer').innerHTML=''; return; }
+  if (t.classList.contains('sheet')) { if (e.target === t) closeSheet(); return; }
+  if (t.dataset.close) { closeSheet(); return; }
   if (t.dataset.ref) { verseSheet(t.dataset.ref); return; }
   if (t.dataset.era) { const [b,c] = t.dataset.era.split(':').map(Number); eraSheet(b,c); return; }
   if (t.dataset.intro) { introSheet(+t.dataset.intro); return; }
   if (t.dataset.gl) { glossSheet(t.dataset.gl); return; }
-  if (t.dataset.favtoggle) { const k = t.dataset.favtoggle; S.data.fav = S.data.fav || {}; if (S.data.fav[k]) delete S.data.fav[k]; else S.data.fav[k] = TODAY(); saveState(); document.getElementById('layer').innerHTML=''; render(); toast(S.data.fav[k] ? 'Ditandai sebagai favorit' : 'Dihapus dari favorit'); return; }
+  if (t.dataset.favtoggle) { const k = t.dataset.favtoggle; S.data.fav = S.data.fav || {}; if (S.data.fav[k]) delete S.data.fav[k]; else S.data.fav[k] = TODAY(); saveState(); closeSheet(); render(); toast(S.data.fav[k] ? 'Ditandai sebagai favorit' : 'Dihapus dari favorit'); return; }
   if (t.dataset.copy) { const [b,c,v] = t.dataset.copy.split(':').map(Number); const x = chapter(b,c).find(y=>y[0]===v); const txt = `${x[1]} (${bookName(b)} ${c}:${v}, AYT)`;
     navigator.clipboard.writeText(txt).then(()=>toast('Ayat disalin')).catch(()=>toast('Tidak dapat menyalin di tampilan ini')); return; }
   if (t.dataset.tab) { S.tabCari = t.dataset.tab; render(); return; }
   if (t.dataset.tabset) S.tabCari = t.dataset.tabset;
-  if (t.dataset.go) { document.getElementById('layer').innerHTML=''; if (t.dataset.go === 'malam') S.viewDate = null; location.hash = t.dataset.go; render(); return; }
+  if (t.dataset.go) { closeSheet(); if (t.dataset.go === 'malam') S.viewDate = null; location.hash = t.dataset.go; render(); return; }
   const a = t.dataset.act;
   if (a === 'start') { const n = document.getElementById('nama'); if (n) S.data.nama = n.value.trim(); S.data.welcomed = true; saveState(); render(); return; }
   if (a === 'read') {
@@ -819,17 +841,20 @@ document.addEventListener('click', e => {
   if (t.dataset.filter) { S.filter = t.dataset.filter; render(); return; }
   if (t.dataset.maplink != null) { S.mapSel = +t.dataset.maplink; location.hash = 'kaitan'; return; }
   if (t.dataset.node != null) { S.mapSel = +t.dataset.node; render(); return; }
-  if (a === 'source') sheet(`<h2>Sumber bacaan</h2>
-      <div class="sechead"><div class="bubble b-mint">${ic('shield')}</div><div><h2 style="font-size:17px">Teks Alkitab</h2><small>Alkitab Yang Terbuka (AYT)</small></div></div>
-      <p class="prose">Terjemahan Yayasan Lembaga SABDA (YLSA) dari bahasa asli Ibrani dan Yunani. Teks lengkap 66 kitab diambil dari repositori resmi YLSA, bukan diketik ulang. Penggunaan non-komersial diizinkan dengan mencantumkan sumber.</p>
-      <div class="sechead"><div class="bubble b-pink">${ic('scroll')}</div><div><h2 style="font-size:17px">Renungan, fakta, dan isu</h2></div></div>
-      <p class="prose">Setiap klaim sejarah, bahasa, dan data isu terkini diperiksa ke sumber yang dicantumkan di bagian “Sumber bacaan”. Renungan ini bahan pribadi dan tidak menggantikan pengajaran gereja.</p>`);
-});
+  if (a === 'source') sheet(`<h2 class="sh-h">Sumber bacaan</h2>
+      <h3 class="rd-h t-sage">${ic('shield')}Teks Alkitab</h3>
+      <p class="sh-def">Alkitab Yang Terbuka (AYT), terjemahan Yayasan Lembaga SABDA (YLSA) dari bahasa asli Ibrani dan Yunani. Teks lengkap 66 kitab diambil dari repositori resmi YLSA, bukan diketik ulang. Penggunaan non-komersial diizinkan dengan mencantumkan sumber.</p>
+      <h3 class="rd-h t-plum">${ic('scroll')}Renungan, fakta, dan isu</h3>
+      <p class="sh-def">Setiap klaim sejarah, bahasa, dan data isu terkini diperiksa ke sumber yang dicantumkan di bagian “Sumber bacaan”. Renungan ini bahan pribadi dan tidak menggantikan pengajaran gereja.</p>`);});
 let nTimer;
 document.addEventListener('input', e => { if (e.target.id === 'namaakun') { S.data.nama = e.target.value.trim(); clearTimeout(nTimer); nTimer = setTimeout(saveState, 700); } });
 document.addEventListener('submit', e => { if (e.target.id === 'authform') { e.preventDefault(); submitAuth(); } });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') document.getElementById('layer').innerHTML='';
+  if (e.key === 'Escape') closeSheet();
+  if (e.key === 'Tab') { const p = document.querySelector('#layer .panel'); if (p) { const f = [...p.querySelectorAll('button,a[href],input,textarea,[tabindex]')]; const i = f.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length-1].focus(); } else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); } } }
+  const r = e.target.closest && e.target.closest('p[data-ref]');
+  if (r && (e.key==='Enter'||e.key===' ')) { e.preventDefault(); verseSheet(r.dataset.ref); return; }
   const n = e.target.closest && e.target.closest('[data-node]');
   if (n && (e.key==='Enter'||e.key===' ')) { e.preventDefault(); S.mapSel = +n.dataset.node; render(); }
 });
