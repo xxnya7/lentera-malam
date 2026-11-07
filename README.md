@@ -1,6 +1,6 @@
 # Lentera Malam
 
-Renungan Alkitab harian sebelum tidur: seluruh Alkitab dalam 365 hari (1 November 2026 – 31 Oktober 2027), dengan renungan bersumber, jurnal, streak, glosarium, lini masa, dan notifikasi malam.
+Renungan Alkitab sebelum tidur: satu perikop setiap malam dari antrean yang mencakup seluruh Alkitab, tanpa tenggat. Ada renungan bersumber, jurnal, streak dengan pemulihan, glosarium, lini masa, dan notifikasi malam.
 
 Stack: HTML/CSS/JS statis (tanpa build) di **Vercel**, login dan database di **Supabase**, notifikasi Web Push (VAPID).
 
@@ -15,8 +15,10 @@ Panduan deploy lengkap ada di dokumen Word **Panduan Deploy Lentera Malam**.
 | `supabase/schema.sql` | Tabel `user_state`, `journals`, `push_subscriptions` + Row Level Security |
 | `sw.js` | Service worker: notifikasi + cache offline |
 | `manifest.webmanifest`, `icons/` | PWA (bisa dipasang ke Layar Utama) |
-| `data/` | Teks Alkitab AYT (penomoran TB), rencana baca, lini masa, glosarium |
-| `content/renungan/YYYY-MM-DD.json` | Renungan harian (ditambah setiap minggu) |
+| `data/` | Teks Alkitab AYT (penomoran TB), urutan rotasi kitab (`rencana.json`), antrean perikop (`antrean.json`), lini masa, glosarium |
+| `content/bacaan/<kitab>-<pasal>-<ayat>.json` | Renungan per perikop (ditambah setiap minggu) |
+| `lib/antrean.js` | Aturan antrean, malam (batas 04.00), streak, pemulihan, dan migrasi data; dipakai aplikasi dan server |
+| `scripts/buat-antrean.mjs` | Membuat ulang `data/antrean.json` |
 | `content/kitab/<indeks>.json` | Pengantar kitab (0 = Kejadian … 65 = Wahyu) |
 | `api/pengingat.js` | Fungsi Vercel pengirim notifikasi (dipanggil Vercel Cron) |
 | `api/vapid-public.js` | Menyediakan kunci publik VAPID ke aplikasi |
@@ -34,14 +36,17 @@ Panduan deploy lengkap ada di dokumen Word **Panduan Deploy Lentera Malam**.
 
 ## Jadwal notifikasi (Vercel Hobby)
 
-- `0 14 * * *` UTC → sekitar 21.00–22.00 WIB: pengingat bacaan bila belum ditandai.
-- `0 15 * * *` UTC → sekitar 22.00–23.00 WIB: peringatan streak bila belum ditandai.
+- `0 14 * * *` UTC → sekitar 21.00–22.00 WIB: satu pengingat lembut bila malam itu belum ada bacaan yang ditandai.
 
-Paket Hobby hanya menjamin ketepatan per jam (±59 menit). Pengguna bisa mematikan notifikasi atau tiap jenisnya dari tab Akun.
+Paket Hobby hanya menjamin ketepatan per jam (±59 menit). Pengguna bisa mematikan notifikasi dari tab Akun.
 
 ## Menambah renungan
 
-Tambahkan file `content/renungan/YYYY-MM-DD.json` (format sama dengan file yang ada), commit, dan push. Vercel otomatis memperbarui situs.
+Tambahkan file `content/bacaan/<kitab>-<pasal>-<ayatAwal>.json` untuk perikop di `data/antrean.json` (format sama dengan file yang ada; `fokus` harus di dalam perikop itu), commit, dan push. Vercel otomatis memperbarui situs.
+
+## Tes
+
+`npm test` menjalankan tes antrean, streak, pemulihan, malam (WIB), dan migrasi di `lib/antrean.test.js`.
 
 ## Lisensi teks
 

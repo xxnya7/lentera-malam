@@ -1,6 +1,11 @@
 {
- "d": 7,
- "t": "2026-11-07",
+ "id": "5-5-9",
+ "bacaan": {
+  "b": 5,
+  "c": 5,
+  "v1": 9,
+  "v2": 15
+ },
  "tema": "Di pihak siapa?",
  "fokus": {
   "b": 5,
@@ -74,5 +79,5 @@
    "u": "https://en.wikipedia.org/wiki/Tell_es-Sultan"
   }
  ],
- "sebelumnya": "Pada Hari 2 Anda membaca Yosua 1–4. Allah meneguhkan Yosua sebagai pengganti Musa dengan seruan \"kuat dan berani\". Rahab di Yerikho menyembunyikan dua pengintai Israel. Ketika para imam yang mengangkat Tabut Perjanjian menjejakkan kaki di Sungai Yordan, air dari hulu berhenti mengalir dan bangsa itu menyeberang di tanah kering. Dua belas batu dari dasar sungai kemudian didirikan di Gilgal sebagai tanda peringatan."
+ "sebelumnya": "Kisah sebelumnya (Yosua 1–4): Allah meneguhkan Yosua sebagai pengganti Musa dengan seruan \"kuat dan berani\". Rahab di Yerikho menyembunyikan dua pengintai Israel. Ketika para imam yang mengangkat Tabut Perjanjian menjejakkan kaki di Sungai Yordan, air dari hulu berhenti mengalir dan bangsa itu menyeberang di tanah kering. Dua belas batu dari dasar sungai kemudian didirikan di Gilgal sebagai tanda peringatan."
 }

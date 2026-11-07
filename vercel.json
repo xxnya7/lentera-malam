@@ -3,10 +3,6 @@
     {
       "path": "/api/pengingat",
       "schedule": "0 14 * * *"
-    },
-    {
-      "path": "/api/pengingat",
-      "schedule": "0 15 * * *"
     }
   ],
   "headers": [
@@ -41,5 +37,10 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/pengingat.js": {
+      "includeFiles": "{data/antrean.json,data/rencana.json,data/panjang-pasal.json,lib/antrean.js}"
+    }
+  }
 }

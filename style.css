@@ -815,3 +815,18 @@ body{overflow-wrap:break-word}
 .au-warn{background:color-mix(in srgb,var(--skyblue) 16%,transparent)}
 .au-warn svg.ms{color:var(--skyblue);flex:none}
 .ws-state{white-space:nowrap;max-width:none}
+
+/* ---- Antrean: satu perikop per malam, bacaan kedua opsional, pemulihan ---- */
+.rd-verses h4{font-family:var(--font-ui);font-size:var(--fs-sm);font-weight:700;color:var(--muted);margin:var(--s3) 0 0}
+.rd-verses h4:first-child{margin-top:0}
+.rd-more{max-width:34rem;width:100%;margin:var(--s5) auto 0}
+.rd-more .rd-chaps details.chap{border:0}
+.rd-more summary .nm{line-height:1.3;padding-block:12px}
+.rd-more .btn-quiet{align-self:flex-start;margin-top:var(--s3)}
+.rd-more .rd-note{font-family:var(--font-ui)}
+.rd-more-note{max-width:34rem;margin:var(--s4) auto 0;text-align:center}
+.sh-unit{font-size:var(--fs-md)}
+.moonph .mp-stitch{fill:none;stroke:var(--on-lamp);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2.2 2}
+.streak.dim{opacity:.7}
+.streak.dim svg.ms{--icon-accent:none}
+.sky-pg .sk-moon,.sky-pg .sk-crater,.sky-pg .sk-glow{display:none}

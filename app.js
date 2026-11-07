@@ -1,4 +1,4 @@
-import { currentStreak } from '/lib/streak.js';
+import { nightOf, tonight, streakState, migrate, mergeData, markRead, uid, minutes, LONG } from '/lib/antrean.js';
 
 // Supabase dimuat dari CDN. Kalau CDN atau layanan akun tidak terjangkau (offline, diblokir, sangat lambat),
 // aplikasi tetap jalan dengan data di perangkat, bukan layar kosong.
@@ -60,6 +60,7 @@ function owl(mood = 'sleepy', size = 96){
 // Penanda hari berbentuk fase bulan: purnama = sudah, sabit = malam ini, bulan baru = belum, putus-putus = nanti.
 function moonPhase(kind){
   const d = {
+    mended:`<circle class="mp-full" cx="18" cy="18" r="13"/><path class="mp-stitch" d="M9 20.5l3-3 3 3 3-3 3 3 3-3 3 3"/>`,
     full:`<circle class="mp-full" cx="18" cy="18" r="13"/><circle class="mp-crater" cx="14" cy="14" r="2.4"/><circle class="mp-crater" cx="22" cy="21" r="1.8"/><path class="mp-check" d="M12.5 18.5l3.6 3.5 7.4-7.6"/>`,
     crescent:`<circle class="mp-ring" cx="18" cy="18" r="13"/><path class="mp-cres" d="M21 7.4c-5 .9-8.2 5.6-7.2 10.6.9 4.6 5.4 7.6 10 6.8-1.8 1.6-4.2 2.5-6.8 2.3-5.4-.3-9.5-5-9.2-10.4.3-5 4.4-8.9 9.4-9 1.3 0 2.6.2 3.8.7z"/>`,
     new:`<circle class="mp-new" cx="18" cy="18" r="13"/>`,
@@ -100,9 +101,9 @@ function nightSky(cls = '', phase = null){
 </svg>`;
 }
 
-// Lentera kunang-kunang: makin terang seiring jumlah malam yang sudah dibaca (maks. 365).
+// Lentera kunang-kunang: satu kunang-kunang untuk setiap malam membaca; makin terang sampai 365 malam, lalu tetap penuh.
 function lantern(count, size = 120, opts = {}){
-  const lv = Math.min(1, count / 365);
+  const lv = Math.min(1, count / 365) * (opts.dim ? .35 : 1); // redup saat menunggu pemulihan
   const n = Math.min(count, 28); let dots = '';
   for (let i = 0; i < n; i++){ const x = 36 + ((i * 37) % 48), y = 50 + ((i * 53) % 46); dots += `<circle class="ln-fly" cx="${x}" cy="${y}" r="${1.6 + (i % 3) * .5}" style="--d:${(i % 7) * .4}s"/>`; }
   return `<svg class="lantern ${opts.cls || ''}" width="${size}" height="${size * 1.25}" viewBox="0 0 120 150" style="--lv:${(.18 + .82 * lv).toFixed(3)}" aria-hidden="true" focusable="false">
@@ -120,7 +121,6 @@ function lantern(count, size = 120, opts = {}){
 const LINK_COLORS = ['--pink','--mint','--lilac'];
 const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-const START = '2026-11-01';
 
 /* ---------- tanggal ---------- */
 const pad = n => String(n).padStart(2,'0');
@@ -130,15 +130,14 @@ const addDays = (s, n) => { const d = parseISO(s); d.setDate(d.getDate()+n); ret
 const dayDiff = (a, b) => Math.round((parseISO(b) - parseISO(a)) / 86400000);
 const fmtDate = s => { const d = parseISO(s); return `${HARI[d.getDay()]}, ${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`; };
 const fmtShort = s => { const d = parseISO(s); return `${d.getDate()} ${BULAN[d.getMonth()].slice(0,3)}`; };
-const TODAY = () => isoLocal(new Date());
-const planIndexFor = date => Math.max(0, Math.min(364, dayDiff(START, date)));
+const TODAY = () => nightOf(new Date()); // tanggal malam: membaca sebelum pukul 04.00 masih dihitung malam sebelumnya
 
 /* ---------- state ---------- */
-let BIBLE = null, PLAN = null;
+let BIBLE = null, PLAN = null, A = null, UNIT = null;
 const S = {
-  view: null, viewDate: null, mapSel: null, filter: 'semua', tabCari: 'cari', q: '',
+  view: null, viewNight: null, mapSel: null, filter: 'semua', tabCari: 'cari', q: '',
   user: { id: null, email: '', signedIn: false }, authChecked: false, authMode: 'masuk', authErr: '', authBusy: false,
-  data: { read: {}, fav: {}, mode: 'mendalam', theme: null, welcomed: false },
+  data: { read: {}, done: {}, nights: {}, round: 1, fav: {}, mode: 'mendalam', theme: null, welcomed: false },
   journal: {}, journalAt: {}, devo: {}, devoLoading: {}, sync: 'local', dbErr: false, cloudDown
 };
 
@@ -158,7 +157,7 @@ function saveState(){
     // Gabung dengan isi cloud dulu supaya perangkat lain yang lebih baru tidak tertimpa.
     const cur = must(await sb.from('user_state').select('data').eq('user_id', uid).maybeSingle());
     const cloud = (cur.data && cur.data.data) || {};
-    S.data = Object.assign({}, cloud, S.data, { read: Object.assign({}, cloud.read, S.data.read) });
+    S.data = upgrade(mergeData(S.data, cloud));
     must(await sb.from('user_state').upsert({ user_id: uid, data: S.data, updated_at: new Date().toISOString() }));
     lsSave(); S.sync = 'cloud';
   }).catch(() => { S.sync = 'local'; });
@@ -175,25 +174,14 @@ function saveJournal(date, text){
   }, 900);
 }
 
-/* ---------- streak ketat ---------- */
-function streakInfo(){
-  const dates = new Set(Object.values(S.data.read).map(r => r.on));
-  const t = TODAY();
-  const cur = currentStreak(dates, t);
-  const sorted = [...dates].sort(); let best = 0, run = 0, prev = null;
-  for (const x of sorted){ run = (prev && dayDiff(prev, x) === 1) ? run + 1 : 1; best = Math.max(best, run); prev = x; }
-  return { cur, best, today: dates.has(t), broken: !dates.has(t) && !dates.has(addDays(t,-1)) && sorted.length > 0 };
-}
+/* ---------- streak dengan pemulihan (aturan di lib/antrean.js) ---------- */
+const streakInfo = () => streakState(S.data.nights || {}, TODAY());
+// Data lama (per tanggal) diubah ke bentuk per perikop begitu antrean termuat. Aman diulang.
+const upgrade = d => (A && PLAN ? migrate(d, PLAN, A.q) : d);
 
 /* ---------- Alkitab ---------- */
 const bookName = b => BIBLE[b].n;
 const chapter = (b, c) => BIBLE[b].c[c-1] || [];
-function fmtRefs(list){
-  const out = [];
-  for (const [b,c] of list){ const last = out[out.length-1]; if (last && last[0]===b && last[2]===c-1) last[2]=c; else out.push([b,c,c]); }
-  const parts = out.map(([b,s,e]) => `${bookName(b)} ${s}${e!==s?'–'+e:''}`);
-  return parts.length > 1 ? parts.slice(0,-1).join(', ') + ' dan ' + parts[parts.length-1] : parts.join('');
-}
 const verseHTML = t => esc(t).replace(/\((\d+-\d+)\)/g, '<span class="hv">($1)</span>');
 const titleHTML = t => esc(t).replace(/&lt;br\s*\/?&gt;/g, ' · ');
 function chapterHTML(b, c, focus){
@@ -207,7 +195,7 @@ async function loadDevo(date){
   if (S.devo[date] !== undefined || S.devoLoading[date]) return;
   S.devoLoading[date] = true;
   const timer = setTimeout(() => { if (S.devo[date] === undefined){ S.devo[date] = 'timeout'; render(); } }, 10000);
-  try { const r = await fetch(`/content/renungan/${date}.json`, { cache: 'no-cache' }); S.devo[date] = r.ok ? await r.json() : null; }
+  try { const r = await fetch(`/content/bacaan/${date}.json`, { cache: 'no-cache' }); S.devo[date] = r.ok ? await r.json() : null; }
   catch(e){ S.devo[date] = null; }
   clearTimeout(timer); S.devoLoading[date] = false; render();
 }
@@ -223,16 +211,17 @@ const VIEWS = [
 const cur = () => { const h = location.hash.slice(1); return (VIEWS.some(v=>v.id===h) || h==='kaitan') ? h : 'malam'; };
 const greet = () => { const f = (S.data.nama || '').trim().split(/\s+/)[0]; return f ? `Selamat malam, ${esc(f)}` : 'Selamat malam'; };
 const head = (title, sub) => `<header class="ph"><h1 class="ph-h">${title}</h1>${sub ? `<p class="ph-sub">${sub}</p>` : ''}</header>`;
-const viewDate = () => S.viewDate || (TODAY() < START ? START : TODAY());
+const viewKey = () => S.viewNight || TODAY();
 
 function renderChrome(){
   const c = cur();
   document.getElementById('nav').innerHTML = VIEWS.map(v => `<button data-go="${v.id}" ${v.id===c?'aria-current="page"':''}>${ic(v.icon)}<span>${v.label}</span></button>`).join('');
   const st = streakInfo();
-  const k = Object.keys(S.data.read).length;
+  const k = Object.keys(S.data.nights || {}).filter(d => S.data.nights[d].length).length;
   const el = document.getElementById('streak');
-  el.innerHTML = `${ic(flameIcon(st.cur))}<span>${st.cur}</span>`;
-  el.setAttribute('aria-label', `Lentera menyala ${st.cur} malam berturut-turut, berisi ${k} kunang-kunang`);
+  el.innerHTML = `${ic(flameIcon(st.dim ? 1 : st.streak))}<span>${st.streak}</span>`;
+  el.classList.toggle('dim', st.dim);
+  el.setAttribute('aria-label', `Lentera menyala ${st.streak} malam berturut-turut${st.dim ? ', sedang redup' : ''}, berisi ${k} kunang-kunang`);
 }
 
 function vLogin(){
@@ -284,9 +273,9 @@ function vWelcome(){
   if (step === 0) return `<div class="wl">${sky}${dots}
     <h1 class="wl-h">Halo, saya Lentera.</h1>
     <div class="wl-talk">
-      <p>Saya akan menemani Anda membaca seluruh Alkitab dalam 365 hari, satu malam setiap kali, bergantian antarjenis kitab dengan teks AYT lengkap.</p>
+      <p>Saya akan menemani Anda membaca Alkitab satu perikop setiap malam, bergantian antarjenis kitab, dengan teks AYT lengkap. Tanpa tenggat: besok malam kita lanjut dari bacaan berikutnya.</p>
       <p>Setiap malam ada renungan dengan sumber yang bisa diperiksa, dan jurnal refleksi pribadi yang tersimpan.</p>
-      <p>Setiap bacaan yang selesai menambah satu kunang-kunang ke lentera Anda.</p>
+      <p>Setiap malam Anda membaca, satu kunang-kunang masuk ke lentera Anda.</p>
     </div>
     <div class="wl-act"><button class="btn-primary" data-wstep="1">Kenalan dulu</button><button class="btn-text" data-act="start">Lewati</button></div></div>`;
   if (step === 1) return `<div class="wl">${sky}${dots}
@@ -304,46 +293,82 @@ function vWelcome(){
     <div class="wl-act"><button class="btn-primary" data-act="start">${ic('moon')}Mulai membaca</button><button class="btn-text" data-wstep="1">Kembali</button></div></div>`;
 }
 
-function readMinutes(day, dv, deep){
-  let w = 0; for (const [b,c] of day.r) for (const v of chapter(b,c)) w += v[1].split(/\s+/).length;
-  if (dv && typeof dv === 'object') w += [...(deep ? dv.kisah : dv.kisah.slice(0,1)), ...(deep ? dv.hidup : dv.hidup.slice(0,1))].join(' ').split(/\s+/).length;
-  return Math.max(5, Math.round(w / 200));
+/* ---------- antrean ---------- */
+const byId = id => UNIT.get(id);
+function unitRef(u){
+  const last = chapter(u[0], u[1]).length;
+  return `${bookName(u[0])} ${u[1]}${u[2] === 1 && u[3] === last ? '' : `:${u[2]}${u[3] !== u[2] ? '–' + u[3] : ''}`}`;
 }
+const unitVerses = u => chapter(u[0], u[1]).filter(v => v[0] >= u[2] && v[0] <= u[3]);
+const unitTitle = u => { const v = unitVerses(u).find(x => x[2]); return v ? titleHTML(v[2]) : ''; };
+function unitHTML(u, keys){
+  const [b, c] = u;
+  return unitVerses(u).map(v => `${v[2] ? `<h4>${titleHTML(v[2])}</h4>` : ''}<p tabindex="0" role="button" data-ref="${b}:${c}:${v[0]}" class="${keys && keys.includes(v[0]) ? 'key' : ''} ${isFav(b,c,v[0]) ? 'fav' : ''}"><sup>${keys && keys.includes(v[0]) ? ic('sparkle') : ''}${v[0]}</sup>${verseHTML(v[1])}</p>`).join('');
+}
+// Ringkas daftar bacaan: perikop yang menutup satu pasal penuh ditulis sebagai pasal, pasal berurutan digabung ("Roma 1–3").
+function refsOf(ids){
+  const set = new Set(ids); const us = ids.map(byId).filter(Boolean); const parts = []; const seen = new Set();
+  for (const u of us) {
+    const ch = A.q.filter(x => x[0] === u[0] && x[1] === u[1]);
+    if (ch.every(x => set.has(uid(x)))) { const k = u[0] + ':' + u[1]; if (seen.has(k)) continue; seen.add(k);
+      const last = parts[parts.length - 1];
+      if (last && last.b === u[0] && last.c2 === u[1] - 1) last.c2 = u[1]; else parts.push({ b: u[0], c1: u[1], c2: u[1] }); }
+    else parts.push({ u });
+  }
+  const r = parts.map(p => p.u ? unitRef(p.u) : `${bookName(p.b)} ${p.c1}${p.c2 !== p.c1 ? '–' + p.c2 : ''}`);
+  return r.length > 1 ? r.slice(0, -1).join(', ') + ' dan ' + r[r.length - 1] : r.join('');
+}
+const litNights = () => Object.keys(S.data.nights || {}).filter(d => S.data.nights[d].length);
+const unitsDone = () => Object.keys(S.data.done || {}).length;
+// Bacaan yang tampil: malam ini dari antrean, atau malam lama yang dibuka dari Riwayat.
+function shownPair(){
+  const night = TODAY();
+  if (S.viewNight && S.viewNight !== night) { const ids = (S.data.nights[S.viewNight] || []).filter(byId); if (ids.length) return { past: S.viewNight, first: byId(ids[0]), second: ids[1] ? byId(ids[1]) : null }; }
+  return { past: null, ...tonight(A.q, S.data.done || {}, night) };
+}
+function readMinutes(u, dv, deep){
+  let w = u[4];
+  if (dv && typeof dv === 'object') w += [...(deep ? dv.kisah : dv.kisah.slice(0,1)), ...(deep ? dv.hidup : dv.hidup.slice(0,1))].join(' ').split(/\s+/).length;
+  return Math.max(2, Math.round(w / 180));
+}
+
 function vMalam(){
   GL_SEEN = new Set();
   const PG = arr => (arr||[]).map(t=>`<p>${glossLink(t)}</p>`).join('');
-  const date = viewDate(); const idx = planIndexFor(date); const day = PLAN[idx];
-  loadDevo(day.t);
-  const dv = S.devo[day.t];
+  const night = TODAY(); const { past, first, second } = shownPair();
+  const id = uid(first);
+  loadDevo(id);
+  const dv = S.devo[id];
   const ok = dv && typeof dv === 'object';
   const deep = S.data.mode === 'mendalam';
-  const done = !!S.data.read[day.t];
+  const done = !!past || !!S.data.done[id];
+  const done2 = second && (!!past || !!S.data.done[uid(second)]);
   const st = streakInfo();
-  const isToday = date === TODAY();
-  const before = TODAY() < START;
-  const fireflies = Object.keys(S.data.read).length;
-  const focusVs = ok && dv.fokus ? chapter(dv.fokus.b, dv.fokus.c).filter(v => v[0]>=dv.fokus.v1 && v[0]<=dv.fokus.v2) : [];
-  const allRefs = day.r;
-  const era = eraOf(day.r[0][0], day.r[0][1]);
+  const fireflies = litNights().length;
+  const keys = ok && dv.fokus && dv.fokus.b === first[0] && dv.fokus.c === first[1] ? dv.fokus.key : null;
+  const era = eraOf(first[0], first[1]);
   const nama = (S.data.nama || '').trim().split(/\s+/)[0];
+  const round = S.data.round || 1;
 
   /* ---- Zona Main: kepala malam ini ---- */
   let note = '';
-  if (before) note = `<p class="tn-note">${ic('calendar')}<span>Rencana dimulai Minggu, 1 November 2026. Hari 1 boleh dibaca lebih awal; streak dihitung dari hari Anda menandainya.</span></p>`;
-  else if (!isToday && date < TODAY()) note = `<p class="tn-note">${ic('clock')}<span>Anda sedang membuka bacaan ${fmtDate(date)}.</span><button class="btn-text" data-act="today">Kembali ke hari ini</button></p>`;
-  else if (isToday && !done && st.cur > 0) note = `<p class="tn-note">${ic(flameIcon(st.cur))}<span>Lentera Anda sudah menyala ${st.cur} malam berturut-turut. Malam ini tinggal satu langkah lagi.</span></p>`;
-  const title = isToday || before ? (nama ? `Selamat malam, ${esc(nama)}` : 'Selamat malam') : `Bacaan ${fmtShort(day.t)}`;
+  if (past) note = `<p class="tn-note">${ic('clock')}<span>Anda sedang membuka bacaan ${fmtDate(past)}.</span><button class="btn-text" data-act="today">Kembali ke malam ini</button></p>`;
+  else if (!done && st.dim) note = `<p class="tn-note">${ic(flameIcon(1))}<span>Lentera Anda sedang redup. Satu bacaan malam ini menyalakannya lagi, dan satu bacaan tambahan membantu memulihkan streak ${st.streak} malam Anda. Masih ada ${dayDiff(night, st.deadline) + 1} malam untuk itu.</span></p>`;
+  else if (!done && st.restarted && st.restarted >= addDays(night, -1) && st.streak === 0) note = `<p class="tn-note">${ic(flameIcon(1))}<span>Lentera Anda menyala lagi mulai malam ini. ${unitsDone()} bacaan dan ${fireflies} kunang-kunang Anda tetap tersimpan.</span></p>`;
+  else if (!done && st.streak > 0) note = `<p class="tn-note">${ic(flameIcon(st.streak))}<span>Lentera Anda menyala ${st.streak} malam berturut-turut. Satu bacaan sudah cukup untuk malam ini.</span></p>`;
+  else if (!done && !fireflies) note = `<p class="tn-note">${ic(flameIcon(0))}<span>Mulai dari satu bacaan saja.</span></p>`;
+  const title = past ? `Bacaan ${fmtShort(past)}` : (nama ? `Selamat malam, ${esc(nama)}` : 'Selamat malam');
   const header = `
   <header class="tn">
-    ${nightSky('', S.moonAnim ? S.moonAnim.p : lunarPhase(date))}
+    ${nightSky('', S.moonAnim ? S.moonAnim.p : lunarPhase(past || night))}
     <div class="tn-chips">
-      <span class="chip-s">Hari ${day.d} dari 365</span>
-      <span class="chip-s">${esc(day.g)}</span>
-      ${era ? `<button class="chip-s chip-btn" data-era="${day.r[0][0]}:${day.r[0][1]}">${ic('clock')}${esc(era.n)}</button>` : ''}
+      <span class="chip-s">${esc(A.g[first[5]])}</span>
+      ${round > 1 ? `<span class="chip-s">Putaran ke-${round}</span>` : ''}
+      ${era ? `<button class="chip-s chip-btn" data-era="${first[0]}:${first[1]}">${ic('clock')}${esc(era.n)}</button>` : ''}
     </div>
     <div class="tn-owl ${S.fxPeek ? 'peek' : ''}">${owl(done ? 'asleep' : 'sleepy', 104)}</div>
     <h1 class="tn-hello">${title}</h1>
-    <p class="tn-line">${done ? 'Bacaan malam ini sudah selesai. Selamat beristirahat.' : `${isToday || before ? 'Malam ini ' : ''}${fmtRefs(allRefs)}, sekitar ${readMinutes(day, dv, deep)} menit.`}</p>
+    <p class="tn-line">${past ? `${refsOf(S.data.nights[past])}.` : done ? 'Bacaan malam ini sudah selesai. Selamat beristirahat.' : `Malam ini ${unitRef(first)}, sekitar ${readMinutes(first, dv, deep)} menit.`}</p>
     ${done ? '' : `<button class="btn-primary" data-act="tobaca">${ic('book')}Mulai baca</button>`}
     ${note}
   </header>`;
@@ -361,27 +386,18 @@ function vMalam(){
     </div>
   </div>`;
 
-  const focus = ok && dv.fokus ? `
-  <section class="rd-focus t-lamp" aria-labelledby="fokush">
-    <h2 class="rd-h rd-theme" id="fokush">${ic('malam')}${esc(dv.tema)}</h2>
-    <div class="rd-verses">${focusVs.map(v => `<p tabindex="0" role="button" data-ref="${dv.fokus.b}:${dv.fokus.c}:${v[0]}" class="${dv.fokus.key.includes(v[0])?'key':''} ${isFav(dv.fokus.b,dv.fokus.c,v[0])?'fav':''}"><sup>${dv.fokus.key.includes(v[0]) ? ic('sparkle') : ''}${v[0]}</sup>${verseHTML(v[1])}</p>`).join('')}</div>
-    <p class="rd-ref">${bookName(dv.fokus.b)} ${dv.fokus.c}:${dv.fokus.v1}–${dv.fokus.v2}, ayat fokus (AYT). Ketuk ayat untuk menyimpan atau menyalin.</p>
-  </section>` : '';
-
+  // Bacaan malam ini: satu perikop utuh, dengan ayat fokus renungan disorot.
   const reading = `
-  <section class="rd-sec t-lamp" aria-labelledby="pasalh">
-    <h2 class="rd-h" id="pasalh">${ic('book')}Bacaan Alkitab hari ini</h2>
-    <p class="rd-note">${allRefs.length} pasal. Ketuk untuk membuka.</p>
-    <div class="rd-chaps">${allRefs.map(([b,c]) => `
-      <details class="chap" ${deep && allRefs.length===1?'open':''}><summary><span class="nm">${bookName(b)} ${c}</span><small>${chapter(b,c).length} ayat</small><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg></summary>
-      <div class="chaptext">${chapterHTML(b,c, ok && dv.fokus && dv.fokus.b===b && dv.fokus.c===c ? dv.fokus.key : null)}</div></details>`).join('')}
-    </div>
+  <section class="rd-focus t-lamp" aria-labelledby="fokush">
+    <h2 class="rd-h rd-theme" id="fokush">${ic('malam')}${ok ? esc(dv.tema) : unitTitle(first) || 'Bacaan malam ini'}</h2>
+    <div class="rd-verses">${unitHTML(first, keys)}</div>
+    <p class="rd-ref">${unitRef(first)} (AYT)${keys ? ', ayat fokus disorot' : ''}. Ketuk ayat untuk menyimpan atau menyalin.</p>
   </section>`;
 
   let devo = '', bonus = '';
-  if (dv === undefined || S.devoLoading[day.t]) devo = `<div class="rd-loading" role="status">${owl('reading', 72)}<div class="rd-skel" aria-label="Memuat renungan"><i></i><i></i><i></i><i></i></div></div>`;
+  if (dv === undefined || S.devoLoading[id]) devo = `<div class="rd-loading" role="status">${owl('reading', 72)}<div class="rd-skel" aria-label="Memuat renungan"><i></i><i></i><i></i><i></i></div></div>`;
   else if (dv === 'timeout') devo = `<div class="rd-empty">${owl(navigator.onLine === false ? 'offline' : 'worried', 72)}<p><b>${navigator.onLine === false ? 'Sedang tanpa sinyal.' : 'Renungan belum dapat dimuat.'}</b> Periksa koneksi Anda. Bacaan Alkitab di atas tetap bisa dibaca.</p></div>`;
-  else if (!dv) devo = `<div class="rd-empty">${owl('sleepy', 72)}<p><b>Renungan untuk hari ini sedang disiapkan.</b> Renungan ditulis per minggu dan diperbarui setiap Jumat. Sementara itu, bacalah pasal-pasal hari ini dan tuliskan refleksi Anda di bawah.</p></div>`;
+  else if (!dv) devo = `<div class="rd-empty">${owl('sleepy', 72)}<p><b>Renungan untuk bacaan ini sedang disiapkan.</b> Bacalah perikopnya, lalu tuliskan refleksi Anda di bawah.</p></div>`;
   else {
     devo = `
   <section class="rd-sec t-plum" aria-labelledby="kisahh">
@@ -398,11 +414,11 @@ function vMalam(){
     <div class="rd-prose">${PG(deep ? dv.hidup : dv.hidup.slice(0,1))}</div>
   </section>`;
     bonus = `
-  <section class="bn-fact" aria-labelledby="faktah">
+  ${dv.fakta ? `<section class="bn-fact" aria-labelledby="faktah">
     <p class="bn-kind">${ic('fakta')}${esc(dv.fakta.kind)}</p>
     <h2 class="bn-h" id="faktah">${esc(dv.fakta.title)}</h2>
     <p>${glossLink(dv.fakta.text)}</p>
-  </section>
+  </section>` : ''}
   ${deep && dv.kaitan ? `<section class="rd-sec t-sky" aria-labelledby="kaitanh">
     <h2 class="rd-h" id="kaitanh">${ic('link')}Ayat yang berkaitan</h2>
     <ol class="rd-links">${dv.kaitan.map((l,i) => `<li>
@@ -413,13 +429,14 @@ function vMalam(){
   </section>` : ''}`;
   }
 
+  const jd = past || night;
   const journal = `
   <section class="rd-sec journal t-lamp" aria-labelledby="refh">
     <h2 class="rd-h" id="refh">${ic('pen')}Refleksi malam ini</h2>
-    <p class="rd-q">${ok && dv.tanya ? esc(dv.tanya) : 'Ayat atau peristiwa apa dari bacaan hari ini yang paling menyentuh Anda, dan mengapa?'}</p>
+    <p class="rd-q">${ok && dv.tanya ? esc(dv.tanya) : 'Ayat apa dari bacaan malam ini yang paling menyentuh Anda, dan mengapa?'}</p>
     ${ok && dv.coba && deep ? `<p class="rd-try">${ic('check')}<span><b>Langkah konkret:</b> ${esc(dv.coba)}</span></p>` : ''}
-    <label class="field-l" for="jurnal">Jurnal ${fmtShort(day.t)}</label>
-    <textarea id="jurnal" data-date="${day.t}" placeholder="Tuliskan refleksi Anda di sini…">${esc(S.journal[day.t] || '')}</textarea>
+    <label class="field-l" for="jurnal">Jurnal ${fmtShort(jd)}</label>
+    <textarea id="jurnal" data-date="${jd}" placeholder="Tuliskan refleksi Anda di sini…">${esc(S.journal[jd] || '')}</textarea>
     <p class="saved" id="jsaved" aria-live="polite"></p>
   </section>`;
 
@@ -428,62 +445,65 @@ function vMalam(){
       <ol class="srclist">${dv.sumber.map(s=>`<li><a href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a></li>`).join('')}</ol></section>` : '';
 
   /* ---- Signature: lentera kunang-kunang ---- */
+  const lan = lantern(fireflies, 112, {cls:'ln-big', id:'f', dim: st.dim && !past});
   const finish = done ? `
-  <section class="fin blanket fin-done ${S.justDone === day.t ? 'just' : ''}" aria-labelledby="finh">${nightSky('sky-fin')}
-    <div class="fin-art">${lantern(fireflies, 112, {cls:'ln-big', id:'f'})}<div class="fin-owl">${owl(S.justDone === day.t ? 'happy' : 'asleep', 76)}</div></div>
-    <h2 class="fin-h" id="finh">${isToday ? `Malam ke-${st.cur}. Selamat tidur${nama ? ', ' + esc(nama) : ''}.` : 'Bacaan ini sudah selesai.'}</h2>
-    <p class="fin-p">Ditandai ${fmtShort(S.data.read[day.t].on)}. Lentera Anda kini berisi ${fireflies} kunang-kunang; ${Math.max(0, 365 - fireflies)} lagi sampai akhir tahun.</p>
+  <section class="fin blanket fin-done ${S.justDone === id ? 'just' : ''}" aria-labelledby="finh">${nightSky('sky-fin')}
+    <div class="fin-art">${lan}<div class="fin-owl">${owl(S.justDone === id ? 'happy' : 'asleep', 76)}</div></div>
+    <h2 class="fin-h" id="finh">${past ? 'Bacaan malam itu sudah selesai.' : `Malam ke-${st.streak}. Selamat tidur${nama ? ', ' + esc(nama) : ''}.`}</h2>
+    <p class="fin-p">${!past && S.justMended ? `Lentera Anda menyala penuh lagi. Streak ${S.justMended} malam tersambung kembali.` : `Lentera Anda kini berisi ${fireflies} kunang-kunang.`}</p>
   </section>` : `
   <section class="fin blanket" aria-labelledby="finh">${nightSky('sky-fin')}
-    <div class="fin-art">${lantern(fireflies, 112, {cls:'ln-big', id:'f'})}</div>
-    <h2 class="fin-h" id="finh">Selesai membaca?</h2>
+    <div class="fin-art">${lan}</div>
+    <h2 class="fin-h" id="finh">Selesai membaca ${unitRef(first)}?</h2>
     <p class="fin-p">Tandai bacaan ini, dan satu kunang-kunang lagi masuk ke lentera Anda.</p>
-    <button class="btn-primary" data-act="read" data-date="${day.t}">${ic('check')}Selesai membaca</button>
+    <button class="btn-primary" data-act="read" data-id="${id}" data-first="1">${ic('check')}Tandai sudah dibaca</button>
   </section>`;
+
+  // Bacaan kedua: opsional, muncul setelah bacaan pertama ditandai. Saat ada pemulihan, inilah bacaan pemulihannya.
+  let more = '';
+  if (done && second) {
+    const owe = !past && !done2 && st.owed > 0;
+    const head2 = past ? `Juga dibaca malam itu: ${unitRef(second)}` : done2 ? `Bacaan kedua selesai: ${unitRef(second)}` : owe ? `Bacaan pemulihan: ${unitRef(second)}` : `Masih ingin membaca? ${unitRef(second)}`;
+    more = `<section class="rd-sec rd-more t-plum" aria-label="Bacaan kedua"><div class="rd-chaps">
+      <details class="chap"><summary><span class="nm">${head2}</span><small>${minutes(second[4])} menit</small><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg></summary>
+      <div class="chaptext">${owe ? `<p class="rd-note">Membantu memulihkan streak ${st.streak} malam Anda. Boleh juga dibaca besok.</p>` : ''}${unitHTML(second)}
+      ${past || done2 ? '' : `<button class="btn-quiet" data-act="read" data-id="${uid(second)}">${ic('check')}Tandai sudah dibaca</button>`}</div></details>
+    </div></section>`;
+  } else if (done && !past && first[4] > LONG) more = `<p class="rd-note rd-more-note">Bacaan ini cukup panjang. Satu bacaan sudah cukup untuk malam ini.</p>`;
 
   return `${header}
   <article class="rd" id="baca" style="--fs-read:${(S.data.fs || 19) + 1}px" aria-label="Bacaan dan renungan">
-    ${tools}${introCards(day)}${focus}${reading}${prevCard(day, dv)}${devo}${journal}${prayer}
+    ${tools}${introCards(first)}${reading}${prevCard(first, dv)}${devo}${journal}${prayer}
   </article>
-  ${finish}
+  ${finish}${more}
   <div class="bonus">${bonus}${sources}
     <p class="srcnote">${ic('shield')}<span>Teks Alkitab: Alkitab Yang Terbuka (AYT) © YLSA, untuk penggunaan non-komersial.</span><button class="btn-text" data-act="source">Tentang sumber</button></p>
   </div>`;
 }
 
 function vArsip(){
-  const t = TODAY(); const lastIdx = TODAY() < START ? 0 : planIndexFor(t);
-  const rows = PLAN.slice(0, lastIdx+1).map(p => {
-    const r = S.data.read[p.t]; const k = r ? 'read' : (p.t === t || TODAY() < START ? 'today' : 'miss');
-    return { p, k, r };
-  }).reverse();
-  const f = S.filter;
-  const shown = rows.filter(x => f==='semua' || (f==='sudah' ? x.k==='read' : x.k!=='read'));
-  const n = Object.keys(S.data.read).length;
-  const nextUp = PLAN.slice(lastIdx+1, lastIdx+4);
-  const label = { read: 'Sudah dibaca', today: 'Malam ini', miss: 'Belum dibaca' };
-  return `${head('Arsip bacaan', 'Buka kembali bacaan dan jurnal lama.')}
-    <div class="seg ws-seg" role="group" aria-label="Saring bacaan">
-      ${['semua','sudah','belum'].map(k=>`<button data-filter="${k}" aria-pressed="${f===k}">${k[0].toUpperCase()+k.slice(1)}</button>`).join('')}
-    </div>
-    <ul class="ws-list">${shown.map(x => `<li>
-      <button class="ws-row st-${x.k}" data-open="${x.p.t}">
-        <span class="ws-ic" aria-hidden="true">${x.k==='read' ? ic('check') : x.k==='today' ? ic('moon') : ic('dot')}</span>
-        <span class="ws-meta"><b>Hari ${x.p.d}, ${fmtShort(x.p.t)}</b><span>${fmtRefs(x.p.r)}</span>${S.journal[x.p.t] ? `<span class="ws-tag">${ic('pen')}Ada jurnal</span>` : ''}</span>
-        <span class="ws-state">${label[x.k]}</span>
-      </button></li>`).join('') || `<li class="ws-empty">${owl('sleepy', 64)}<p>Belum ada bacaan di kategori ini.</p></li>`}
+  const nights = [...new Set([...litNights(), ...Object.keys(S.journal).filter(d => S.journal[d] && S.journal[d].trim())])].sort().reverse();
+  const { first } = tonight(A.q, S.data.done || {}, TODAY());
+  const i0 = first ? A.q.indexOf(first) : -1;
+  const nextUp = i0 < 0 ? [] : A.q.slice(i0).filter(u => !S.data.done[uid(u)]).slice(0, 5);
+  return `${head('Riwayat bacaan', 'Malam-malam yang sudah Anda baca, dan bacaan berikutnya.')}
+    <ul class="ws-list">${nights.map(d => { const ids = (S.data.nights || {})[d] || []; return `<li>
+      <button class="ws-row ${ids.length ? 'st-read' : ''}" data-open="${d}">
+        <span class="ws-ic" aria-hidden="true">${ids.length ? ic('check') : ic('pen')}</span>
+        <span class="ws-meta"><b>${fmtDate(d)}</b><span>${ids.length ? refsOf(ids) : 'Jurnal tanpa bacaan yang ditandai'}</span>${S.journal[d] ? `<span class="ws-tag">${ic('pen')}Ada jurnal</span>` : ''}</span>
+      </button></li>`; }).join('') || `<li class="ws-empty">${owl('sleepy', 64)}<p>Belum ada malam yang tercatat. Malam pertama Anda akan muncul di sini.</p></li>`}
     </ul>
-    ${nextUp.length ? `<section class="ws-group" aria-labelledby="nexth"><h2 class="ws-h" id="nexth">Berikutnya</h2>
-      <ul class="ws-list">${nextUp.map(p=>`<li><div class="ws-row st-lock"><span class="ws-ic" aria-hidden="true">${ic('lock')}</span><span class="ws-meta"><b>Hari ${p.d}, ${fmtShort(p.t)}</b><span>${fmtRefs(p.r)}</span></span></div></li>`).join('')}</ul></section>` : ''}
+    ${nextUp.length ? `<section class="ws-group" aria-labelledby="nexth"><h2 class="ws-h" id="nexth">Berikutnya di antrean</h2>
+      <ul class="ws-list">${nextUp.map((u, k) => `<li><div class="ws-row ${k ? 'st-lock' : 'st-today'}"><span class="ws-ic" aria-hidden="true">${k ? ic('book') : ic('moon')}</span><span class="ws-meta"><b>${unitRef(u)}</b><span>${unitTitle(u) || esc(A.g[u[5]])}, sekitar ${minutes(u[4])} menit</span></span>${k ? '' : `<span class="ws-state">${streakInfo().litTonight ? 'Besok' : 'Malam ini'}</span>`}</div></li>`).join('')}</ul></section>` : ''}
     <button class="btn-quiet" data-act="export">${ic('download')}Ekspor jurnal (.md)</button>
-    <p class="ws-foot">${n} dari 365 malam sudah ditandai. Bacaan yang belum dibaca bisa disusul kapan saja.</p>`;
+    <p class="ws-foot">${unitsDone()} bacaan sudah dibaca${(S.data.round || 1) > 1 ? ` pada putaran ke-${S.data.round}` : ''}.${first ? ` Antrean lanjut dari ${unitRef(first)}.` : ''}</p>`;
 }
 
 function vKaitan(){
-  const date = viewDate(); const day = PLAN[planIndexFor(date)];
-  loadDevo(day.t); const dv = S.devo[day.t];
+  const { first } = shownPair(); const id = uid(first);
+  loadDevo(id); const dv = S.devo[id];
   const back = `<button class="btn-quiet" data-go="malam">${ic('moon')}Kembali ke bacaan</button>`;
-  if (!dv || !dv.kaitan) return `${head('Kaitan antar ayat', fmtDate(day.t))}<div class="ws-empty">${owl('sleepy', 72)}<p><b>Peta kaitan belum tersedia.</b> Peta muncul bersama renungan hari ini.</p></div>${back}`;
+  if (!dv || !dv.kaitan) return `${head('Kaitan antar ayat', unitRef(first))}<div class="ws-empty">${owl('sleepy', 72)}<p><b>Peta kaitan belum tersedia.</b> Peta muncul bersama renungan bacaan ini.</p></div>${back}`;
   const cx=170, cy=150, pos=[[62,58],[278,58],[170,262]], tone=['--plum','--sage','--skyblue'];
   const sel = S.mapSel; const fk = dv.fokus;
   const lines = dv.kaitan.map((l,i)=>`<path class="mp-line ${sel===i?'on':''}" d="M${cx} ${cy} L ${pos[i][0]} ${pos[i][1]}" style="stroke:var(${tone[i]})"/>`).join('');
@@ -494,7 +514,7 @@ function vKaitan(){
   const L = sel==null ? null : dv.kaitan[sel];
   const info = L ? `<p class="rd-links-ref">${refText(L.b,L.c,L.v)}</p><p class="rd-links-v">${chapter(L.b,L.c).filter(v=>L.v.includes(v[0])).map(v=>verseHTML(v[1])).join(' ')}</p><p class="rd-links-why">${esc(L.why)}</p>`
     : `<p class="rd-note">Ketuk salah satu lingkaran untuk membaca ayatnya dan melihat hubungannya dengan ayat fokus.</p>`;
-  return `${head('Kaitan antar ayat', fmtDate(day.t))}
+  return `${head('Kaitan antar ayat', unitRef(first))}
     <div class="mapbox ws-panel"><svg viewBox="0 0 340 320" role="img" aria-label="Peta kaitan ayat">${lines}
       <circle class="mp-ring" cx="${cx}" cy="${cy}" r="58"/>
       <circle class="mp-core" cx="${cx}" cy="${cy}" r="50"/>
@@ -504,44 +524,60 @@ function vKaitan(){
     ${back}`;
 }
 
-const MILESTONES = [[1,'malam','Malam pertama'],[7,'lentera2','Seminggu bersinar'],[30,'arsip','Sebulan setia'],[100,'fakta','Seratus kunang-kunang'],[200,'lentera3','Dua ratus malam'],[365,'terang','Setahun penuh']];
+// Pencapaian: malam membaca, satu kitab tamat, dan seluruh Alkitab.
+function milestones(k, bookDone){
+  const nightsM = [[1,'malam','Malam pertama'],[7,'lentera2','Seminggu bersinar'],[30,'arsip','Sebulan setia'],[100,'fakta','Seratus kunang-kunang'],[365,'lentera3','365 malam']];
+  return [...nightsM.map(([need, icon, name]) => ({ icon, name, on: k >= need, hint: `Baca ${need} malam (${Math.min(k, need)}/${need})` })),
+    { icon: 'pasal', name: 'Satu kitab tamat', on: bookDone, hint: 'Selesaikan satu kitab' },
+    { icon: 'terang', name: 'Seluruh Alkitab', on: (S.data.history || []).length > 0, hint: 'Selesaikan satu putaran' }];
+}
+function chapterProgress(){
+  const done = S.data.done || {}; const tot = {}, got = {};
+  for (const u of A.q) { const k = u[0] + ':' + u[1]; tot[k] = (tot[k] || 0) + 1; if (done[uid(u)]) got[k] = (got[k] || 0) + 1; }
+  return { tot, got, full: Object.keys(tot).filter(k => got[k] === tot[k]) };
+}
 function vProgres(){
   const st = streakInfo();
-  const readDays = Object.keys(S.data.read); const k = readDays.length;
-  const readCh = new Set(); readDays.forEach(t => { const p = PLAN[planIndexFor(t)]; p.r.forEach(([b,c]) => readCh.add(b+':'+c)); });
-  const books = BIBLE.map((B,i) => { const tot = B.c.length; let r=0; for (let c=1;c<=tot;c++) if (readCh.has(i+':'+c)) r++; return {i, n:B.n, a:B.a, r, tot}; });
-  const n = readCh.size;
+  const lit = new Set(litNights()); const k = lit.size; const mended = new Set(st.mended);
+  const cp = chapterProgress(); const readCh = new Set(cp.full);
+  const books = BIBLE.map((B,i) => { const tot = B.c.length; let r = 0, part = 0; for (let c=1;c<=tot;c++) { const key = i+':'+c; if (readCh.has(key)) r++; part += (cp.got[key] || 0) / cp.tot[key]; } return {i, n:B.n, a:B.a, r, tot, part}; });
+  const n = readCh.size; const round = S.data.round || 1;
+  const pct = n / 1189 * 100;
   const cmp = n ? books.filter(b => b.tot <= n).sort((x,y) => y.tot - x.tot)[0] : null;
-  const t = TODAY(); const ref = t < START ? START : t; const d0 = parseISO(ref); const y=d0.getFullYear(), m=d0.getMonth();
-  const readOn = new Set(Object.values(S.data.read).map(r=>r.on));
+  const t = TODAY(); const d0 = parseISO(t); const y=d0.getFullYear(), m=d0.getMonth();
   // minggu ini (Senin–Minggu)
-  const dow = (d0.getDay()+6)%7; const mon = addDays(ref, -dow);
-  const week = ['Sn','Sl','Rb','Km','Jm','Sb','Mg'].map((l,i) => { const d = addDays(mon, i); return { l, d, r: readOn.has(d), today: d === t, future: d > t }; });
+  const dow = (d0.getDay()+6)%7; const mon = addDays(t, -dow);
+  const week = ['Sn','Sl','Rb','Km','Jm','Sb','Mg'].map((l,i) => { const d = addDays(mon, i); return { l, d, r: lit.has(d), mend: mended.has(d), today: d === t, future: d > t }; });
   // kalender bulan
   const first = new Date(y,m,1).getDay(); const lead = (first+6)%7; const dim = new Date(y,m+1,0).getDate();
   let cells = ['Sn','Sl','Rb','Km','Jm','Sb','Mg'].map(d=>`<div class="pg-dh" aria-hidden="true">${d}</div>`).join('');
   for (let i=0;i<lead;i++) cells += `<div class="pg-d e"></div>`;
-  for (let d=1; d<=dim; d++){ const s = `${y}-${pad(m+1)}-${pad(d)}`; const r = readOn.has(s); cells += `<div class="pg-d ${r?'r':''} ${s===t?'t':''}" aria-label="${d} ${BULAN[m]}${r ? ', sudah membaca' : ''}">${r ? ic('check') : d}</div>`; }
-  const shelf = (from, to, title) => `<h3 class="pg-shelf-h">${title}</h3><ul class="pg-shelf">${books.slice(from, to).map(b => `<li><button class="pg-book ${b.r===b.tot?'done':''}" data-bk="${b.i}" style="--fill:${(b.r/b.tot*100).toFixed(1)}%" aria-label="${esc(b.n)}: ${b.r} dari ${b.tot} pasal"><span>${esc(b.a)}</span></button></li>`).join('')}</ul>`;
-  return `${head('Progres', 'Rencana setahun, 1 November 2026 sampai 31 Oktober 2027.')}
+  for (let d=1; d<=dim; d++){ const s = `${y}-${pad(m+1)}-${pad(d)}`; const r = lit.has(s); cells += `<div class="pg-d ${r?'r':''} ${s===t?'t':''}" aria-label="${d} ${BULAN[m]}${r ? ', sudah membaca' : ''}">${r ? ic('check') : d}</div>`; }
+  const shelf = (from, to, title) => `<h3 class="pg-shelf-h">${title}</h3><ul class="pg-shelf">${books.slice(from, to).map(b => `<li><button class="pg-book ${b.r===b.tot?'done':''}" data-bk="${b.i}" style="--fill:${(b.part/b.tot*100).toFixed(1)}%" aria-label="${esc(b.n)}: ${b.r} dari ${b.tot} pasal"><span>${esc(b.a)}</span></button></li>`).join('')}</ul>`;
+  const ms = milestones(k, books.some(b => b.r === b.tot));
+  const streakLine = st.dim ? `Lentera sedang redup. ${st.owed} bacaan tambahan memulihkan streak ${st.streak} malam, paling lambat ${fmtShort(st.deadline)}.`
+    : st.streak ? `Menyala ${st.streak} malam berturut-turut. Terpanjang ${st.best} malam.`
+    : st.restarted ? 'Streak dimulai lagi malam ini. Kunang-kunang dan bacaan Anda tetap tersimpan.' : 'Streak dimulai saat Anda menandai bacaan pertama.';
+  return `${head('Progres', 'Seluruh Alkitab, satu bacaan demi satu bacaan.')}
     <section class="pg-hero" aria-labelledby="pgh">${nightSky('sky-pg')}
-      <div class="pg-lantern ${S.fxGlow ? 'glow' : ''}">${lantern(k, 128, {cls:'ln-big', id:'p'})}</div>
+      <div class="pg-lantern ${S.fxGlow ? 'glow' : ''}">${lantern(k, 128, {cls:'ln-big', id:'p', dim: st.dim})}</div>
       <div class="pg-hero-t">
-        <h2 class="pg-stat" id="pgh">${k}<span> kunang-kunang</span></h2>
-        <p>${k ? `Lentera Anda makin terang. ${Math.max(0, 365 - k)} malam lagi sampai lentera penuh.` : 'Lentera Anda menunggu kunang-kunang pertama malam ini.'}</p>
-        <p class="pg-streak">${st.cur ? `Menyala ${st.cur} malam berturut-turut. Terpanjang ${st.best} malam.` : st.broken ? 'Streak dimulai lagi malam ini. Kunang-kunang Anda tetap tersimpan.' : 'Streak dimulai saat Anda menandai bacaan pertama.'}</p>
+        <h2 class="pg-stat" id="pgh">${n}<span> pasal sudah dibaca</span></h2>
+        <p>Putaran ke-${round}${pct >= 1 ? `, ${Math.floor(pct)}% dari seluruh Alkitab` : n ? ', baru dimulai' : ''}.</p>
+        <p>${k ? `Lentera Anda berisi ${k} kunang-kunang, satu untuk setiap malam Anda membaca.` : 'Lentera Anda menunggu kunang-kunang pertama malam ini.'}</p>
+        <p class="pg-streak">${streakLine}</p>
       </div>
     </section>
     <section class="ws-panel" aria-labelledby="wkh"><h2 class="rd-h t-lamp" id="wkh">${ic('calendar')}Minggu ini</h2>
-      <ol class="pg-week">${week.map(w => `<li class="${w.r ? 'r' : ''} ${w.today ? 't' : ''} ${w.today && w.r && S.fxWax ? 'wax' : ''}">${moonPhase(w.r ? 'full' : w.today ? 'crescent' : w.future ? 'future' : 'new')}<span class="pg-wl">${w.l}</span><span class="sr">${fmtShort(w.d)}${w.r ? ', sudah membaca' : w.today ? ', malam ini' : w.future ? '' : ', belum dibaca'}</span></li>`).join('')}</ol>
-      <p class="pg-legend"><span>${moonPhase('full')}Sudah dibaca</span><span>${moonPhase('crescent')}Malam ini</span><span>${moonPhase('new')}Belum dibaca</span></p>
+      <ol class="pg-week">${week.map(w => `<li class="${w.r || w.mend ? 'r' : ''} ${w.today ? 't' : ''} ${w.today && w.r && S.fxWax ? 'wax' : ''}">${moonPhase(w.r ? 'full' : w.mend ? 'mended' : w.today ? 'crescent' : w.future ? 'future' : 'new')}<span class="pg-wl">${w.l}</span><span class="sr">${fmtShort(w.d)}${w.r ? ', sudah membaca' : w.mend ? ', dipulihkan' : w.today ? ', malam ini' : w.future ? '' : ', tidak membaca'}</span></li>`).join('')}</ol>
+      <p class="pg-legend"><span>${moonPhase('full')}Sudah dibaca</span><span>${moonPhase('crescent')}Malam ini</span><span>${moonPhase('mended')}Dipulihkan</span><span>${moonPhase('new')}Tidak membaca</span></p>
     </section>
     <section class="ws-panel" aria-labelledby="rakh"><h2 class="rd-h t-sky" id="rakh">${ic('progres')}Rak Alkitab</h2>
       <p class="pg-lead">${n ? `${n} dari 1.189 pasal sudah dibaca.${cmp ? ` Sudah lebih panjang dari seluruh kitab ${esc(cmp.n)} (${cmp.tot} pasal).` : ''}` : 'Rak masih kosong. Setiap pasal yang dibaca mengisi satu kitab sedikit demi sedikit.'}</p>
       ${shelf(0, 39, 'Perjanjian Lama')}${shelf(39, 66, 'Perjanjian Baru')}
     </section>
     <section class="ws-panel cloud-top" aria-labelledby="stkh"><h2 class="rd-h t-plum" id="stkh">${ic('pencapaian')}Pencapaian</h2>
-      <ul class="pg-stickers">${MILESTONES.map(([need, icon, name], i) => `<li class="${k >= need ? 'on' : ''} ${S.fxStick === i ? 'stick' : ''}">${sticker(k >= need ? icon : 'kunci', k >= need, i)}<b>${name}</b><small>${k >= need ? 'Terbuka' : `Baca ${need} malam (${k}/${need})`}</small></li>`).join('')}</ul>
+      <ul class="pg-stickers">${ms.map((x, i) => `<li class="${x.on ? 'on' : ''} ${S.fxStick === i ? 'stick' : ''}">${sticker(x.on ? x.icon : 'kunci', x.on, i)}<b>${x.name}</b><small>${x.on ? 'Terbuka' : x.hint}</small></li>`).join('')}</ul>
     </section>
     <section class="ws-panel" aria-labelledby="calh"><h2 class="rd-h t-sage" id="calh">${ic('calendar')}${BULAN[m]} ${y}</h2><div class="pg-cal">${cells}</div></section>
     ${timelineHTML()}`;
@@ -581,10 +617,8 @@ function vAkun(){
         <div class="switchrow main"><div><b>Notifikasi</b><small>${S.pushBusy ? 'Memproses…' : S.data.notif ? 'Menyala' : 'Mati'}</small></div>
           <button class="switch" role="switch" aria-checked="${!!S.data.notif}" aria-label="Notifikasi" data-act="pushtoggle" ${S.pushBusy ? 'disabled' : ''}></button></div>
         ${S.data.notif ? `
-        <div class="switchrow"><div><b>Pengingat renungan</b><small>Sekitar 21.00–22.00 WIB, bila belum membaca</small></div>
-          <button class="switch" role="switch" aria-checked="${S.data.notifMalam !== false}" aria-label="Pengingat renungan" data-notifkind="notifMalam"></button></div>
-        <div class="switchrow"><div><b>Pengingat lentera</b><small>Sekitar 22.00–23.00 WIB, bila streak akan berhenti malam ini</small></div>
-          <button class="switch" role="switch" aria-checked="${S.data.notifStreak !== false}" aria-label="Pengingat lentera" data-notifkind="notifStreak"></button></div>
+        <div class="switchrow"><div><b>Pengingat malam</b><small>Sekitar 21.00 WIB, bila malam itu belum membaca</small></div>
+          <button class="switch" role="switch" aria-checked="${S.data.notifMalam !== false}" aria-label="Pengingat malam" data-notifkind="notifMalam"></button></div>
         <button class="btn-text" data-act="push">${ic('notifications')}Daftarkan ulang perangkat ini</button>` : ''}
       </div>`
         : `<p class="ac-txt">Masuk dengan akun terlebih dahulu untuk mengaktifkan notifikasi.</p>`}
@@ -672,8 +706,8 @@ async function exportJournal(){
   if (!dates.length){ toast('Belum ada jurnal untuk diekspor'); return; }
   let md = `# Jurnal Lentera Malam\n\nDiekspor ${fmtDate(TODAY())}\n`;
   for (const d of dates){
-    const p = PLAN[planIndexFor(d)]; const dv = S.devo[d];
-    md += `\n## Hari ${p.d} · ${fmtDate(d)}\n\nBacaan: ${fmtRefs(p.r)}\n`;
+    const ids = (S.data.nights || {})[d] || []; const dv = ids[0] && S.devo[ids[0]];
+    md += `\n## ${fmtDate(d)}\n\n${ids.length ? `Bacaan: ${refsOf(ids)}\n` : ''}`;
     if (dv && dv.tema) md += `Tema: ${dv.tema}\n`;
     if (dv && dv.tanya) md += `Pertanyaan: ${dv.tanya}\n`;
     md += `\n${S.journal[d].trim()}\n`;
@@ -704,7 +738,6 @@ function eraSheet(b, c){
     <p class="sh-def">${esc(e.d)}</p>${note ? `<p class="sh-note">${esc(note)}</p>` : ''}
     <div class="sh-actions"><button class="btn-quiet" data-go="progres">${ic('chart')}Lihat lini masa lengkap</button></div>`);
 }
-const firstDayOfBook = b => { for (const p of PLAN) if (p.r.some(x => x[0] === b)) return p.d; return null; };
 function loadIntro(b){
   if (INTRO[b] !== undefined || introLoading[b]) return;
   introLoading[b] = true;
@@ -724,29 +757,28 @@ function introSheet(b){
   loadIntro(b); const x = INTRO[b];
   sheet(`<h2 class="sh-h">Pengantar ${esc(bookName(b))}</h2>${x ? introHTML(x) : `<p class="sh-def">Pengantar kitab ini sedang disiapkan dan akan muncul sebelum kitab ini mulai dibaca.</p>`}`);
 }
-function introCards(day){
-  const books = [...new Set(day.r.map(x => x[0]))];
-  return books.map(b => {
-    loadIntro(b);
-    const isFirst = firstDayOfBook(b) === day.d; const x = INTRO[b];
-    if (isFirst && x) return `<section class="rd-sec rd-intro t-sky" aria-labelledby="in${b}"><h2 class="rd-h" id="in${b}">${ic('compass')}Kitab baru: ${esc(bookName(b))}</h2>${introHTML(x)}</section>`;
-    return `<button class="btn-quiet" data-intro="${b}">${ic('compass')}Tentang kitab ${esc(bookName(b))}</button>`;
-  }).join('');
+function introCards(u){
+  const b = u[0]; loadIntro(b); const x = INTRO[b];
+  // Bacaan pertama sebuah kitab: tampilkan pengantarnya utuh.
+  if (u[1] === 1 && u[2] === 1 && x) return `<section class="rd-sec rd-intro t-sky" aria-labelledby="in${b}"><h2 class="rd-h" id="in${b}">${ic('compass')}Kitab baru: ${esc(bookName(b))}</h2>${introHTML(x)}</section>`;
+  return `<button class="btn-quiet" data-intro="${b}">${ic('compass')}Tentang kitab ${esc(bookName(b))}</button>`;
 }
-function prevCard(day, dv){
-  const b = day.r[0][0];
-  let prev = null; for (let i = day.d - 2; i >= 0; i--) if (PLAN[i].r.some(x => x[0] === b)) { prev = PLAN[i]; break; }
+function prevCard(u, dv){
+  const i = A.q.indexOf(u); let prev = null;
+  for (let k = i - 1; k >= 0; k--) if (A.q[k][0] === u[0]) { prev = A.q[k]; break; }
   if (!prev) return '';
-  const chs = prev.r.filter(x => x[0] === b);
-  const titles = chs.flatMap(([bb,c]) => chapter(bb,c).filter(v => v[2]).map(v => titleHTML(v[2])));
-  const read = S.data.read[prev.t];
+  const title = unitTitle(prev);
   return `<section class="rd-sec t-plum" aria-labelledby="prevh">
     <h2 class="rd-h" id="prevh">${ic('rewind')}Sebelumnya di kitab ini</h2>
-    <p class="rd-note">Hari ${prev.d}, ${fmtShort(prev.t)}: ${fmtRefs(chs)}.${read ? '' : ' Belum dibaca, bisa disusul kapan saja.'}</p>
+    <p class="rd-note">${unitRef(prev)}${title ? `: ${title}` : ''}.${S.data.done[uid(prev)] ? '' : ' Bacaan ini masih menunggu di antrean.'}</p>
     ${dv && dv.sebelumnya ? `<div class="rd-prose"><p>${glossLink(esc(dv.sebelumnya))}</p></div>` : ''}
-    ${titles.length ? `<ul class="rd-outline">${titles.map(t => `<li>${t}</li>`).join('')}</ul>` : ''}
-    <button class="btn-quiet" data-open="${prev.t}">${ic('book')}Buka bacaan Hari ${prev.d}</button>
+    <button class="btn-quiet" data-unit="${uid(prev)}">${ic('book')}Baca ${unitRef(prev)}</button>
   </section>`;
+}
+// Sheet berisi satu perikop (untuk membaca ulang bacaan sebelumnya).
+function unitSheet(id){
+  const u = byId(id); if (!u) return;
+  sheet(`<h2 class="sh-h">${unitRef(u)}</h2><div class="rd-verses sh-unit">${unitHTML(u)}</div><p class="sh-cite">Alkitab Yang Terbuka (AYT)</p>`);
 }
 /* tautan glosarium: setiap istilah hanya ditautkan sekali per tampilan */
 let GL_SEEN = new Set(), GL_RE = null;
@@ -780,11 +812,11 @@ function vIstilah(){
 }
 function timelineHTML(){
   if (!LINI) return '';
-  const t = TODAY() < START ? START : TODAY(); const cur = eraOf(...PLAN[planIndexFor(t)].r[0]);
-  const counts = {}; Object.keys(S.data.read).forEach(d => { const e = eraOf(...PLAN[planIndexFor(d)].r[0]); if (e) counts[e.id] = (counts[e.id]||0) + 1; });
+  const f = shownPair().first; const cur = f ? eraOf(f[0], f[1]) : null;
+  const counts = {}; Object.keys(S.data.done || {}).forEach(id => { const u = byId(id); const e = u && eraOf(u[0], u[1]); if (e) counts[e.id] = (counts[e.id]||0) + 1; });
   return `<section class="ws-panel" aria-labelledby="linh"><h2 class="rd-h t-ember" id="linh">${ic('clock')}Lini masa Alkitab</h2>
     <p class="ac-txt">Tanggal adalah perkiraan; sebagian masih diperdebatkan para ahli. Bacaan Anda berpindah-pindah era karena pola rotasi.</p>
-    <ol class="pg-tl">${LINI.eras.map(e => `<li class="${cur && cur.id===e.id ? 'now' : ''}"><span class="pg-tl-dot" aria-hidden="true"></span><div><b>${esc(e.n)}</b><p class="pg-tl-meta"><span>${esc(e.t)}</span>${counts[e.id] ? `<span>${counts[e.id]} hari dibaca</span>` : ''}${cur && cur.id===e.id ? `<span class="now-tag">Bacaan hari ini</span>` : ''}</p><p>${esc(e.d)}</p></div></li>`).join('')}</ol></section>`;
+    <ol class="pg-tl">${LINI.eras.map(e => `<li class="${cur && cur.id===e.id ? 'now' : ''}"><span class="pg-tl-dot" aria-hidden="true"></span><div><b>${esc(e.n)}</b><p class="pg-tl-meta"><span>${esc(e.t)}</span>${counts[e.id] ? `<span>${counts[e.id]} bacaan</span>` : ''}${cur && cur.id===e.id ? `<span class="now-tag">Bacaan malam ini</span>` : ''}</p><p>${esc(e.d)}</p></div></li>`).join('')}</ol></section>`;
 }
 
 /* ---------- render ---------- */
@@ -795,8 +827,8 @@ const FX = new Set();
 function fx(){
   const v = cur();
   if (v === 'malam' && !FX.has('malam')){
-    const date = viewDate(); const day = PLAN[planIndexFor(date)];
-    if (S.devo[day.t] === undefined || S.devoLoading[day.t]) return; // tunggu layar stabil
+    const id = uid(shownPair().first); const date = viewKey();
+    if (S.devo[id] === undefined || S.devoLoading[id]) return; // tunggu layar stabil
     FX.add('malam');
     // Burung hantu mengintip sekali saat beranda dibuka.
     S.fxPeek = true; const o = document.querySelector('.tn-owl'); if (o) o.classList.add('peek');
@@ -816,12 +848,14 @@ function fx(){
   }
   if (v === 'progres' && !FX.has('progres')){
     FX.add('progres');
-    const k = Object.keys(S.data.read).length, earned = MILESTONES.filter(([n]) => k >= n).length;
+    const f = new Set(chapterProgress().full);
+    const ms = milestones(litNights().length, BIBLE.some((B, i) => B.c.every((_, c) => f.has(i + ':' + (c + 1)))));
+    const onIdx = ms.map((x, i) => x.on ? i : -1).filter(i => i >= 0), earned = onIdx.length;
     const seen = Number(lsGet('lentera-stk') || 0); lsSet('lentera-stk', String(earned));
-    const t = TODAY(), readToday = Object.values(S.data.read).some(r => r.on === t);
+    const t = TODAY(), readToday = streakInfo().litTonight;
     const L = document.querySelector('.pg-lantern'); if (L) { S.fxGlow = true; L.classList.add('glow'); }
     // Satu momen besar saja: stiker baru ditempel, atau bulan malam ini menjadi purnama.
-    if (earned > seen && seen >= 0 && lsGet('lentera-stk-init')){ S.fxStick = earned - 1; const li = document.querySelectorAll('.pg-stickers li')[earned - 1]; if (li) li.classList.add('stick'); }
+    if (earned > seen && seen >= 0 && lsGet('lentera-stk-init')){ S.fxStick = onIdx[earned - 1]; const li = document.querySelectorAll('.pg-stickers li')[onIdx[earned - 1]]; if (li) li.classList.add('stick'); }
     else if (readToday && lsGet('lentera-wax') !== t){ S.fxWax = true; const li = document.querySelector('.pg-week li.t.r'); if (li) li.classList.add('wax'); }
     if (readToday) lsSet('lentera-wax', t);
     lsSet('lentera-stk-init', '1');
@@ -833,7 +867,7 @@ function fx(){
 function render(){
   renderChrome();
   const app = document.getElementById('app');
-  if (!BIBLE || !PLAN) { app.innerHTML = `<div class="loading"><span class="spin"></span>Memuat Alkitab…</div>`; return; }
+  if (!BIBLE || !PLAN || !A) { app.innerHTML = `<div class="loading"><span class="spin"></span>Memuat Alkitab…</div>`; return; }
   if (!S.authChecked) { app.innerHTML = `<div class="loading"><span class="spin"></span>Memeriksa akun…</div>`; return; }
   if (S.recovery) { S.authMode = 'baru'; app.innerHTML = `<div class="view">${vLogin()}</div>`; document.querySelector('nav.bottom').hidden = true; return; }
   // Layanan akun mati tetapi perangkat ini sudah punya bacaan: tetap bisa membaca, sinkron menyusul.
@@ -842,11 +876,11 @@ function render(){
   if (!S.data.welcomed) { app.innerHTML = `<div class="view">${vWelcome()}</div>`; document.querySelector('nav.bottom').hidden = true; return; }
   document.querySelector('nav.bottom').hidden = false;
   const openState = {}; app.querySelectorAll('details.chap').forEach((d,i)=>{ openState[i]=d.open; });
-  const sameView = app.dataset.v === cur() + viewDate();
+  const sameView = app.dataset.v === cur() + viewKey();
   const html = {malam:vMalam, cari:vCari, arsip:vArsip, kaitan:vKaitan, progres:vProgres, akun:vAkun}[cur()]();
   const focusId = document.activeElement && document.activeElement.id;
   app.innerHTML = `<div class="view">${html}</div>`;
-  app.dataset.v = cur() + viewDate();
+  app.dataset.v = cur() + viewKey();
   if (sameView) app.querySelectorAll('details.chap').forEach((d,i)=>{ if (openState[i] !== undefined) d.open = openState[i]; });
   if (focusId === 'qg') { const q = document.getElementById('qg'); if (q){ q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
   if (focusId === 'q') { const q = document.getElementById('q'); if (q){ q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
@@ -870,9 +904,9 @@ const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* Signature: satu kunang-kunang terbang dari tombol ke lentera di bilah atas. */
 function celebrate(from, date){
   const st = streakInfo(); const nama = (S.data.nama || '').trim().split(/\s+/)[0];
-  const msg = date === TODAY() ? `Malam ke-${st.cur}. Selamat tidur${nama ? ', ' + nama : ''}.` : 'Tercatat. Terima kasih sudah menyusul bacaan ini.';
+  const msg = S.justMended ? `Lentera Anda menyala penuh lagi. Streak ${S.justMended} malam tersambung kembali.` : `Malam ke-${st.streak}. Selamat tidur${nama ? ', ' + nama : ''}.`;
   const top = document.getElementById('streak');
-  setTimeout(() => { if (S.justDone === date) { S.justDone = null; }
+  setTimeout(() => { if (S.justDone === date) { S.justDone = null; S.justMended = 0; }
     // Setelah perayaan, burung hantu tertidur pelan-pelan.
     const o = document.querySelector('.fin-done .fin-owl'); if (o) { o.innerHTML = owl('asleep', 76); o.classList.add('doze'); }
   }, 2800);
@@ -933,6 +967,7 @@ document.addEventListener('click', e => {
   if (t.dataset.ref) { verseSheet(t.dataset.ref); return; }
   if (t.dataset.era) { const [b,c] = t.dataset.era.split(':').map(Number); eraSheet(b,c); return; }
   if (t.dataset.intro) { introSheet(+t.dataset.intro); return; }
+  if (t.dataset.unit) { unitSheet(t.dataset.unit); return; }
   if (t.dataset.gl) { glossSheet(t.dataset.gl); return; }
   if (t.dataset.favtoggle) { const k = t.dataset.favtoggle; S.data.fav = S.data.fav || {}; if (S.data.fav[k]) delete S.data.fav[k]; else S.data.fav[k] = TODAY(); saveState(); closeSheet(); render(); toast(S.data.fav[k] ? 'Ditandai sebagai favorit' : 'Dihapus dari favorit'); return; }
   if (t.dataset.copy) { const [b,c,v] = t.dataset.copy.split(':').map(Number); const x = chapter(b,c).find(y=>y[0]===v); const txt = `${x[1]} (${bookName(b)} ${c}:${v}, AYT)`;
@@ -941,13 +976,17 @@ document.addEventListener('click', e => {
   if (t.dataset.bk) { toast(t.getAttribute('aria-label').replace(':', ',') + ' sudah dibaca.'); return; }
   if (t.dataset.wstep) { const n = document.getElementById('nama'); if (n) S.data.nama = n.value.trim(); S.wStep = +t.dataset.wstep; render(); const h = document.querySelector('#app h1'); if (h) { h.setAttribute('tabindex','-1'); h.focus(); } return; }
   if (t.dataset.tabset) S.tabCari = t.dataset.tabset;
-  if (t.dataset.go) { closeSheet(); if (t.dataset.go === 'malam') S.viewDate = null; location.hash = t.dataset.go; render(); return; }
+  if (t.dataset.go) { closeSheet(); if (t.dataset.go === 'malam') S.viewNight = null; location.hash = t.dataset.go; render(); return; }
   const a = t.dataset.act;
   if (a === 'start') { const n = document.getElementById('nama'); if (n) S.data.nama = n.value.trim(); S.data.welcomed = true; saveState(); render(); return; }
   if (a === 'read') {
-    const from = t.getBoundingClientRect(); const date = t.dataset.date;
-    S.data.read[date] = { on: TODAY(), at: new Date().toISOString() }; S.justDone = date; saveState(); render();
-    celebrate(from, date); return;
+    const from = t.getBoundingClientRect(); const id = t.dataset.id; const before = streakInfo();
+    S.data = markRead(S.data, A.q, id, TODAY()); saveState();
+    const after = streakInfo(); const mended = before.dim && !after.dim ? after.streak : 0;
+    if (t.dataset.first) { S.justDone = id; S.justMended = mended; render(); celebrate(from, id); return; }
+    render();
+    toast(mended ? `Lentera Anda menyala penuh lagi. Streak ${mended} malam tersambung kembali.` : before.owed > after.owed ? `Satu malam dipulihkan. Tinggal ${after.owed} lagi, boleh dilanjutkan besok.` : 'Tercatat. Selamat tidur.');
+    return;
   }
   if (a === 'tobaca') { const el = document.getElementById('baca'); if (el) el.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'start' }); return; }
   if (t.dataset.fs) { S.data.fs = Math.max(17, Math.min(21, (S.data.fs || 19) + 2 * Number(t.dataset.fs))); saveState(); render(); return; }
@@ -960,10 +999,10 @@ document.addEventListener('click', e => {
   if (a === 'push') { enablePush(); return; }
   if (a === 'pushoff' || (a === 'pushtoggle' && S.data.notif)) { S.data.notif = false; saveState(); render(); toast('Notifikasi dimatikan'); return; }
   if (a === 'pushtoggle') { enablePush(); return; }
-  if (t.dataset.notifkind) { const k = t.dataset.notifkind; S.data[k] = S.data[k] === false; saveState(); render(); toast(`${k === 'notifMalam' ? 'Pengingat renungan' : 'Pengingat lentera'} ${S.data[k] ? 'dinyalakan' : 'dimatikan'}`); return; }
-  if (a === 'today') { S.viewDate = null; render(); window.scrollTo({top:0}); return; }
+  if (t.dataset.notifkind) { const k = t.dataset.notifkind; S.data[k] = S.data[k] === false; saveState(); render(); toast(`Pengingat malam ${S.data[k] ? 'dinyalakan' : 'dimatikan'}`); return; }
+  if (a === 'today') { S.viewNight = null; render(); window.scrollTo({top:0}); return; }
   if (t.dataset.mode) { S.data.mode = t.dataset.mode; saveState(); render(); return; }
-  if (t.dataset.open) { S.viewDate = t.dataset.open; S.mapSel = null; location.hash = 'malam'; render(); window.scrollTo({top:0}); return; }
+  if (t.dataset.open) { S.viewNight = t.dataset.open; S.mapSel = null; location.hash = 'malam'; render(); window.scrollTo({top:0}); return; }
   if (t.dataset.filter) { S.filter = t.dataset.filter; render(); return; }
   if (t.dataset.maplink != null) { S.mapSel = +t.dataset.maplink; location.hash = 'kaitan'; return; }
   if (t.dataset.node != null) { S.mapSel = +t.dataset.node; render(); return; }
@@ -1059,10 +1098,10 @@ async function loadCloud(uid){
   try {
     const st = must(await sb.from('user_state').select('data').eq('user_id', uid).maybeSingle());
     const cloud = st.data ? st.data.data : null;
-    if (cloud) { const localRead = S.data.read; S.data = Object.assign({}, S.data, cloud); S.data.read = Object.assign({}, localRead, cloud.read || {}); }
+    if (cloud) S.data = upgrade(mergeData(cloud, S.data)); // isi cloud menang untuk pengaturan, bacaan dari keduanya digabung
     await syncJournals(uid);
     S.sync = 'cloud';
-    if (S.data.welcomed || Object.keys(S.data.read).length) saveState(); // kirim juga progres yang dibuat sebelum masuk
+    if (S.data.welcomed || Object.keys(S.data.nights || {}).length) saveState(); // kirim juga progres yang dibuat sebelum masuk
     applyTheme();
   } catch(e) { S.sync = 'local'; }
 }
@@ -1088,9 +1127,10 @@ async function loadCloud(uid){
   // Aplikasi di HP bisa berhari-hari di latar; ambil data terbaru setiap kali dibuka lagi.
   window.addEventListener('online', () => { if (S.user.id && S.sync !== 'cloud') saveState(); }); // coba kirim ulang setelah sinyal kembali
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.user.id) loadCloud(S.user.id).then(render); });
-  const [bible, plan] = await Promise.all([fetch('/data/alkitab.json').then(r=>r.json()), fetch('/data/rencana.json').then(r=>r.json())]).catch(()=>[null,null]);
+  const [bible, plan, antrean] = await Promise.all(['/data/alkitab.json', '/data/rencana.json', '/data/antrean.json'].map(u => fetch(u).then(r => r.json()))).catch(() => [null, null, null]);
   try { const [l, g] = await Promise.all([fetch('/data/linimasa.json').then(r=>r.json()), fetch('/data/glosarium.json').then(r=>r.json())]); LINI = l; GLOS = g; glossInit(); } catch(e) {}
-  BIBLE = bible; PLAN = plan;
+  BIBLE = bible; PLAN = plan; A = antrean;
+  if (A) { UNIT = new Map(A.q.map(u => [uid(u), u])); const before = JSON.stringify(S.data); S.data = upgrade(S.data); if (JSON.stringify(S.data) !== before) saveState(); }
   if (!BIBLE) { document.getElementById('app').innerHTML = `<div class="ws-empty">${owl(navigator.onLine === false ? 'offline' : 'worried', 72)}<p><b>Alkitab gagal dimuat.</b> Periksa koneksi lalu muat ulang halaman.</p></div>`; return; }
   render();
 })();

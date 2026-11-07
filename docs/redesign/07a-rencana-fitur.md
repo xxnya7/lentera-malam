@@ -1,9 +1,40 @@
 # 07a. Rencana fitur: antrean bacaan dan streak yang memaafkan
 
-Status: **rencana, menunggu persetujuan.** Belum ada kode yang diubah.
+Status: **disetujui dan diterapkan** di branch `redesign` (7 November 2026). Keputusan pengguna ada di §0; bagian lain adalah rencana awal, dan di mana §0 berbeda, §0 yang berlaku.
 Branch: `redesign`. Implementasi sesudah disetujui, dengan pendekatan ponytail (perubahan sekecil mungkin yang menyelesaikan masalah).
 
 ---
+
+## 0. Keputusan (jawaban pengguna)
+
+| No | Keputusan |
+|---|---|
+| T1 | **Satuan bacaan = satu perikop**, bukan pasal. Bacaan malam itu hanya perikop yang dibahas renungan, tidak sampai ke perikop atau pasal lain. Renungan ditulis per perikop. |
+| T2 | **Satu pengingat** saja, pukul 21.00 WIB. Pengingat lentera pukul 22.00 dihapus. |
+| T3 | Pemulihan dibayar dengan **bacaan kedua** malam itu (maksimal 2 bacaan per malam). |
+| T4 | Batas malam **pukul 04.00**. |
+| T5 | Bacaan di luar antrean **tidak dihitung** untuk streak. |
+| T6 | Progres menampilkan **persen** dari seluruh Alkitab (dihitung per pasal yang selesai). |
+| T7 | Batas pemulihan: **7 malam, maksimal 3 malam bolong, 1 bacaan pemulihan per malam**. |
+| T8 | Renungan baru ditulis **per perikop di branch `redesign`**; renungan per tanggal di `main` berhenti sampai merge. |
+
+### Cara antrean perikop dibuat
+- `scripts/buat-antrean.mjs` membaca `data/alkitab.json` dan `data/rencana.json`, lalu menulis `data/antrean.json`.
+- Urutan kitab mengikuti rotasi rencana yang lama, pasal demi pasal. Tiap pasal dipecah menurut judul perikop AYT.
+- Perikop di bawah 150 kata digabung dengan perikop berikutnya di pasal yang sama, supaya satu malam tidak hanya 2–3 ayat. Contoh: Yosua 5:9–12 dan 5:13–15 menjadi satu bacaan, Yosua 5:9–15.
+- Hasilnya 1.925 bacaan. Median panjangnya sekitar 290 kata, kira-kira 2 menit membaca, ditambah renungan.
+- Ayat di awal pasal yang belum berjudul (lanjutan perikop pasal sebelumnya) ikut ke bacaan pertama pasal itu.
+
+### Renungan per perikop
+- File: `content/bacaan/<kitab>-<pasal>-<ayatAwal>.json`, misalnya `content/bacaan/5-5-9.json` untuk Yosua 5:9–15. Isinya sama seperti format lama, ditambah `id` dan `bacaan` (rentang ayat). `fokus` harus berada di dalam perikop itu.
+- 14 renungan lama (1–14 Nov) sudah dipindahkan ke perikop yang memuat ayat fokusnya.
+- Update mingguan: Claude menulis renungan untuk **14 bacaan berikutnya di antrean**, dimulai dari bacaan pertama yang belum punya renungan setelah posisi pengguna, mengikuti tempo maksimal 2 per malam. Kalau pengguna lebih cepat, bacaan tetap tampil dengan status "Renungan untuk bacaan ini sedang disiapkan".
+
+### Yang berubah dari rencana awal
+- Semua teks "pasal" untuk bacaan malam diganti "bacaan" (karena satuannya perikop). Kata "pasal" tetap dipakai untuk progres per kitab ("12 pasal sudah dibaca").
+- Ayat fokus tidak lagi tampil sebagai bagian terpisah. Seluruh perikop malam itu tampil di panel pertama dengan judul tema renungan, dan ayat fokusnya disorot.
+- Tab "Arsip" bernama halaman "Riwayat bacaan". Label menu bawah tetap "Arsip".
+- `lib/streak.js` dihapus karena semua pemanggilnya sudah memakai `lib/antrean.js`.
 
 ## 1. Ringkasan
 

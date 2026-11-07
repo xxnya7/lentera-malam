@@ -1,42 +1,39 @@
-/* Dipanggil Vercel Cron setiap malam.
-   ?jenis=malam  -> "Renungan malam ini sudah siap" bila bacaan hari ini belum ditandai
-   ?jenis=streak -> peringatan streak akan putus bila belum membaca hari ini */
+/* Dipanggil Vercel Cron setiap malam pukul 21.00 WIB.
+   Mengirim satu pengingat lembut bila malam itu belum ada bacaan yang ditandai. */
+import fs from 'fs';
 import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
-import { currentStreak } from '../lib/streak.js';
+import { nightOf, tonight, streakState, migrate, minutes } from '../lib/antrean.js';
+
+const A = JSON.parse(fs.readFileSync(new URL('../data/antrean.json', import.meta.url)));
+const PLAN = JSON.parse(fs.readFileSync(new URL('../data/rencana.json', import.meta.url)));
+const BOOK_LEN = JSON.parse(fs.readFileSync(new URL('../data/panjang-pasal.json', import.meta.url)));
+const ref = u => `${A.n[u[0]]} ${u[1]}${u[2] === 1 && u[3] === BOOK_LEN[u[0]][u[1] - 1] ? '' : `:${u[2]}${u[3] !== u[2] ? '–' + u[3] : ''}`}`;
 
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:admin@example.com', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
-
-const ymd = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(d);
 
 export default async function handler(req, res) {
   if (!process.env.CRON_SECRET || req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'unauthorized' });
   }
-  // Vercel Cron memberi tahu jadwal yang memanggil lewat header; ?jenis= tetap bisa dipakai untuk uji manual.
-  const jenis = (req.query.jenis || (req.headers['x-vercel-cron-schedule'] === '0 15 * * *' ? 'streak' : 'malam')) === 'streak' ? 'streak' : 'malam';
-  const today = ymd(new Date());
+  const today = nightOf(new Date(), 'Asia/Jakarta');
   const { data: states, error } = await sb.from('user_state').select('user_id, data');
   if (error) return res.status(500).json({ error: error.message });
   let sent = 0, skipped = 0, removed = 0; const failed = [];
 
   for (const row of states || []) {
-    const data = row.data || {};
-    if (!data.notif) { skipped++; continue; }
-    if (jenis === 'malam' && data.notifMalam === false) { skipped++; continue; }
-    if (jenis === 'streak' && data.notifStreak === false) { skipped++; continue; }
-    const dates = new Set(Object.values(data.read || {}).map(r => r && r.on).filter(Boolean));
-    if (dates.has(today)) { skipped++; continue; }
-    const streak = currentStreak(dates, today);
-    if (jenis === 'streak' && streak === 0) { skipped++; continue; }
+    const data = migrate(row.data || {}, PLAN, A.q);
+    if (!data.notif || data.notifMalam === false) { skipped++; continue; }
+    const st = streakState(data.nights, today);
+    if (st.litTonight) { skipped++; continue; }
+    const { first } = tonight(A.q, data.done, today);
+    if (!first) { skipped++; continue; }
 
     const nama = (data.nama || '').split(' ')[0];
-    const payload = JSON.stringify({
-      title: jenis === 'streak' ? `Streak ${streak} malam hampir putus` : (nama ? `Selamat malam, ${nama}` : 'Selamat malam'),
-      body: jenis === 'streak' ? 'Tandai bacaan malam ini sebelum pukul 24.00 supaya streak tetap berlanjut.' : 'Renungan malam ini sudah siap. Luangkan beberapa menit sebelum tidur.',
-      tag: jenis, link: '/'
-    });
+    const payload = JSON.stringify(st.dim
+      ? { title: 'Lentera Anda menunggu', body: `Satu bacaan malam ini menyalakannya lagi. Kalau sempat, satu bacaan tambahan memulihkan streak ${st.streak} malam Anda.`, tag: 'malam', link: '/' }
+      : { title: nama ? `Selamat malam, ${nama}` : 'Selamat malam', body: `${ref(first)} menunggu Anda, sekitar ${minutes(first[4])} menit. Satu bacaan sudah cukup.`, tag: 'malam', link: '/' });
 
     const { data: subs } = await sb.from('push_subscriptions').select('endpoint, subscription').eq('user_id', row.user_id);
     if (!subs || !subs.length) { skipped++; continue; }
@@ -48,7 +45,7 @@ export default async function handler(req, res) {
       }
     }
   }
-  const result = { jenis, today, sent, skipped, removed, failed };
+  const result = { today, sent, skipped, removed, failed };
   console.log('pengingat', JSON.stringify(result)); // terlihat di Vercel → Logs
   res.status(200).json(result);
 }
