@@ -412,7 +412,7 @@ nav.bottom button[aria-current="page"]::before{content:"";position:absolute;top:
 /* Bonus setelah selesai */
 .bonus{display:flex;flex-direction:column;gap:var(--s7);max-width:34rem;margin:var(--s7) auto 0;width:100%}
 .bn-fact{background:var(--lamp-soft);border-radius:var(--r-md);padding:var(--s5);display:flex;flex-direction:column;gap:var(--s2)}
-.bn-kind{display:flex;align-items:center;gap:6px;font-size:var(--fs-sm);font-weight:700;color:var(--lamp-text)}
+.bn-kind{display:flex;align-items:center;gap:6px;font-size:var(--fs-sm);font-weight:700;color:color-mix(in srgb,var(--lamp-text) 80%,var(--text))}
 .bn-kind svg.ms{font-size:18px}
 .bn-h{font-family:var(--font-display);font-weight:700;font-size:24px;line-height:1.2}
 .bn-fact > p:last-child{font-size:var(--fs-md);line-height:1.7;color:var(--text-2)}
@@ -562,7 +562,6 @@ button.ws-row:active{transform:scale(.985)}
 .st-read .ws-ic{background:color-mix(in srgb,var(--sage) 20%,transparent);color:var(--sage)}
 .st-today .ws-ic{background:var(--lamp-soft);color:var(--lamp-text)}
 .st-today{border-color:color-mix(in srgb,var(--lamp) 45%,transparent)}
-.st-lock{opacity:.75}
 .ws-meta{display:flex;flex-direction:column;gap:2px;min-width:0}
 .ws-meta b{font-weight:700;font-size:var(--fs-md);color:var(--text)}
 .ws-meta > span{font-size:var(--fs-sm);color:var(--text-2)}
@@ -594,7 +593,7 @@ button.ws-row:active{transform:scale(.985)}
 .ac-name{font-family:var(--font-display);font-weight:700;font-size:var(--fs-h2);line-height:1.2}
 .ac-mail{font-size:var(--fs-sm);color:var(--muted);overflow-wrap:anywhere}
 .ac-sync{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;min-height:32px;padding:0 12px;border-radius:999px;font-size:var(--fs-xs);font-weight:700;background:var(--surface-2);color:var(--text-2)}
-.ac-sync.ok{color:var(--sage)}
+.ac-sync.ok{color:color-mix(in srgb,var(--sage) 75%,var(--text))}
 .ac-sync svg.ms{font-size:16px}
 .ac-txt{font-size:var(--fs-sm);line-height:1.65;color:var(--text-2)}
 .ac-who .btn-quiet,.ac-who .btn-primary,.ws-panel > .btn-quiet{align-self:flex-start}

@@ -182,9 +182,6 @@ const bookName = b => BIBLE[b].n;
 const chapter = (b, c) => BIBLE[b].c[c-1] || [];
 const verseHTML = t => esc(t).replace(/\((\d+-\d+)\)/g, '<span class="hv">($1)</span>');
 const titleHTML = t => esc(t).replace(/&lt;br\s*\/?&gt;/g, ' · ');
-function chapterHTML(b, c, focus){
-  return chapter(b,c).map(v => `${v[2]?`<h4>${titleHTML(v[2])}</h4>`:''}<p data-ref="${b}:${c}:${v[0]}" class="${focus && focus.includes(v[0])?'focus':''} ${isFav(b,c,v[0])?'fav':''}"><sup>${v[0]}</sup>${verseHTML(v[1])}</p>`).join('');
-}
 const isFav = (b,c,v) => !!(S.data.fav && S.data.fav[`${b}:${c}:${v}`]);
 const refText = (b,c,vs) => `${bookName(b)} ${c}:${vs.length>1?vs[0]+'-'+vs[vs.length-1]:vs[0]}`;
 
@@ -493,7 +490,7 @@ function vArsip(){
       </button></li>`; }).join('') || `<li class="ws-empty">${owl('sleepy', 64)}<p>Masih kosong. Malam pertamamu nanti muncul di sini.</p></li>`}
     </ul>
     ${nextUp.length ? `<section class="ws-group" aria-labelledby="nexth"><h2 class="ws-h" id="nexth">Berikutnya di antrean</h2>
-      <ul class="ws-list">${nextUp.map((u, k) => `<li><div class="ws-row ${k ? 'st-lock' : 'st-today'}"><span class="ws-ic" aria-hidden="true">${k ? ic('book') : ic('moon')}</span><span class="ws-meta"><b>${unitRef(u)}</b><span>${unitTitle(u) || esc(A.g[u[5]])}, sekitar ${minutes(u[4])} menit</span></span>${k ? '' : `<span class="ws-state">${streakInfo().litTonight ? 'Besok' : 'Malam ini'}</span>`}</div></li>`).join('')}</ul></section>` : ''}
+      <ul class="ws-list">${nextUp.map((u, k) => `<li><div class="ws-row ${k ? 'st-next' : 'st-today'}"><span class="ws-ic" aria-hidden="true">${k ? ic('book') : ic('moon')}</span><span class="ws-meta"><b>${unitRef(u)}</b><span>${unitTitle(u) || esc(A.g[u[5]])}, sekitar ${minutes(u[4])} menit</span></span>${k ? '' : `<span class="ws-state">${streakInfo().litTonight ? 'Besok' : 'Malam ini'}</span>`}</div></li>`).join('')}</ul></section>` : ''}
     <button class="btn-quiet" data-act="export">${ic('download')}Ekspor jurnal (.md)</button>
     <p class="ws-foot">${unitsDone()} bacaan sudah dibaca${(S.data.round || 1) > 1 ? ` pada putaran ke-${S.data.round}` : ''}.${first ? ` Antrean lanjut dari ${unitRef(first)}.` : ''}</p>`;
 }
@@ -968,7 +965,7 @@ document.addEventListener('click', e => {
   if (t.dataset.intro) { introSheet(+t.dataset.intro); return; }
   if (t.dataset.unit) { unitSheet(t.dataset.unit); return; }
   if (t.dataset.gl) { glossSheet(t.dataset.gl); return; }
-  if (t.dataset.favtoggle) { const k = t.dataset.favtoggle; S.data.fav = S.data.fav || {}; if (S.data.fav[k]) delete S.data.fav[k]; else S.data.fav[k] = TODAY(); saveState(); closeSheet(); render(); toast(S.data.fav[k] ? 'Ditandai sebagai favorit' : 'Dihapus dari favorit'); return; }
+  if (t.dataset.favtoggle) { const k = t.dataset.favtoggle; S.data.fav = S.data.fav || {}; S.data.favDel = S.data.favDel || {}; const now = new Date().toISOString(); if (S.data.fav[k]) { delete S.data.fav[k]; S.data.favDel[k] = now; } else S.data.fav[k] = now; saveState(); closeSheet(); render(); toast(S.data.fav[k] ? 'Ditandai sebagai favorit' : 'Dihapus dari favorit'); return; }
   if (t.dataset.copy) { const [b,c,v] = t.dataset.copy.split(':').map(Number); const x = chapter(b,c).find(y=>y[0]===v); const txt = `${x[1]} (${bookName(b)} ${c}:${v}, AYT)`;
     navigator.clipboard.writeText(txt).then(()=>toast('Ayat disalin')).catch(()=>toast('Belum bisa menyalin di tampilan ini')); return; }
   if (t.dataset.tab) { S.tabCari = t.dataset.tab; render(); return; }
