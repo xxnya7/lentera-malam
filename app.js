@@ -82,8 +82,15 @@ let writing = Promise.resolve();
 function saveState(){
   lsSave();
   const ref = stateDoc(); if (!ref) return;
-  const body = JSON.parse(JSON.stringify(S.data));
-  writing = writing.then(() => sb.from('user_state').upsert({ user_id: S.user.id, data: body, updated_at: new Date().toISOString() }).then(must)).then(() => { S.sync = 'cloud'; }).catch(() => { S.sync = 'local'; });
+  const uid = S.user.id;
+  writing = writing.then(async () => {
+    // Gabung dengan isi cloud dulu supaya perangkat lain yang lebih baru tidak tertimpa.
+    const cur = must(await sb.from('user_state').select('data').eq('user_id', uid).maybeSingle());
+    const cloud = (cur.data && cur.data.data) || {};
+    S.data = Object.assign({}, cloud, S.data, { read: Object.assign({}, cloud.read, S.data.read) });
+    must(await sb.from('user_state').upsert({ user_id: uid, data: S.data, updated_at: new Date().toISOString() }));
+    lsSave(); S.sync = 'cloud';
+  }).catch(() => { S.sync = 'local'; });
 }
 const jTimers = {};
 function saveJournal(date, text){
@@ -799,6 +806,8 @@ async function loadCloud(uid){
   };
   sb.auth.onAuthStateChange((event, session) => { setTimeout(() => onSession(event, session), 0); });
   sb.auth.getSession().then(({ data }) => onSession('INITIAL', data.session));
+  // Aplikasi di HP bisa berhari-hari di latar; ambil data terbaru setiap kali dibuka lagi.
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.user.id) loadCloud(S.user.id).then(render); });
   const [bible, plan] = await Promise.all([fetch('/data/alkitab.json').then(r=>r.json()), fetch('/data/rencana.json').then(r=>r.json())]).catch(()=>[null,null]);
   try { const [l, g] = await Promise.all([fetch('/data/linimasa.json').then(r=>r.json()), fetch('/data/glosarium.json').then(r=>r.json())]); LINI = l; GLOS = g; glossInit(); } catch(e) {}
   BIBLE = bible; PLAN = plan;
