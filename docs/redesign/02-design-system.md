@@ -278,7 +278,7 @@ Tujuannya tenang dan fokus, dengan teks sebagai prioritas utama.
 - **Tanpa kartu.** Teks langsung berada di atas `--bg`. Bagian dipisahkan oleh jarak 48 px dan judul bagian `--fs-h3`. Tidak ada gelembung ikon, cukup satu ikon Phosphor 20 px berwarna `--muted` di depan judul bila perlu.
 - **Ayat fokus:**
   - teks Literata `--fs-read` berwarna `--text-read`
-  - **ayat kunci** memakai `--fs-key` dan garis kiri 3 px `--lamp`, dengan latar `--lamp-soft` dan radius `--r-sm`
+  - **ayat kunci** memakai `--fs-key` dengan latar `--lamp-soft`, radius `--r-sm`, dan ikon lentera kecil di depan nomor ayatnya (tanpa garis tepi berwarna; lihat 03-kritik-desain.md temuan 1)
   - referensi ("Yosua 5:13–15 · AYT") ditulis di bawah dengan `--fs-sm` dan `--muted`
 - **Renungan:** paragraf `--fs-read` dengan tinggi baris 1,75, berwarna `--text-read`. Jangan memakai warna yang lebih redup untuk teks utama.
 - **Telaah kata:** bukan kartu di dalam kartu, melainkan daftar definisi (`<dl>`): kata asli dalam Literata italik 20 px, artinya dalam `--fs-sm` `--muted`, dan penjelasan dalam `--fs-md`.
