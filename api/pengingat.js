@@ -11,7 +11,7 @@ const ymd = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).
 const minusDays = (s, n) => { const d = new Date(s + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - n); return d.toISOString().slice(0, 10); };
 
 export default async function handler(req, res) {
-  if (process.env.CRON_SECRET && req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'unauthorized' });
   }
   const jenis = req.query.jenis === 'streak' ? 'streak' : 'malam';
