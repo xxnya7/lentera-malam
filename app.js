@@ -1,4 +1,4 @@
-import { nightOf, tonight, streakState, migrate, mergeData, markRead, uid, minutes, LONG } from '/lib/antrean.js';
+import { nightOf, tonight, streakState, migrate, mergeData, markRead, uid, minutes, LONG, wipeProgress, RESET } from '/lib/antrean.js';
 
 // Supabase dimuat dari CDN. Kalau CDN atau layanan akun tidak terjangkau (offline, diblokir, sangat lambat),
 // aplikasi tetap jalan dengan data di perangkat, bukan layar kosong.
@@ -156,7 +156,7 @@ function saveState(){
   writing = writing.then(async () => {
     // Gabung dengan isi cloud dulu supaya perangkat lain yang lebih baru tidak tertimpa.
     const cur = must(await sb.from('user_state').select('data').eq('user_id', uid).maybeSingle());
-    const cloud = (cur.data && cur.data.data) || {};
+    const cloud = await resetCloud(uid, (cur.data && cur.data.data) || {});
     S.data = upgrade(mergeData(S.data, cloud));
     must(await sb.from('user_state').upsert({ user_id: uid, data: S.data, updated_at: new Date().toISOString() }));
     lsSave(); S.sync = 'cloud';
@@ -1094,10 +1094,16 @@ async function logout(){
   S.data = { read: {}, fav: {}, mode: 'mendalam', theme: S.data.theme, welcomed: false }; S.journal = {}; S.journalAt = {}; lsSave(); location.hash = ''; render();
 }
 
+// Reset sekali jalan di cloud: jurnal akun dihapus, progres dan favorit dikosongkan. Bila gagal, dicoba lagi nanti.
+async function resetCloud(uid, cloud){
+  if ((cloud.resetGen || 0) >= RESET) return cloud;
+  must(await sb.from('journals').delete().eq('user_id', uid));
+  return wipeProgress(cloud);
+}
 async function loadCloud(uid){
   try {
     const st = must(await sb.from('user_state').select('data').eq('user_id', uid).maybeSingle());
-    const cloud = st.data ? st.data.data : null;
+    const cloud = st.data ? await resetCloud(uid, st.data.data || {}) : null;
     if (cloud) S.data = upgrade(mergeData(cloud, S.data)); // isi cloud menang untuk pengaturan, bacaan dari keduanya digabung
     await syncJournals(uid);
     S.sync = 'cloud';
@@ -1108,6 +1114,10 @@ async function loadCloud(uid){
 
 (async function init(){
   const local = lsLoad(); if (local) { Object.assign(S.data, local.data || {}); S.journal = local.journal || {}; S.journalAt = local.journalAt || {}; }
+  if ((S.data.resetGen || 0) < RESET) { // reset di perangkat ini: mulai dari awal, termasuk jurnal dan favorit
+    S.data = wipeProgress(S.data); S.journal = {}; S.journalAt = {}; lsSave();
+    lsSet('lentera-stk', '0'); lsSet('lentera-stk-init', '1'); lsSet('lentera-wax', '');
+  }
   applyTheme(); render();
   registerSW();
   let lastUid = null;
