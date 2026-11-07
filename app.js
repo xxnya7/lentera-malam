@@ -416,7 +416,7 @@ function vMalam(){
   </section>`;
 
   return `${header}
-  <article class="rd" id="baca" style="--fs-read:${S.data.fs || 19}px" aria-label="Bacaan dan renungan">
+  <article class="rd" id="baca" style="--fs-read:${(S.data.fs || 19) + 1}px" aria-label="Bacaan dan renungan">
     ${tools}${introCards(day)}${focus}${reading}${prevCard(day, dv)}${devo}${journal}${prayer}
   </article>
   ${finish}

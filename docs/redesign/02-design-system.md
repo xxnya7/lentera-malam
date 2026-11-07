@@ -169,33 +169,38 @@ Di mode terang, kuning lentera sebagai **teks** hanya boleh memakai `--lamp-text
 
 ### 3.3 Tipografi
 
-| Peran | Font (Google Fonts) | Kenapa |
-|---|---|---|
-| Teks baca (ayat, renungan, doa) | **Literata** (opsz 7–72, 400/500, italik) | Dirancang khusus untuk membaca panjang di layar, dan sumbu *optical size* membuatnya tetap jelas di ukuran besar maupun kecil. Sudah dipakai di versi sekarang. |
-| Antarmuka (label, tombol, navigasi) | **Nunito** (400–800) | Ujung hurufnya membulat sehingga terasa ramah, "teman akrab", tetapi tetap jelas pada 13–15 px. Dukungan Latin dan angkanya lengkap. Bukan Inter, dan lebih hangat daripada Plus Jakarta Sans. |
-| Judul besar di Zona Main (sapaan, angka streak, pencapaian) | **Fraunces** (SOFT 100, WONK 0, 600–700) | Serif "lembut" yang punya karakter dan memberi kesan hangat. Hanya untuk judul 28 px ke atas, tidak untuk teks. |
+> **Revisi 3 (November 2026):** pengguna memilih pasangan "Buku cerita klasik" dari tiga pilihan pratinjau. Literata, Nunito, dan Fraunces diganti.
 
-**Skala (px, tinggi baris):**
+| Peran | Font | Kenapa |
+|---|---|---|
+| Teks baca (ayat, renungan, doa) dan judul | **Alegreya** (variabel 400–900, tegak dan italik) | Serif kaligrafis yang hangat, seperti buku dongeng yang dicetak indah. Dirancang untuk teks panjang, jadi tetap tenang di layar gelap. Judul memakai bobot 700. |
+| Antarmuka (label, tombol, navigasi) | **Alegreya Sans** (400, 500, 700) | Pasangan sans dari keluarga yang sama, sehingga semuanya terasa menyatu. Tetap jelas di 14 px. |
+
+Hanya dua keluarga. Keduanya OFL, disimpan sendiri di `/fonts`, memakai `font-display: swap`, dan punya font cadangan yang diukur ulang (`size-adjust`, `ascent-override`, `descent-override`) dari Times New Roman dan Arial supaya teks tidak melompat saat font selesai dimuat. Yang dimuat lebih dulu (*preload*) hanya Alegreya tegak dan Alegreya Sans 700.
+
+**Skala (px, tinggi baris).** Alegreya punya tinggi huruf kecil yang lebih rendah daripada Literata, jadi skala dinaikkan sekitar satu langkah:
 
 | Token | Ukuran / tinggi baris | Pemakaian |
 |---|---|---|
-| `--fs-xs` | 13 / 1.4 | Keterangan (minimum; jangan lebih kecil) |
-| `--fs-sm` | 15 / 1.5 | Label, chip, navigasi bawah |
-| `--fs-md` | 17 / 1.6 | Teks antarmuka |
-| `--fs-read` | **19 / 1.75** | Ayat dan renungan (bisa diubah: 17 / 19 / 21) |
-| `--fs-key` | 23 / 1.5 | Ayat kunci |
-| `--fs-h3` | 20 / 1.3 | Judul bagian di Zona Baca (Nunito 700) |
-| `--fs-h2` | 26 / 1.2 | Judul halaman |
-| `--fs-h1` | 34 / 1.1 | Sapaan atau hero di Zona Main (Fraunces) |
-| `--fs-stat` | 56 / 1 | Angka streak dan pencapaian (Fraunces, angka tabular) |
+| `--fs-xs` | 14 / 1.45 | Keterangan, label navigasi (minimum) |
+| `--fs-sm` | 16 / 1.45 | Label, chip |
+| `--fs-md` | 18 / 1.45 | Teks antarmuka |
+| `--fs-read` | **20 / 1.7** | Ayat dan renungan (bisa diubah: 18 / 20 / 22) |
+| `--fs-key` | 24 / 1.5 | Ayat kunci |
+| `--fs-h3` | 21 / 1.3 | Judul bagian (Alegreya Sans 700) |
+| `--fs-h2` | 27 / 1.2 | Judul halaman (Alegreya 700) |
+| `--fs-h1` | 36 / 1.1 | Sapaan atau hero (Alegreya 700) |
+| `--fs-stat` | 60 / 1 | Angka streak dan pencapaian (Alegreya 700, angka tabular) |
+
+Token tinggi baris: `--lh-ui` 1.45, `--lh-read` 1.7, `--lh-head` 1.15.
 
 **Aturan tipografi:**
-- **Bobot:** 400 untuk teks, 600–700 untuk judul, 500 untuk label. Bobot 800 hanya untuk angka besar.
+- **Bobot:** 400 untuk teks, 500 untuk label, 700 untuk judul dan tombol. Tidak ada 800.
 - **Panjang baris di Zona Baca:** `max-width: 34rem`, sekitar 50–60 karakter di HP.
-- **Huruf kapital:** tidak memakai label kapital kecil. Kategori kecil ditulis dengan huruf biasa (*sentence case*) lewat `--fs-sm`, dengan Nunito 600 dan `--muted`.
+- **Huruf kapital:** tidak memakai label kapital kecil.
 - **Angka:** angka streak, hari, dan persen memakai `font-variant-numeric: tabular-nums`.
-- **Nomor ayat:** Nunito 13 px, `--verse-num`, superscript ringan. Jangan lebih kecil.
-- **Pemuatan font:** simpan ketiga font di server sendiri (`/fonts/*.woff2`) dengan `font-display: swap` dan muat lebih dulu (*preload*) hanya Literata 400. Dengan begitu, font tetap tersedia saat offline.
+- **Nomor ayat:** Alegreya Sans 14 px, `--verse-num`, superscript ringan.
+- **Paragraf:** `text-wrap: pretty` supaya tidak ada satu kata menggantung di baris terakhir.
 
 ### 3.4 Jarak, radius, elevasi
 
