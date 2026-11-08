@@ -10,7 +10,7 @@ const BOOK_LEN = JSON.parse(fs.readFileSync(new URL('../data/panjang-pasal.json'
 const ref = u => `${A.n[u[0]]} ${u[1]}${u[2] === 1 && u[3] === BOOK_LEN[u[0]][u[1] - 1] ? '' : `:${u[2]}${u[3] !== u[2] ? '–' + u[3] : ''}`}`;
 
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
-webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:admin@example.com', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
+webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'https://lenteraanya.vercel.app', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
 
 export default async function handler(req, res) {
   if (!process.env.CRON_SECRET || req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {

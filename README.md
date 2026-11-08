@@ -30,9 +30,9 @@ Panduan deploy lengkap ada di dokumen Word **Panduan Deploy Lentera Malam**.
 | Nama | Isi |
 | --- | --- |
 | `SUPABASE_URL` | Project URL Supabase |
-| `SUPABASE_SERVICE_ROLE_KEY` | Kunci service_role (rahasia, hanya di Vercel) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Secret key Supabase (`sb_secret_…`, Settings → API Keys; rahasia, hanya di Vercel) |
 | `CRON_SECRET` | String acak panjang. Nilai yang sama juga disimpan sebagai secret repositori GitHub `CRON_SECRET` |
-| `VAPID_SUBJECT` | `mailto:email-anda` |
+| `VAPID_SUBJECT` | Alamat situs, `https://lenteraanya.vercel.app` (Apple menolak subject yang tidak valid dengan BadJwtToken) |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Sudah terpasang. Bila perlu kunci baru: `npx web-push generate-vapid-keys`, lalu Redeploy (semua perangkat harus mendaftar ulang) |
 
 ## Jadwal notifikasi (GitHub Actions)
