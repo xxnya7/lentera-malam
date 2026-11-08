@@ -1,4 +1,4 @@
-/* Dipanggil Vercel Cron setiap malam pukul 21.00 WIB.
+/* Dipanggil GitHub Actions (.github/workflows/pengingat.yml) setiap malam sekitar pukul 21.00 WIB.
    Mengirim satu pengingat lembut bila malam itu belum ada bacaan yang ditandai. */
 import fs from 'fs';
 import { createClient } from '@supabase/supabase-js';

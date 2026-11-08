@@ -20,9 +20,10 @@ Panduan deploy lengkap ada di dokumen Word **Panduan Deploy Lentera Malam**.
 | `lib/antrean.js` | Aturan antrean, malam (batas 04.00), streak, pemulihan, dan migrasi data; dipakai aplikasi dan server |
 | `scripts/buat-antrean.mjs` | Membuat ulang `data/antrean.json` |
 | `content/kitab/<indeks>.json` | Pengantar kitab (0 = Kejadian … 65 = Wahyu) |
-| `api/pengingat.js` | Fungsi Vercel pengirim notifikasi (dipanggil Vercel Cron) |
+| `api/pengingat.js` | Fungsi Vercel pengirim notifikasi (dipanggil GitHub Actions) |
 | `api/vapid-public.js` | Menyediakan kunci publik VAPID ke aplikasi |
-| `vercel.json` | Jadwal cron dan header |
+| `vercel.json` | Header dan berkas tambahan fungsi |
+| `.github/workflows/pengingat.yml` | Jadwal pengingat malam (GitHub Actions) |
 
 ## Variabel lingkungan Vercel
 
@@ -30,15 +31,15 @@ Panduan deploy lengkap ada di dokumen Word **Panduan Deploy Lentera Malam**.
 | --- | --- |
 | `SUPABASE_URL` | Project URL Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | Kunci service_role (rahasia, hanya di Vercel) |
-| `CRON_SECRET` | String acak panjang; Vercel otomatis mengirimnya ke fungsi cron |
+| `CRON_SECRET` | String acak panjang. Nilai yang sama juga disimpan sebagai secret repositori GitHub `CRON_SECRET` |
 | `VAPID_SUBJECT` | `mailto:email-anda` |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Sudah terpasang. Bila perlu kunci baru: `npx web-push generate-vapid-keys`, lalu Redeploy (semua perangkat harus mendaftar ulang) |
 
-## Jadwal notifikasi (Vercel Hobby)
+## Jadwal notifikasi (GitHub Actions)
 
-- `0 14 * * *` UTC → sekitar 21.00–22.00 WIB: satu pengingat lembut bila malam itu belum ada bacaan yang ditandai.
+- `3 14 * * *` UTC → sekitar 21.00 WIB: satu pengingat lembut bila malam itu belum ada bacaan yang ditandai.
 
-Paket Hobby hanya menjamin ketepatan per jam (±59 menit). Pengguna bisa mematikan notifikasi dari tab Akun.
+Vercel Cron Jobs (legacy) tidak pernah memanggil fungsi ini, jadi jadwalnya dipindah ke `.github/workflows/pengingat.yml`. Jadwal GitHub bisa terlambat beberapa menit. Untuk tes: GitHub → Actions → Pengingat malam → Run workflow. Pengguna bisa mematikan notifikasi dari tab Akun.
 
 ## Menambah renungan
 

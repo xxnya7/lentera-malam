@@ -1,10 +1,4 @@
 {
-  "crons": [
-    {
-      "path": "/api/pengingat",
-      "schedule": "0 14 * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/sw.js",
