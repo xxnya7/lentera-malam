@@ -14,6 +14,8 @@ webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:admin@example.com',
 
 export default async function handler(req, res) {
   if (!process.env.CRON_SECRET || req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+    // Catat penolakan (tanpa isi rahasia) supaya terlihat di log apakah jadwal Vercel benar-benar memanggil.
+    console.warn('pengingat ditolak', JSON.stringify({ adaSecret: !!process.env.CRON_SECRET, adaHeader: !!req.headers.authorization, cron: req.headers['x-vercel-cron-schedule'] || null, ua: req.headers['user-agent'] || null }));
     return res.status(401).json({ error: 'unauthorized' });
   }
   const today = nightOf(new Date(), 'Asia/Jakarta');
