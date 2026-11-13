@@ -1,0 +1,91 @@
+{
+ "id": "44-1-1",
+ "bacaan": {
+  "b": 44,
+  "c": 1,
+  "v1": 1,
+  "v2": 17
+ },
+ "tema": "Tidak malu akan Injil",
+ "fokus": {
+  "b": 44,
+  "c": 1,
+  "v1": 16,
+  "v2": 17,
+  "key": [
+   16,
+   17
+  ]
+ },
+ "kisah": [
+  "Surat Roma dibuka dengan salam yang panjang. Dalam satu kalimat, Paulus memperkenalkan dirinya sebagai hamba Yesus Kristus yang dipanggil menjadi rasul, lalu langsung bercerita tentang Injil: kabar yang dijanjikan para nabi, tentang Anak Allah yang lahir dari keturunan Daud dan dinyatakan berkuasa melalui kebangkitan-Nya (1:1–4). Paulus belum pernah mengunjungi jemaat di Roma, tetapi ia menyapa mereka sebagai orang-orang yang dikasihi Allah (1:7).",
+  "Ia bersyukur karena iman mereka sudah terdengar ke seluruh dunia dan mengaku selalu mendoakan mereka (1:8–10). Ia rindu datang, bukan hanya untuk memberi, tetapi supaya mereka sama-sama diteguhkan oleh iman masing-masing (1:11–12). Rencananya berkali-kali terhalang, tetapi ia merasa berutang kepada semua orang, orang Yunani maupun bukan, yang berhikmat maupun tidak (1:13–15).",
+  "Ayat 16–17 sering dianggap sebagai tema seluruh surat. Paulus tidak malu akan Injil, karena Injil adalah kuasa Allah untuk keselamatan setiap orang yang percaya. Di dalamnya kebenaran Allah dinyatakan dari iman kepada iman. Paulus menutupnya dengan kutipan dari Habakuk 2:4: “Orang benar akan hidup oleh imannya.”"
+ ],
+ "kata": [
+  {
+   "w": "euangelion",
+   "l": "Yunani · “kabar baik”",
+   "d": "Kata ini terbentuk dari <em>eu</em> (baik) dan <em>angelos</em> (pembawa pesan). Dalam pemakaian Yunani kuno, kata ini juga bisa berarti hadiah bagi orang yang membawa kabar baik. Di zaman Paulus, kata ini juga dipakai untuk pengumuman kemenangan atau peristiwa besar dalam kekaisaran."
+  },
+  {
+   "w": "dynamis",
+   "l": "Yunani · “kuasa, kekuatan”",
+   "d": "Kata ini berarti kemampuan atau kekuatan untuk melakukan sesuatu. Di 1:16, Injil disebut <em>dynamis</em> Allah. Injil bukan sekadar informasi tentang keselamatan, tetapi kekuatan Allah sendiri yang bekerja untuk menyelamatkan."
+  }
+ ],
+ "isu": null,
+ "hidup": [
+  "Mengapa Paulus perlu berkata “aku tidak malu”? Karena di mata dunia Romawi, berita tentang seorang Yahudi yang disalibkan terdengar memalukan. Salib adalah hukuman bagi budak dan pemberontak. Paulus sadar betul bahwa yang ia beritakan terdengar bodoh bagi banyak orang (1 Korintus 1:18), tetapi ia tetap memberitakannya.",
+  "Kita juga bisa merasa malu, walaupun dengan cara yang lebih halus: diam ketika iman ditertawakan, menyembunyikan kebiasaan berdoa, atau merasa canggung menyebut nama Yesus di lingkungan kerja. Paulus mengingatkan bahwa Injil tidak bergantung pada kefasihan kita. Kuasanya ada pada Allah.",
+  "Perhatikan juga kerendahan hati Paulus di ayat 12. Rasul besar itu ingin dikuatkan oleh iman jemaat yang belum pernah ia temui. Tidak malu akan Injil tidak sama dengan merasa lebih tinggi dari orang lain. Kita saling meneguhkan."
+ ],
+ "tanya": "Dalam situasi apa kamu paling sering merasa canggung menunjukkan imanmu?",
+ "coba": "Besok, ceritakan dengan sederhana kepada satu orang satu hal yang kamu syukuri dari Tuhan minggu ini. Tidak perlu berkhotbah, cukup jujur.",
+ "doa": "Tuhan Yesus, terima kasih untuk Injil yang telah menyelamatkanku. Ampuni aku ketika aku malu menyebut nama-Mu. Beri aku keberanian yang lembut, dan biarlah kuasa-Mu bekerja melalui kata-kataku yang sederhana. Amin.",
+ "fakta": {
+  "kind": "Fakta kitab",
+  "title": "Surat yang dibawa Febe",
+  "text": "Surat Roma kemungkinan besar ditulis di Korintus, sekitar akhir tahun 55 sampai awal 57, ketika Paulus bersiap membawa sumbangan ke Yerusalem (Roma 15:25–26). Di pasal 16 Paulus memperkenalkan Febe, pelayan jemaat di Kengkrea, kota pelabuhan Korintus. Banyak ahli menduga Febe yang membawa surat ini ke Roma."
+ },
+ "kaitan": [
+  {
+   "b": 34,
+   "c": 2,
+   "v": [
+    4
+   ],
+   "why": "Ayat yang dikutip Paulus: orang benar akan hidup oleh imannya."
+  },
+  {
+   "b": 45,
+   "c": 1,
+   "v": [
+    18
+   ],
+   "why": "Berita salib adalah kekuatan Allah bagi orang yang diselamatkan."
+  },
+  {
+   "b": 40,
+   "c": 8,
+   "v": [
+    38
+   ],
+   "why": "Yesus memperingatkan tentang malu mengakui Dia dan firman-Nya."
+  }
+ ],
+ "sumber": [
+  {
+   "t": "Bible Hub: Strong’s Greek 2098 (euangelion)",
+   "u": "https://biblehub.com/greek/2098.htm"
+  },
+  {
+   "t": "Bible Hub: Strong’s Greek 1411 (dunamis)",
+   "u": "https://biblehub.com/greek/1411.htm"
+  },
+  {
+   "t": "Wikipedia: Epistle to the Romans",
+   "u": "https://en.wikipedia.org/wiki/Epistle_to_the_Romans"
+  }
+ ]
+}
